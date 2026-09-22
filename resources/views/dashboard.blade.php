@@ -58,7 +58,7 @@
     </div>
 
     <!-- Department Quick Navigation Ribbon -->
-    <div id="departments-list" class="bg-white rounded-xl border border-gray-200 shadow-sm p-4 flex flex-col md:flex-row items-center justify-between gap-4">
+    <div id="departments-list" class="scroll-mt-24 bg-white rounded-xl border border-gray-200 shadow-sm p-4 flex flex-col md:flex-row items-center justify-between gap-4">
         <div class="flex items-center gap-2">
             <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Unit Operasional:</span>
             <div class="flex flex-wrap items-center gap-2">
@@ -79,20 +79,20 @@
     </div>
 
     <!-- Main Split-Screen Console: Left Form & Right Livewire Chat -->
-    <div id="split-screen" class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+    <div id="split-screen" class="scroll-mt-24 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         <!-- Left/Center Card: Ticket Creation Component (7 Columns) -->
-        <div id="new-ticket" class="lg:col-span-7">
+        <div id="new-ticket" class="scroll-mt-24 lg:col-span-7">
             <livewire:ticket-form />
         </div>
 
         <!-- Right Side Panel: Real-Time Communication / Chat Component (5 Columns) -->
-        <div id="chat-pane" class="lg:col-span-5 h-full">
+        <div id="chat-pane" class="scroll-mt-24 lg:col-span-5 h-full">
             <livewire:ticket-chat />
         </div>
     </div>
 
     <!-- Active Incident & Request Queue (TicketList Component) -->
-    <div id="queue" class="mt-8">
+    <div id="queue" class="scroll-mt-24 mt-8">
         <livewire:ticket-list />
     </div>
 </div>

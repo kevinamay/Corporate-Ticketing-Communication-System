@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full bg-slate-100">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="min-h-screen bg-slate-100 scroll-smooth">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -16,14 +16,14 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
 </head>
-<body class="h-full font-sans antialiased text-slate-800 bg-[#f4f6fa] flex flex-col" x-data="{ mobileMenuOpen: false }">
+<body class="min-h-screen font-sans antialiased text-slate-800 bg-[#f4f6fa] flex flex-col" x-data="{ mobileMenuOpen: false }">
 
-    <!-- TOP HERO SECTION (Full visual recreation of Asia Plastik industrial portal) -->
-    <div class="relative w-full bg-slate-900 shadow-xl overflow-hidden" 
-         style="background-image: url('/images/fotopt.webp'); background-size: cover; background-position: center;">
+    <!-- TOP HERO SECTION (Asia Plastik industrial manufacturing entrance) -->
+    <header class="relative w-full bg-slate-900 shadow-xl overflow-hidden" 
+            style="background-image: url('/images/fotopt.webp'); background-size: cover; background-position: center;">
         
-        <!-- Subtle dark gradient overlay to ensure high contrast and text readability -->
-        <div class="absolute inset-0 bg-gradient-to-b from-black/75 via-black/55 to-slate-950/85 pointer-events-none"></div>
+        <!-- Dark gradient overlay for high contrast and text readability -->
+        <div class="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-slate-950/90 pointer-events-none"></div>
 
         <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <!-- Top Utility Bar (Email, Phone, Language) -->
@@ -48,7 +48,6 @@
             <div class="h-24 flex items-center justify-between">
                 <!-- Left: ASIA PLASTIK Brand Logo -->
                 <a href="{{ url('/') }}" class="flex items-center gap-3.5 group">
-                    <!-- Stylized "ap" Monogram Icon -->
                     <div class="w-12 h-12 rounded-xl bg-white/10 group-hover:bg-white/15 backdrop-blur-md border border-white/20 flex items-center justify-center transition shadow-md">
                         <svg class="w-8 h-8 text-white" viewBox="0 0 40 40" fill="none">
                             <circle cx="15" cy="18" r="8" stroke="currentColor" stroke-width="3" />
@@ -124,7 +123,7 @@
             </div>
 
             <!-- HERO CENTER CONTENT (Exact typography and vertical guide-line from screenshot) -->
-            <div class="pt-10 pb-20 md:pt-14 md:pb-28">
+            <div class="pt-8 pb-16 md:pt-12 md:pb-24">
                 <div class="max-w-3xl">
                     <!-- Vertical Line with Top Dot Accent -->
                     <div class="relative pl-7 border-l-2 border-white/85 py-1">
@@ -152,27 +151,27 @@
                             Sistem Ticketing &amp; Komunikasi Antar-Departemen Terpadu
                         </div>
                         <a href="#new-ticket" 
-                           class="px-5 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs uppercase tracking-wider shadow-lg transition flex items-center gap-2">
+                           class="px-5 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs uppercase tracking-wider shadow-lg transition flex items-center gap-2 cursor-pointer">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
                             <span>Buat Tiket Dukungan</span>
                         </a>
                         <a href="#chat-pane" 
-                           class="px-5 py-3 rounded-xl bg-white/15 hover:bg-white/25 backdrop-blur-md text-white font-bold text-xs uppercase tracking-wider border border-white/25 transition flex items-center gap-2">
+                           class="px-5 py-3 rounded-xl bg-white/15 hover:bg-white/25 backdrop-blur-md text-white font-bold text-xs uppercase tracking-wider border border-white/25 transition flex items-center gap-2 cursor-pointer">
                             <svg class="w-4 h-4 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
                             <span>Live Chat Desk</span>
                         </a>
                         <a href="#queue" 
-                           class="px-4 py-3 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-md text-white/90 font-semibold text-xs tracking-wider border border-white/15 transition">
+                           class="px-4 py-3 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-md text-white/90 font-semibold text-xs tracking-wider border border-white/15 transition cursor-pointer">
                             Antrean Tiket ({{ \App\Models\Ticket::count() }})
                         </a>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    </header>
 
-    <!-- MAIN BODY CONTENT AREA (Split-Screen & Desk Dashboard) -->
-    <div class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 -mt-10 relative z-20 pb-12">
+    <!-- MAIN BODY CONTENT AREA (Split-Screen & Desk Dashboard with clean spacing, no negative margins) -->
+    <div class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-20">
         <main class="w-full">
             {{ $slot ?? '' }}
             @yield('content')
