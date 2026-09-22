@@ -2,10 +2,13 @@
 
 namespace App\Livewire;
 
+use App\Mail\SendOtpMail;
 use App\Models\Department;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -76,7 +79,7 @@ class RegisterUser extends Component
             'complete_address' => 'required|string|min:10|max:500',
             'postal_code' => 'required|string|min:5|max:10|regex:/^[0-9]+$/',
             'department_id' => 'required|exists:departments,id',
-            'avatar' => 'nullable|image|max:2048',
+            'avatar' => 'nullable|image|max:10240',
         ];
     }
 
@@ -94,6 +97,8 @@ class RegisterUser extends Component
             'whatsapp_number.required' => 'Nomor WhatsApp aktif wajib diisi.',
             'password.confirmed' => 'Konfirmasi password tidak cocok.',
             'email.unique' => 'Email ini telah digunakan oleh akun lain.',
+            'avatar.max' => 'Ukuran foto profil tidak boleh lebih dari 10MB.',
+            'avatar.image' => 'File harus berupa foto/gambar (JPG, JPEG, PNG, WEBP).',
         ];
     }
 
@@ -137,6 +142,13 @@ class RegisterUser extends Component
             'email_verified_at' => null,
             'role' => 'staff',
         ]);
+
+        // 4. Kirim email OTP ke alamat Gmail / email yang dimasukkan
+        try {
+            Mail::to($user->email)->send(new SendOtpMail($user->name, $otpCode));
+        } catch (\Throwable $e) {
+            Log::warning('Gagal mengirim email OTP: '.$e->getMessage());
+        }
 
         $this->userId = $user->id;
         $this->generatedOtpDemo = $otpCode;
@@ -199,6 +211,13 @@ class RegisterUser extends Component
             $this->generatedOtpDemo = $newOtp;
             $this->reset(['otp1', 'otp2', 'otp3', 'otp4', 'otp5', 'otp6']);
             $this->errorMessage = null;
+
+            try {
+                Mail::to($user->email)->send(new SendOtpMail($user->name, $newOtp));
+            } catch (\Throwable $e) {
+                Log::warning('Gagal mengirim ulang email OTP: '.$e->getMessage());
+            }
+
             $this->successMessage = 'Kode OTP baru berhasil dibuat dan dikirimkan.';
         }
     }

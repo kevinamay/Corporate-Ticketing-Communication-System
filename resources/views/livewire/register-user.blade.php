@@ -57,7 +57,7 @@
                         </div>
                         <div class="flex-1 text-center sm:text-left">
                             <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Foto Profil Karyawan (Opsional)</label>
-                            <p class="text-[11px] text-slate-500 mb-2">Format: JPG, JPEG, atau PNG (Maksimum 2MB). Jika dikosongkan, avatar inisial akan digenerate otomatis.</p>
+                            <p class="text-[11px] text-slate-500 mb-2">Format: JPG, JPEG, PNG, atau WEBP (Maksimum 10MB). Jika dikosongkan, avatar inisial akan digenerate otomatis.</p>
                             <input type="file" wire:model="avatar" accept="image/*" id="avatar_input" class="text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
                             @error('avatar') <p class="text-[11px] text-rose-600 mt-1">{{ $message }}</p> @enderror
                         </div>
