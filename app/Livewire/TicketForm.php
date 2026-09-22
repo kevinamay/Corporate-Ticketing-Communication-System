@@ -34,7 +34,7 @@ class TicketForm extends Component
             'title' => 'required|min:5|max:150',
             'sender_department_id' => 'required|exists:departments,id',
             'target_department_id' => 'required|exists:departments,id',
-            'category' => 'required|in:IT,HR,Maintenance',
+            'category' => 'required|in:IT,HR,Maintenance,General',
             'priority' => 'required|in:Low,Medium,High,Critical',
             'status' => 'required|in:Pending,Open,In Progress,Resolved',
             'description' => 'required|min:10',
