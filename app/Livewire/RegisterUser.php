@@ -58,8 +58,6 @@ class RegisterUser extends Component
     public string $otp6 = '';
 
     // Helpers
-    public ?string $generatedOtpDemo = null;
-
     public ?string $errorMessage = null;
 
     public ?string $successMessage = null;
@@ -114,8 +112,8 @@ class RegisterUser extends Component
     {
         $this->validate();
 
-        // 1. Generate 6-digit random secure OTP code
-        $otpCode = (string) random_int(100000, 999999);
+        // 1. Generate genuinely random 6-digit secure OTP code
+        $otpCode = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 
         // 2. Handle optional avatar upload or generate UI avatar
         $avatarUrl = null;
@@ -143,18 +141,18 @@ class RegisterUser extends Component
             'role' => 'staff',
         ]);
 
-        // 4. Kirim email OTP ke alamat Gmail / email yang dimasukkan
-        try {
-            Mail::to($user->email)->send(new SendOtpMail($user->name, $otpCode));
-        } catch (\Throwable $e) {
-            Log::warning('Gagal mengirim email OTP: '.$e->getMessage());
-        }
-
         $this->userId = $user->id;
-        $this->generatedOtpDemo = $otpCode;
         $this->step = 2; // Transition to OTP Verification UI
         $this->errorMessage = null;
-        $this->successMessage = 'Kode verifikasi 6-digit telah dikirimkan ke WhatsApp & Email Anda.';
+
+        // 4. Kirim email OTP ke alamat email pendaftar
+        try {
+            Mail::to($user->email)->send(new SendOtpMail($user->name, $otpCode));
+            $this->successMessage = 'Kode OTP 6-digit telah dikirim ke '.$user->email.'. Silakan periksa inbox atau folder spam email Anda.';
+        } catch (\Throwable $e) {
+            Log::error('Gagal mengirim email OTP: '.$e->getMessage());
+            $this->errorMessage = 'Pendaftaran tersimpan, namun gagal mengirim email ke '.$user->email.'. Pastikan konfigurasi SMTP di file .env sudah aktif.';
+        }
     }
 
     public function verifyOtp(): void
@@ -206,19 +204,18 @@ class RegisterUser extends Component
 
         $user = User::find($this->userId);
         if ($user) {
-            $newOtp = (string) random_int(100000, 999999);
+            $newOtp = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
             $user->update(['otp_code' => $newOtp]);
-            $this->generatedOtpDemo = $newOtp;
             $this->reset(['otp1', 'otp2', 'otp3', 'otp4', 'otp5', 'otp6']);
             $this->errorMessage = null;
 
             try {
                 Mail::to($user->email)->send(new SendOtpMail($user->name, $newOtp));
+                $this->successMessage = 'Kode OTP baru telah berhasil dikirimkan ke '.$user->email.'.';
             } catch (\Throwable $e) {
-                Log::warning('Gagal mengirim ulang email OTP: '.$e->getMessage());
+                Log::error('Gagal mengirim ulang email OTP: '.$e->getMessage());
+                $this->errorMessage = 'Gagal mengirim ulang email OTP ke '.$user->email.'. Periksa pengaturan SMTP di file .env.';
             }
-
-            $this->successMessage = 'Kode OTP baru berhasil dibuat dan dikirimkan.';
         }
     }
 

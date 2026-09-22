@@ -105,17 +105,6 @@
                 </a>
             </div>
 
-            <!-- Fast Demo Credentials Helper -->
-            <div class="mt-5 p-3 rounded-lg bg-slate-50 border border-slate-200 text-[11px] text-slate-500">
-                <div class="font-semibold text-slate-700 mb-1 flex items-center justify-between">
-                    <span>Akun Uji Coba Default:</span>
-                    <span class="text-[10px] bg-slate-200 px-1.5 py-0.5 rounded text-slate-700">Demo</span>
-                </div>
-                <div class="space-y-0.5">
-                    <div><strong>KTP:</strong> <span class="font-mono text-slate-700">3171000000000001</span> atau <strong>Email:</strong> <span class="text-slate-700">alice@company.com</span></div>
-                    <div><strong>Password:</strong> <span class="font-mono text-slate-700">password123</span></div>
-                </div>
-            </div>
 
         </div>
 

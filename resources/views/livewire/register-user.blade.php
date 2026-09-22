@@ -223,13 +223,6 @@
                     <strong class="text-slate-800 font-semibold">{{ $email }}</strong> (WhatsApp: <strong class="text-slate-800 font-semibold">{{ $whatsapp_number }}</strong>).
                 </p>
 
-                <!-- Demo Instant Testing Badge -->
-                @if ($generatedOtpDemo)
-                    <div class="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-xs inline-flex items-center gap-2">
-                        <span class="font-bold uppercase tracking-wider bg-amber-200 px-2 py-0.5 rounded text-[10px]">Testing Helper</span>
-                        <span>Kode OTP Anda di database: <strong class="font-mono text-sm tracking-widest text-amber-900 font-black">{{ $generatedOtpDemo }}</strong></span>
-                    </div>
-                @endif
 
                 @if ($successMessage)
                     <div class="mt-4 p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs">
