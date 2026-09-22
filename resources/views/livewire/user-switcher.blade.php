@@ -4,6 +4,7 @@
         <div class="relative">
             <img src="{{ $currentUser?->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($currentUser?->name ?? 'User') . '&background=0284c7&color=fff' }}" 
                  alt="{{ $currentUser?->name ?? 'User' }}" 
+                 onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name={{ urlencode($currentUser?->name ?? 'User') }}&background=0284c7&color=fff';"
                  class="w-8 h-8 rounded-full object-cover border border-white/40 shadow-xs" />
             <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-400 border border-white rounded-full"></span>
         </div>
@@ -40,6 +41,7 @@
                     class="w-full px-2.5 py-2 rounded-lg flex items-center gap-2.5 text-left transition {{ $user->id === $currentUser?->id ? 'bg-blue-50 text-blue-900 font-bold border border-blue-200' : 'hover:bg-slate-50 text-slate-700' }}">
                     <img src="{{ $user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($user->name) }}" 
                          alt="{{ $user->name }}" 
+                         onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name={{ urlencode($user->name) }}&background=0284c7&color=fff';"
                          class="w-7 h-7 rounded-full object-cover border border-gray-200" />
                     <div class="flex-1 min-w-0">
                         <div class="flex items-center justify-between">

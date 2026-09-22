@@ -89,6 +89,7 @@
                     @if (! $isMe)
                         <img src="{{ $msg->user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($msg->user->name) }}" 
                              alt="{{ $msg->user->name }}" 
+                             onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name={{ urlencode($msg->user->name) }}&background=0284c7&color=fff';"
                              class="w-7 h-7 rounded-full border border-gray-200 object-cover shrink-0" />
                     @endif
 
@@ -107,6 +108,7 @@
                     @if ($isMe)
                         <img src="{{ $msg->user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($msg->user->name) }}" 
                              alt="{{ $msg->user->name }}" 
+                             onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name={{ urlencode($msg->user->name) }}&background=0284c7&color=fff';"
                              class="w-7 h-7 rounded-full border border-blue-200 object-cover shrink-0" />
                     @endif
                 </div>
