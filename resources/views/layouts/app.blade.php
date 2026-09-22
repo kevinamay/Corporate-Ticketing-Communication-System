@@ -38,6 +38,19 @@
                     <span>+6231 8433078</span>
                 </a>
                 <span class="text-white/40">|</span>
+                @auth
+                    <span class="text-emerald-300 font-semibold">Aktif: {{ Auth::user()->name }}</span>
+                    <span class="text-white/40">|</span>
+                    <form action="{{ route('logout') }}" method="POST" class="inline">
+                        @csrf
+                        <button type="submit" class="hover:text-rose-300 text-rose-200 transition cursor-pointer">Logout</button>
+                    </form>
+                @else
+                    <a href="{{ route('login') }}" class="hover:text-white font-bold text-blue-200 transition">Masuk (Login)</a>
+                    <span class="text-white/40">|</span>
+                    <a href="{{ route('register') }}" class="hover:text-white font-bold text-white transition">Registrasi KTP</a>
+                @endauth
+                <span class="text-white/40">|</span>
                 <div class="flex items-center gap-1 cursor-pointer hover:text-white font-bold">
                     <span>ID</span>
                     <svg class="w-3 h-3 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>

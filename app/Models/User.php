@@ -16,15 +16,43 @@ use Illuminate\Notifications\Notifiable;
     'name',
     'email',
     'password',
+    'national_id_ktp',
+    'gender',
+    'whatsapp_number',
+    'complete_address',
+    'postal_code',
     'department_id',
     'avatar',
+    'otp_code',
     'role',
+    'email_verified_at',
 ])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
+
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var list<string>
+     */
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+        'national_id_ktp',
+        'gender',
+        'whatsapp_number',
+        'complete_address',
+        'postal_code',
+        'department_id',
+        'avatar',
+        'otp_code',
+        'role',
+        'email_verified_at',
+    ];
 
     /**
      * Get the attributes that should be cast.
