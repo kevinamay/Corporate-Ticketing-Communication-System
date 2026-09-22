@@ -18,7 +18,8 @@ class ExampleTest extends TestCase
         $response = $this->get('/');
 
         $response->assertStatus(200);
-        $response->assertSee('Corporate Ticketing & Communication Hub', false);
+        $response->assertSee('ASIA');
+        $response->assertSee('PERUSAHAAN');
         $response->assertSee('Submit Support Request');
     }
 }
