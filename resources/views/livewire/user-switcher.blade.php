@@ -1,4 +1,5 @@
 <div class="relative" x-data="{ open: false }">
+    <!-- Header Button (User Avatar & Name) -->
     <button @click="open = !open" type="button" 
         class="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur-md flex items-center gap-3 cursor-pointer transition text-white">
         <div class="relative">
@@ -22,7 +23,7 @@
         </svg>
     </button>
 
-    <!-- Dropdown Menu -->
+    <!-- Clean Corporate User Profile Dropdown -->
     <div x-show="open" @click.away="open = false" 
          x-transition:enter="transition ease-out duration-150"
          x-transition:enter-start="opacity-0 transform scale-95"
@@ -30,42 +31,88 @@
          x-transition:leave="transition ease-in duration-100"
          x-transition:leave-start="opacity-100 transform scale-100"
          x-transition:leave-end="opacity-0 transform scale-95"
-         class="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-xl border border-gray-200 p-2 z-50 text-slate-800"
+         class="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden z-50 text-slate-800"
          style="display: none;">
-        <div class="px-3 py-2 border-b border-gray-100 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-            Switch Perspective (Corporate Roster)
-        </div>
-        <div class="space-y-1 mt-1 max-h-64 overflow-y-auto">
-            @foreach ($users as $user)
-                <button wire:click="switchUser({{ $user->id }})" @click="open = false" 
-                    class="w-full px-2.5 py-2 rounded-lg flex items-center gap-2.5 text-left transition {{ $user->id === $currentUser?->id ? 'bg-blue-50 text-blue-900 font-bold border border-blue-200' : 'hover:bg-slate-50 text-slate-700' }}">
-                    <img src="{{ $user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($user->name) }}" 
-                         alt="{{ $user->name }}" 
-                         onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name={{ urlencode($user->name) }}&background=0284c7&color=fff';"
-                         class="w-7 h-7 rounded-full object-cover border border-gray-200" />
-                    <div class="flex-1 min-w-0">
-                        <div class="flex items-center justify-between">
-                            <span class="text-xs truncate">{{ $user->name }}</span>
-                            <span class="text-[9px] uppercase px-1 rounded bg-slate-100 text-slate-600 font-medium">{{ $user->role }}</span>
-                        </div>
-                        <p class="text-[10px] text-slate-400 truncate">{{ $user->department?->name ?? 'Corporate HQ' }}</p>
+        
+        <!-- User Identity Header Banner -->
+        <div class="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900 p-4 text-white">
+            <div class="flex items-center gap-3">
+                <img src="{{ $currentUser?->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($currentUser?->name ?? 'User') . '&background=0284c7&color=fff' }}" 
+                     alt="{{ $currentUser?->name ?? 'User' }}" 
+                     onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name={{ urlencode($currentUser?->name ?? 'User') }}&background=0284c7&color=fff';"
+                     class="w-12 h-12 rounded-full object-cover border-2 border-white/60 shadow-md shrink-0" />
+                <div class="min-w-0 flex-1">
+                    <div class="flex items-center gap-1.5">
+                        <h4 class="text-xs font-bold text-white truncate">{{ $currentUser?->name ?? 'Pengguna' }}</h4>
                     </div>
-                </button>
-            @endforeach
+                    <p class="text-[11px] text-blue-200 truncate">{{ $currentUser?->email }}</p>
+                    <div class="mt-1 flex items-center gap-1.5">
+                        <span class="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded bg-blue-500/40 text-blue-100 border border-blue-400/30">
+                            {{ $currentUser?->role ?? 'Staff' }}
+                        </span>
+                        <span class="text-[9px] font-medium text-white/80">
+                            &bull; {{ $currentUser?->department?->name ?? 'Corporate' }}
+                        </span>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="mt-2 pt-2 border-t border-gray-100 flex items-center justify-between px-2 text-xs">
+
+        <!-- Detail Profil Karyawan -->
+        <div class="p-3 space-y-2 text-xs bg-slate-50 border-b border-gray-100">
+            <div class="flex items-center justify-between text-[11px]">
+                <span class="text-slate-500">Status Akun:</span>
+                @if ($currentUser?->email_verified_at)
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-200">
+                        <svg class="w-3 h-3 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                        Terverifikasi OTP
+                    </span>
+                @else
+                    <span class="text-[10px] font-semibold text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                        Belum Verifikasi
+                    </span>
+                @endif
+            </div>
+
+            @if ($currentUser?->national_id_ktp)
+                <div class="flex items-center justify-between text-[11px]">
+                    <span class="text-slate-500">Nomor KTP (NIK):</span>
+                    <span class="font-mono font-semibold text-slate-800">{{ $currentUser->national_id_ktp }}</span>
+                </div>
+            @endif
+
+            @if ($currentUser?->whatsapp_number)
+                <div class="flex items-center justify-between text-[11px]">
+                    <span class="text-slate-500">WhatsApp:</span>
+                    <span class="font-semibold text-slate-800">{{ $currentUser->whatsapp_number }}</span>
+                </div>
+            @endif
+
+            @if ($currentUser?->complete_address)
+                <div class="pt-1 border-t border-slate-200 text-[11px]">
+                    <span class="text-slate-500 block mb-0.5">Alamat:</span>
+                    <p class="text-slate-700 leading-tight text-[10px] line-clamp-2">{{ $currentUser->complete_address }}</p>
+                </div>
+            @endif
+        </div>
+
+        <!-- Tombol Aksi Logout -->
+        <div class="p-2 bg-white">
             @auth
                 <form action="{{ route('logout') }}" method="POST" class="w-full">
                     @csrf
-                    <button type="submit" class="w-full py-1.5 px-3 rounded-lg text-rose-600 hover:bg-rose-50 font-semibold transition text-left flex items-center justify-between">
+                    <button type="submit" class="w-full py-2 px-3 rounded-lg text-rose-600 hover:bg-rose-50 font-semibold transition text-xs flex items-center justify-between cursor-pointer">
                         <span>Keluar Akun (Logout)</span>
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                        <svg class="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
                     </button>
                 </form>
             @else
-                <a href="{{ route('login') }}" class="text-blue-600 hover:text-blue-800 font-bold">Masuk (Login)</a>
-                <a href="{{ route('register') }}" class="text-slate-600 hover:text-slate-800">Daftar Akun Baru</a>
+                <div class="flex items-center justify-between px-2 py-1 text-xs">
+                    <a href="{{ route('login') }}" class="text-blue-600 hover:text-blue-800 font-bold">Masuk (Login)</a>
+                    <a href="{{ route('register') }}" class="text-slate-600 hover:text-slate-800">Daftar Akun</a>
+                </div>
             @endauth
         </div>
+
     </div>
 </div>
