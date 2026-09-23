@@ -24,4 +24,19 @@ if (is_dir('/var/task') || !is_writable($app->storagePath()) || getenv('VERCEL')
     $app->useStoragePath('/tmp/storage');
 }
 
+$app->booting(function () use ($app) {
+    if (empty($app['config']['session.driver'])) {
+        $app['config']->set('session.driver', 'database');
+    }
+    if (empty($app['config']['cache.default'])) {
+        $app['config']->set('cache.default', 'database');
+    }
+    if (empty($app['config']['queue.default'])) {
+        $app['config']->set('queue.default', 'database');
+    }
+    if (empty($app['config']['database.default'])) {
+        $app['config']->set('database.default', 'sqlite');
+    }
+});
+
 return $app;
