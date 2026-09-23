@@ -67,6 +67,7 @@ $envDefaults = [
     'LOG_CHANNEL' => 'stderr',
     'VIEW_COMPILED_PATH' => '/tmp/storage/framework/views',
     'APP_MAINTENANCE_DRIVER' => 'file',
+    'BCRYPT_ROUNDS' => '12',
 ];
 
 foreach ($envDefaults as $key => $val) {

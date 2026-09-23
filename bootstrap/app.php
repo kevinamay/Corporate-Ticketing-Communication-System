@@ -53,6 +53,10 @@ $app->booting(function () use ($app, $isVercel) {
     if (empty($app['config']['database.default'])) {
         $app['config']->set('database.default', 'sqlite');
     }
+    $bcryptRounds = (int) ($app['config']['hashing.bcrypt.rounds'] ?? 12);
+    if ($bcryptRounds < 4) {
+        $app['config']->set('hashing.bcrypt.rounds', 12);
+    }
 });
 
 return $app;
