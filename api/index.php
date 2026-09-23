@@ -26,7 +26,33 @@ foreach ($storageDirs as $dir) {
     }
 }
 
-// 2. Prepare writable SQLite database in /tmp
+// 2. Redirect bootstrap caches to /tmp and copy pre-discovered files if present
+$packagesCache = __DIR__ . '/../bootstrap/cache/packages.php';
+if (file_exists($packagesCache) && !file_exists('/tmp/packages.php')) {
+    copy($packagesCache, '/tmp/packages.php');
+}
+$servicesCache = __DIR__ . '/../bootstrap/cache/services.php';
+if (file_exists($servicesCache) && !file_exists('/tmp/services.php')) {
+    copy($servicesCache, '/tmp/services.php');
+}
+
+putenv('APP_PACKAGES_CACHE=/tmp/packages.php');
+putenv('APP_SERVICES_CACHE=/tmp/services.php');
+putenv('APP_CONFIG_CACHE=/tmp/config.php');
+putenv('APP_ROUTES_CACHE=/tmp/routes.php');
+putenv('APP_EVENTS_CACHE=/tmp/events.php');
+$_ENV['APP_PACKAGES_CACHE'] = '/tmp/packages.php';
+$_ENV['APP_SERVICES_CACHE'] = '/tmp/services.php';
+$_ENV['APP_CONFIG_CACHE'] = '/tmp/config.php';
+$_ENV['APP_ROUTES_CACHE'] = '/tmp/routes.php';
+$_ENV['APP_EVENTS_CACHE'] = '/tmp/events.php';
+$_SERVER['APP_PACKAGES_CACHE'] = '/tmp/packages.php';
+$_SERVER['APP_SERVICES_CACHE'] = '/tmp/services.php';
+$_SERVER['APP_CONFIG_CACHE'] = '/tmp/config.php';
+$_SERVER['APP_ROUTES_CACHE'] = '/tmp/routes.php';
+$_SERVER['APP_EVENTS_CACHE'] = '/tmp/events.php';
+
+// 3. Prepare writable SQLite database in /tmp
 $tmpDb = '/tmp/database.sqlite';
 if (!file_exists($tmpDb) || filesize($tmpDb) === 0) {
     $seededDb = __DIR__ . '/../database/database.sqlite';
@@ -65,7 +91,7 @@ putenv('VIEW_COMPILED_PATH=/tmp/storage/framework/views');
 $_ENV['VIEW_COMPILED_PATH'] = '/tmp/storage/framework/views';
 $_SERVER['VIEW_COMPILED_PATH'] = '/tmp/storage/framework/views';
 
-// 3. Forward request to Laravel public/index.php with debug catch
+// 4. Forward request to Laravel public/index.php with debug catch
 try {
     require __DIR__ . '/../public/index.php';
 } catch (\Throwable $e) {
