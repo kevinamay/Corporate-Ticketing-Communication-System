@@ -64,13 +64,26 @@ if (!file_exists($tmpDb) || filesize($tmpDb) === 0) {
     @chmod($tmpDb, 0666);
 }
 
-// Ensure APP_KEY is always set and never empty
-$appKey = getenv('APP_KEY') ?: ($_ENV['APP_KEY'] ?? '');
-if (empty($appKey)) {
-    $fallbackKey = 'base64:QX6Shj9IM6P1zsqviSaEOOomvYB9raucqTLGNJYCDnA=';
-    putenv("APP_KEY={$fallbackKey}");
-    $_ENV['APP_KEY'] = $fallbackKey;
-    $_SERVER['APP_KEY'] = $fallbackKey;
+// 4. Ensure essential environment variables have valid non-empty defaults
+$envDefaults = [
+    'APP_KEY' => 'base64:QX6Shj9IM6P1zsqviSaEOOomvYB9raucqTLGNJYCDnA=',
+    'APP_ENV' => 'production',
+    'APP_DEBUG' => 'true',
+    'SESSION_DRIVER' => 'database',
+    'CACHE_STORE' => 'database',
+    'QUEUE_CONNECTION' => 'database',
+    'DB_CONNECTION' => 'sqlite',
+    'LOG_CHANNEL' => 'stderr',
+    'VIEW_COMPILED_PATH' => '/tmp/storage/framework/views',
+];
+
+foreach ($envDefaults as $key => $val) {
+    $cur = getenv($key);
+    if ($cur === false || $cur === '') {
+        putenv("{$key}={$val}");
+        $_ENV[$key] = $val;
+        $_SERVER[$key] = $val;
+    }
 }
 
 // Ensure Database connection works seamlessly on Vercel
@@ -86,12 +99,7 @@ if (empty($dbConn) || $dbConn === 'sqlite' || $dbHost === '127.0.0.1' || $dbHost
     $_SERVER['DB_DATABASE'] = $tmpDb;
 }
 
-// Set storage paths for serverless
-putenv('VIEW_COMPILED_PATH=/tmp/storage/framework/views');
-$_ENV['VIEW_COMPILED_PATH'] = '/tmp/storage/framework/views';
-$_SERVER['VIEW_COMPILED_PATH'] = '/tmp/storage/framework/views';
-
-// 4. Forward request to Laravel public/index.php with debug catch
+// 5. Forward request to Laravel public/index.php with debug catch
 try {
     require __DIR__ . '/../public/index.php';
 } catch (\Throwable $e) {
