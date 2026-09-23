@@ -60,22 +60,8 @@
             <!-- Main Navigation Bar (Logo on Left, Tools & Menu on Right) -->
             <div class="h-24 flex items-center justify-between">
                 <!-- Left: ASIA PLASTIK Brand Logo -->
-                <a href="{{ url('/') }}" class="flex items-center gap-3.5 group">
-                    <div class="w-12 h-12 rounded-xl bg-white/10 group-hover:bg-white/15 backdrop-blur-md border border-white/20 flex items-center justify-center transition shadow-md">
-                        <svg class="w-8 h-8 text-white" viewBox="0 0 40 40" fill="none">
-                            <circle cx="15" cy="18" r="8" stroke="currentColor" stroke-width="3" />
-                            <path d="M15 10V30" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
-                            <circle cx="25" cy="22" r="8" stroke="currentColor" stroke-width="3" />
-                            <path d="M25 14V34" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
-                        </svg>
-                    </div>
-                    <div>
-                        <div class="text-white font-black text-xl tracking-wider leading-none flex items-center gap-1.5">
-                            <span>ASIA</span>
-                            <span class="text-blue-300">PLASTIK</span>
-                        </div>
-                        <p class="text-[9px] uppercase tracking-[0.25em] text-white/70 font-semibold mt-1">PLASTIC INDUSTRY</p>
-                    </div>
+                <a href="{{ url('/') }}" class="flex items-center group">
+                    <img src="{{ asset('images/logo.webp') }}" alt="Asia Plastik - Plastic Industry" class="h-11 sm:h-12 w-auto object-contain transition duration-200 group-hover:opacity-90">
                 </a>
 
                 <!-- Right: Search, Notifications, User Roster, Menu -->
