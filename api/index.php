@@ -50,7 +50,7 @@ if (!file_exists($tmpDb) || filesize($tmpDb) === 0) {
 $envDefaults = [
     'APP_KEY' => 'base64:QX6Shj9IM6P1zsqviSaEOOomvYB9raucqTLGNJYCDnA=',
     'APP_ENV' => 'production',
-    'APP_DEBUG' => 'true',
+    'APP_DEBUG' => 'false',
     'SESSION_DRIVER' => 'database',
     'CACHE_STORE' => 'database',
     'QUEUE_CONNECTION' => 'database',
