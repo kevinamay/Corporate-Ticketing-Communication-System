@@ -8,15 +8,14 @@
     <div class="relative z-10 w-full max-w-md bg-white shadow-2xl border border-gray-100 rounded-xl overflow-hidden my-8">
         
         <!-- Corporate Top Bar -->
-        <div class="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900 px-6 py-5 flex items-center justify-between text-white border-b border-blue-700/50">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-lg bg-white/10 border border-white/20 flex items-center justify-center font-black text-sm tracking-wider shadow">
-                    AP
-                </div>
-                <div>
-                    <h2 class="font-extrabold text-sm sm:text-base tracking-wide text-white">PT. ASIA PLASTIK</h2>
-                    <p class="text-[10px] text-blue-200 tracking-wider uppercase font-semibold">Corporate Ticketing Portal</p>
-                </div>
+        <div class="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900 px-6 py-4 flex items-center justify-between text-white border-b border-blue-700/50">
+            <a href="{{ url('/') }}" class="flex items-center group">
+                <img src="{{ asset('images/logo.webp') }}" alt="PT. Asia Plastik" class="h-10 sm:h-11 w-auto object-contain transition duration-200 group-hover:opacity-90">
+            </a>
+            <div class="text-right hidden sm:block">
+                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-500/30 text-blue-200 border border-blue-400/30">
+                    Portal Masuk
+                </span>
             </div>
         </div>
 
