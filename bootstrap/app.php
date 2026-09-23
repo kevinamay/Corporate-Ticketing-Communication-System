@@ -20,7 +20,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
         );
     })->create();
 
-if (getenv('VERCEL') || isset($_ENV['VERCEL']) || isset($_SERVER['VERCEL'])) {
+if (is_dir('/var/task') || !is_writable($app->storagePath()) || getenv('VERCEL') || isset($_ENV['VERCEL']) || isset($_SERVER['VERCEL'])) {
     $app->useStoragePath('/tmp/storage');
 }
 

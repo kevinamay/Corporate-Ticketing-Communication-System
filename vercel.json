@@ -32,6 +32,7 @@
     }
   ],
   "env": {
+    "VERCEL": "1",
     "APP_ENV": "production",
     "APP_DEBUG": "true",
     "VIEW_COMPILED_PATH": "/tmp/storage/framework/views",
