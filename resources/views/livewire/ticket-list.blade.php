@@ -1,4 +1,4 @@
-<div class="bg-white shadow-md border border-gray-200 rounded-xl p-5 mb-6">
+<div class="bg-white shadow-md border border-gray-200 rounded-xl p-5 mb-6" wire:poll.3s>
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
         <div class="flex items-center gap-2.5">
             <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center">
@@ -96,8 +96,14 @@
                 </div>
             </div>
         @empty
-            <div class="col-span-full text-center py-8 text-slate-400 text-xs">
-                No tickets found matching the specified filter criteria.
+            <div class="col-span-full text-center py-12 px-4 rounded-xl border-2 border-dashed border-gray-200 bg-slate-50/50">
+                <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-500 mx-auto flex items-center justify-center mb-3">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                </div>
+                <h4 class="text-sm font-bold text-slate-800">Belum Ada Tiket yang Dibuat</h4>
+                <p class="text-xs text-slate-500 max-w-sm mx-auto mt-1">Antrean tiket antar divisi saat ini masih bersih. Silakan buat tiket pertama Anda melalui formulir di atas untuk memulai koordinasi antar divisi.</p>
             </div>
         @endforelse
     </div>

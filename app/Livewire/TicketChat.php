@@ -4,7 +4,7 @@ namespace App\Livewire;
 
 use App\Models\Message;
 use App\Models\Ticket;
-use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
@@ -20,34 +20,39 @@ class TicketChat extends Component
 
     public function mount(?int $initialTicketId = null): void
     {
-        if ($initialTicketId) {
-            $this->ticketId = $initialTicketId;
-        } else {
-            // Default to first active ticket
-            $firstTicket = Ticket::latest()->first();
-            $this->ticketId = $firstTicket?->id;
-        }
-    }
-
-    #[On('ticketSelected')]
-    public function onTicketSelected(int $ticketId): void
-    {
-        $this->ticketId = $ticketId;
-        $this->resetErrorBag();
-        $this->newMessage = '';
-        $this->isCalling = false;
+        $this->ticketId = $initialTicketId ?? Ticket::latest()->first()?->id;
     }
 
     #[On('ticketCreated')]
     public function onTicketCreated(int $ticketId): void
     {
         $this->ticketId = $ticketId;
-        $this->resetErrorBag();
-        $this->newMessage = '';
+    }
+
+    #[On('ticketSelected')]
+    public function onTicketSelected(int $ticketId): void
+    {
+        $this->ticketId = $ticketId;
+        $this->isCalling = false;
+        $this->callSeconds = 0;
+    }
+
+    public function selectTicket(int $id): void
+    {
+        $this->ticketId = $id;
     }
 
     public function sendMessage(): void
     {
+        $activeUserId = Auth::id() ?? session('active_user_id');
+
+        if (! $activeUserId) {
+            session()->flash('error', 'Silakan masuk (login) terlebih dahulu.');
+            $this->redirect(route('login'));
+
+            return;
+        }
+
         $this->validate([
             'newMessage' => 'required|min:1|max:1000',
         ]);
@@ -55,8 +60,6 @@ class TicketChat extends Component
         if (! $this->ticketId) {
             return;
         }
-
-        $activeUserId = session('active_user_id', User::first()?->id ?? 1);
 
         Message::create([
             'ticket_id' => $this->ticketId,
@@ -98,7 +101,7 @@ class TicketChat extends Component
             ? Ticket::with(['sender', 'targetDepartment', 'messages.user'])->find($this->ticketId)
             : null;
 
-        $activeUserId = session('active_user_id', User::first()?->id ?? 1);
+        $activeUserId = Auth::id() ?? session('active_user_id');
 
         return view('livewire.ticket-chat', [
             'ticket' => $ticket,

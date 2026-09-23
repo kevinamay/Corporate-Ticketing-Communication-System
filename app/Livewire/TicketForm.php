@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\Department;
 use App\Models\Ticket;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 class TicketForm extends Component
@@ -50,10 +51,12 @@ class TicketForm extends Component
         }
 
         // Align with active user's department if available
-        $currentUserId = session('active_user_id', User::first()?->id ?? 1);
-        $currentUser = User::find($currentUserId);
-        if ($currentUser && $currentUser->department_id) {
-            $this->sender_department_id = $currentUser->department_id;
+        $currentUserId = Auth::id() ?? session('active_user_id');
+        if ($currentUserId) {
+            $currentUser = User::find($currentUserId);
+            if ($currentUser && $currentUser->department_id) {
+                $this->sender_department_id = $currentUser->department_id;
+            }
         }
     }
 
@@ -86,10 +89,16 @@ class TicketForm extends Component
 
     public function submit(): void
     {
-        $this->validate();
+        $currentUserId = Auth::id() ?? session('active_user_id');
 
-        // Get current active user from session or default to first user
-        $currentUserId = session('active_user_id', User::first()?->id ?? 1);
+        if (! $currentUserId) {
+            session()->flash('error', 'Silakan masuk (login) terlebih dahulu untuk membuat tiket.');
+            $this->redirect(route('login'));
+
+            return;
+        }
+
+        $this->validate();
 
         $ticket = Ticket::create([
             'sender_id' => $currentUserId,

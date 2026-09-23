@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 class UserSwitcher extends Component
@@ -11,21 +12,26 @@ class UserSwitcher extends Component
 
     public function mount(): void
     {
-        $this->activeUserId = session('active_user_id', User::first()?->id ?? 1);
+        $this->activeUserId = Auth::id() ?? session('active_user_id');
     }
 
     public function switchUser(int $userId): void
     {
-        session(['active_user_id' => $userId]);
-        $this->activeUserId = $userId;
-        $this->dispatch('userSwitched', userId: $userId);
-        $this->redirect(request()->header('Referer', '/'));
+        $user = User::find($userId);
+        if ($user) {
+            Auth::login($user);
+            session(['active_user_id' => $userId]);
+            $this->activeUserId = $userId;
+            $this->dispatch('userSwitched', userId: $userId);
+            $this->redirect(request()->header('Referer', '/'));
+        }
     }
 
     public function render()
     {
-        $users = User::with('department')->get();
-        $currentUser = User::with('department')->find($this->activeUserId) ?? $users->first();
+        $this->activeUserId = Auth::id() ?? session('active_user_id');
+        $currentUser = $this->activeUserId ? User::with('department')->find($this->activeUserId) : null;
+        $users = $currentUser ? User::with('department')->get() : collect();
 
         return view('livewire.user-switcher', [
             'users' => $users,

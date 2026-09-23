@@ -123,23 +123,37 @@
             @endforelse
         </div>
 
-        <!-- Footer: Text input and a solid blue send button -->
+        <!-- Footer: Text input and send button for auth users, login prompt for guests -->
         <div class="p-3.5 border-t border-gray-200 bg-white">
-            <form wire:submit="sendMessage" class="flex items-center gap-2">
-                <input type="text" wire:model="newMessage" placeholder="Type message to {{ $ticket->targetDepartment->name }}..."
-                    class="flex-1 px-3.5 py-2.5 text-xs md:text-sm text-slate-800 bg-slate-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition shadow-xs" />
-                <button type="submit" 
-                    class="px-4 py-2.5 rounded-lg text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 transition shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
-                    </svg>
-                    <span>Send</span>
-                </button>
-            </form>
-            <div class="flex items-center justify-between mt-1.5 px-0.5 text-[10px] text-slate-400">
-                <span>Direct secure channel &bull; Auto-syncing</span>
-                <span>Press Enter to dispatch</span>
-            </div>
+            @auth
+                <form wire:submit="sendMessage" class="flex items-center gap-2">
+                    <input type="text" wire:model="newMessage" placeholder="Type message to {{ $ticket->targetDepartment->name }}..."
+                        class="flex-1 px-3.5 py-2.5 text-xs md:text-sm text-slate-800 bg-slate-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition shadow-xs" />
+                    <button type="submit" 
+                        class="px-4 py-2.5 rounded-lg text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 transition shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                        </svg>
+                        <span>Send</span>
+                    </button>
+                </form>
+                <div class="flex items-center justify-between mt-1.5 px-0.5 text-[10px] text-slate-400">
+                    <span>Direct secure channel &bull; Auto-syncing</span>
+                    <span>Press Enter to dispatch</span>
+                </div>
+            @else
+                <div class="p-3 rounded-lg bg-slate-50 border border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                    <div class="flex items-center gap-2 text-xs text-slate-600">
+                        <svg class="w-4 h-4 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                        <span>Masuk (Login) untuk membalas percakapan di tiket ini.</span>
+                    </div>
+                    <a href="{{ route('login') }}" class="px-3.5 py-1.5 rounded-md text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 transition shadow-xs text-center">
+                        Masuk ke Akun
+                    </a>
+                </div>
+            @endauth
         </div>
     @else
         <div class="flex flex-col items-center justify-center h-full p-8 text-center min-h-[420px]">
@@ -148,8 +162,8 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
                 </svg>
             </div>
-            <h4 class="text-sm font-bold text-slate-800">No Ticket Selected</h4>
-            <p class="text-xs text-slate-500 max-w-xs mt-1">Select an active ticket from the queue or submit a new request to activate this communication console.</p>
+            <h4 class="text-sm font-bold text-slate-800">Belum Ada Tiket yang Dipilih</h4>
+            <p class="text-xs text-slate-500 max-w-xs mt-1">Pilih salah satu tiket dari antrean di bawah atau buat tiket baru melalui formulir di sebelah kiri untuk membuka ruang koordinasi inter-divisi.</p>
         </div>
     @endif
 </div>
