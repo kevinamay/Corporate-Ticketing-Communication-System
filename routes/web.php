@@ -41,7 +41,7 @@ Route::get('/storage/{path}', function (string $path) {
     return response()->file($filePath);
 })->where('path', '.*')->name('storage.local');
 
-Route::get('/api/diag-hash', function () {
+Route::get('/diag-hash', function () {
     $info = [
         'algos' => password_algos(),
         'PASSWORD_BCRYPT_defined' => defined('PASSWORD_BCRYPT'),

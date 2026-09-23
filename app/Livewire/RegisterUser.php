@@ -158,7 +158,15 @@ class RegisterUser extends Component
             // 3. Generate genuinely random 6-digit secure OTP code
             $otpCode = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 
-            // 4. Handle optional avatar upload or generate UI avatar
+            // 4. Safe password hashing with resilient fallback
+            try {
+                $hashedPassword = Hash::make($this->password);
+            } catch (\Throwable $e) {
+                Log::warning('BcryptHasher fallback to PASSWORD_DEFAULT: '.$e->getMessage());
+                $hashedPassword = password_hash($this->password, PASSWORD_DEFAULT);
+            }
+
+            // 5. Handle optional avatar upload or generate UI avatar
             $avatarUrl = null;
             if ($this->avatar) {
                 try {
@@ -172,13 +180,13 @@ class RegisterUser extends Component
                 $avatarUrl = 'https://ui-avatars.com/api/?name='.urlencode($this->name).'&background=0284c7&color=fff';
             }
 
-            // 5. Create or update unverified user
+            // 6. Create or update unverified user
             $targetUser = $userByEmail ?: $userByKtp;
             if ($targetUser) {
                 $targetUser->update([
                     'name' => trim($this->name),
                     'email' => $cleanEmail,
-                    'password' => Hash::make($this->password),
+                    'password' => $hashedPassword,
                     'national_id_ktp' => $cleanKtp,
                     'gender' => $this->gender,
                     'whatsapp_number' => trim($this->whatsapp_number),
@@ -194,7 +202,7 @@ class RegisterUser extends Component
                 $user = User::create([
                     'name' => trim($this->name),
                     'email' => $cleanEmail,
-                    'password' => Hash::make($this->password),
+                    'password' => $hashedPassword,
                     'national_id_ktp' => $cleanKtp,
                     'gender' => $this->gender,
                     'whatsapp_number' => trim($this->whatsapp_number),
