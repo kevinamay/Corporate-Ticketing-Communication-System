@@ -57,6 +57,7 @@ $envDefaults = [
     'DB_CONNECTION' => 'sqlite',
     'LOG_CHANNEL' => 'stderr',
     'VIEW_COMPILED_PATH' => '/tmp/storage/framework/views',
+    'APP_MAINTENANCE_DRIVER' => 'file',
 ];
 
 foreach ($envDefaults as $key => $val) {

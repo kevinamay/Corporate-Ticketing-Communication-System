@@ -25,6 +25,9 @@ if (is_dir('/var/task') || !is_writable($app->storagePath()) || getenv('VERCEL')
 }
 
 $app->booting(function () use ($app) {
+    if (empty($app['config']['app.maintenance.driver'])) {
+        $app['config']->set('app.maintenance.driver', 'file');
+    }
     if (empty($app['config']['session.driver'])) {
         $app['config']->set('session.driver', 'database');
     }
