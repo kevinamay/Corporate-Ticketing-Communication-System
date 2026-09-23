@@ -34,7 +34,13 @@ $app->booting(function () use ($app, $isVercel) {
         $app['config']->set('app.maintenance.driver', 'file');
     }
     if ($isVercel) {
-        $app['config']->set('session.driver', 'cookie');
+        $app['config']->set('database.default', 'sqlite');
+        $app['config']->set('database.connections.sqlite.database', '/tmp/database.sqlite');
+        $app['config']->set('session.driver', 'file');
+        $app['config']->set('session.files', '/tmp/storage/framework/sessions');
+        $app['config']->set('session.cookie', 'corporate_ticketing_session');
+        $app['config']->set('livewire.temporary_file_upload.disk', 'local');
+        $app['config']->set('livewire.temporary_file_upload.directory', 'livewire-tmp');
     } elseif (empty($app['config']['session.driver'])) {
         $app['config']->set('session.driver', 'database');
     }
@@ -46,10 +52,6 @@ $app->booting(function () use ($app, $isVercel) {
     }
     if (empty($app['config']['database.default'])) {
         $app['config']->set('database.default', 'sqlite');
-    }
-    if ($isVercel) {
-        $app['config']->set('livewire.temporary_file_upload.disk', 'local');
-        $app['config']->set('livewire.temporary_file_upload.directory', 'livewire-tmp');
     }
 });
 

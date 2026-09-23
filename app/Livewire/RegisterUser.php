@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Component;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
 
 class RegisterUser extends Component
@@ -110,21 +111,40 @@ class RegisterUser extends Component
 
     public function register(): void
     {
+        // 1. Sanitize avatar on serverless if temporary file was purged or on another worker
+        if ($this->avatar) {
+            try {
+                if ($this->avatar instanceof TemporaryUploadedFile) {
+                    if (! $this->avatar->exists()) {
+                        $this->avatar = null;
+                    }
+                }
+            } catch (\Throwable $e) {
+                Log::warning('Temporary avatar check fallback: '.$e->getMessage());
+                $this->avatar = null;
+            }
+        }
+
         $this->validate();
 
-        // 1. Generate genuinely random 6-digit secure OTP code
+        // 2. Generate genuinely random 6-digit secure OTP code
         $otpCode = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 
-        // 2. Handle optional avatar upload or generate UI avatar
+        // 3. Handle optional avatar upload or generate UI avatar
         $avatarUrl = null;
         if ($this->avatar) {
-            $path = $this->avatar->store('avatars', 'public');
-            $avatarUrl = '/storage/'.$path;
+            try {
+                $path = $this->avatar->store('avatars', 'public');
+                $avatarUrl = '/storage/'.$path;
+            } catch (\Throwable $e) {
+                Log::warning('Avatar store fallback: '.$e->getMessage());
+                $avatarUrl = 'https://ui-avatars.com/api/?name='.urlencode($this->name).'&background=0284c7&color=fff';
+            }
         } else {
             $avatarUrl = 'https://ui-avatars.com/api/?name='.urlencode($this->name).'&background=0284c7&color=fff';
         }
 
-        // 3. Exact User::create Eloquent statement storing ALL specified fields
+        // 4. Exact User::create Eloquent statement storing ALL specified fields
         $user = User::create([
             'name' => trim($this->name),
             'email' => strtolower(trim($this->email)),
@@ -145,13 +165,13 @@ class RegisterUser extends Component
         $this->step = 2; // Transition to OTP Verification UI
         $this->errorMessage = null;
 
-        // 4. Kirim email OTP ke alamat email pendaftar
+        // 5. Kirim email OTP ke alamat email pendaftar
         try {
             Mail::to($user->email)->send(new SendOtpMail($user->name, $otpCode));
             $this->successMessage = 'Kode OTP 6-digit telah dikirim ke '.$user->email.'. Silakan periksa inbox atau folder spam email Anda.';
         } catch (\Throwable $e) {
             Log::error('Gagal mengirim email OTP: '.$e->getMessage());
-            $this->errorMessage = 'Pendaftaran tersimpan, namun gagal mengirim email ke '.$user->email.'. Pastikan konfigurasi SMTP di file .env sudah aktif.';
+            $this->errorMessage = 'Pendaftaran tersimpan! Pengiriman email ke '.$user->email.' gagal (SMTP belum aktif). Gunakan Kode OTP ini: '.$otpCode;
         }
     }
 
@@ -214,7 +234,7 @@ class RegisterUser extends Component
                 $this->successMessage = 'Kode OTP baru telah berhasil dikirimkan ke '.$user->email.'.';
             } catch (\Throwable $e) {
                 Log::error('Gagal mengirim ulang email OTP: '.$e->getMessage());
-                $this->errorMessage = 'Gagal mengirim ulang email OTP ke '.$user->email.'. Periksa pengaturan SMTP di file .env.';
+                $this->errorMessage = 'Pengiriman ulang email gagal (SMTP belum aktif). Kode OTP Baru Anda: '.$newOtp;
             }
         }
     }

@@ -53,14 +53,17 @@ if (! file_exists($tmpDb) || filesize($tmpDb) === 0) {
 
 // 4. Ensure essential environment variables have valid non-empty defaults
 $envDefaults = [
+    'APP_NAME' => 'Corporate Ticketing',
     'APP_KEY' => 'base64:QX6Shj9IM6P1zsqviSaEOOomvYB9raucqTLGNJYCDnA=',
     'APP_ENV' => 'production',
     'APP_DEBUG' => 'false',
-    'SESSION_DRIVER' => 'cookie',
+    'SESSION_DRIVER' => 'file',
+    'SESSION_COOKIE' => 'corporate_ticketing_session',
     'CACHE_STORE' => 'database',
     'QUEUE_CONNECTION' => 'database',
     'DB_CONNECTION' => 'sqlite',
     'FILESYSTEM_DISK' => 'local',
+    'MAIL_MAILER' => 'log',
     'LOG_CHANNEL' => 'stderr',
     'VIEW_COMPILED_PATH' => '/tmp/storage/framework/views',
     'APP_MAINTENANCE_DRIVER' => 'file',
