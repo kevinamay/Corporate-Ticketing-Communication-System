@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -39,3 +40,28 @@ Route::get('/storage/{path}', function (string $path) {
 
     return response()->file($filePath);
 })->where('path', '.*')->name('storage.local');
+
+Route::get('/api/diag-hash', function () {
+    $info = [
+        'algos' => password_algos(),
+        'PASSWORD_BCRYPT_defined' => defined('PASSWORD_BCRYPT'),
+        'PASSWORD_DEFAULT' => PASSWORD_DEFAULT,
+    ];
+    try {
+        $info['bcrypt_result'] = password_hash('test', PASSWORD_BCRYPT);
+    } catch (Throwable $e) {
+        $info['bcrypt_error'] = get_class($e).': '.$e->getMessage();
+    }
+    try {
+        $info['default_result'] = password_hash('test', PASSWORD_DEFAULT);
+    } catch (Throwable $e) {
+        $info['default_error'] = get_class($e).': '.$e->getMessage();
+    }
+    try {
+        $info['hash_make'] = Hash::make('test');
+    } catch (Throwable $e) {
+        $info['hash_make_error'] = get_class($e).': '.$e->getMessage();
+    }
+
+    return response()->json($info);
+});
