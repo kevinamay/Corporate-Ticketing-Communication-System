@@ -6,32 +6,61 @@ $storageDirs = [
     '/tmp/storage/framework/cache/data',
     '/tmp/storage/framework/sessions',
     '/tmp/storage/logs',
+    '/tmp/views',
 ];
 
 foreach ($storageDirs as $dir) {
     if (!is_dir($dir)) {
-        mkdir($dir, 0755, true);
+        mkdir($dir, 0777, true);
     }
 }
 
 // 2. Prepare writable SQLite database in /tmp
 $tmpDb = '/tmp/database.sqlite';
-if (!file_exists($tmpDb)) {
+if (!file_exists($tmpDb) || filesize($tmpDb) === 0) {
     $seededDb = __DIR__ . '/../database/database.sqlite';
-    if (file_exists($seededDb)) {
+    if (file_exists($seededDb) && filesize($seededDb) > 0) {
         copy($seededDb, $tmpDb);
     } else {
         touch($tmpDb);
     }
+    @chmod($tmpDb, 0666);
 }
 
-// Default DB_DATABASE to /tmp/database.sqlite if sqlite is active
+// Ensure APP_KEY is always set and never empty
+$appKey = getenv('APP_KEY') ?: ($_ENV['APP_KEY'] ?? '');
+if (empty($appKey)) {
+    $fallbackKey = 'base64:QX6Shj9IM6P1zsqviSaEOOomvYB9raucqTLGNJYCDnA=';
+    putenv("APP_KEY={$fallbackKey}");
+    $_ENV['APP_KEY'] = $fallbackKey;
+    $_SERVER['APP_KEY'] = $fallbackKey;
+}
+
+// Ensure Database connection works seamlessly on Vercel
+$dbHost = getenv('DB_HOST') ?: ($_ENV['DB_HOST'] ?? '');
 $dbConn = getenv('DB_CONNECTION') ?: ($_ENV['DB_CONNECTION'] ?? 'sqlite');
-if ($dbConn === 'sqlite') {
+if (empty($dbConn) || $dbConn === 'sqlite' || $dbHost === '127.0.0.1' || $dbHost === 'localhost' || empty($dbHost)) {
+    putenv('DB_CONNECTION=sqlite');
+    $_ENV['DB_CONNECTION'] = 'sqlite';
+    $_SERVER['DB_CONNECTION'] = 'sqlite';
+
     putenv("DB_DATABASE={$tmpDb}");
     $_ENV['DB_DATABASE'] = $tmpDb;
     $_SERVER['DB_DATABASE'] = $tmpDb;
 }
 
-// 3. Forward request to Laravel entrypoint
-require __DIR__ . '/../public/index.php';
+// Set storage paths for serverless
+putenv('VIEW_COMPILED_PATH=/tmp/storage/framework/views');
+$_ENV['VIEW_COMPILED_PATH'] = '/tmp/storage/framework/views';
+$_SERVER['VIEW_COMPILED_PATH'] = '/tmp/storage/framework/views';
+
+// 3. Forward request to Laravel public/index.php with debug catch
+try {
+    require __DIR__ . '/../public/index.php';
+} catch (\Throwable $e) {
+    http_response_code(500);
+    echo "<h1>Vercel Deployment Error</h1>";
+    echo "<p><strong>" . htmlspecialchars($e->getMessage()) . "</strong></p>";
+    echo "<p>" . htmlspecialchars($e->getFile()) . " (Line " . $e->getLine() . ")</p>";
+    echo "<pre>" . htmlspecialchars($e->getTraceAsString()) . "</pre>";
+}
