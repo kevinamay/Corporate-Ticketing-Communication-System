@@ -26,16 +26,7 @@ foreach ($storageDirs as $dir) {
     }
 }
 
-// 2. Redirect bootstrap caches to /tmp and copy pre-discovered files if present
-$packagesCache = __DIR__ . '/../bootstrap/cache/packages.php';
-if (file_exists($packagesCache) && !file_exists('/tmp/packages.php')) {
-    copy($packagesCache, '/tmp/packages.php');
-}
-$servicesCache = __DIR__ . '/../bootstrap/cache/services.php';
-if (file_exists($servicesCache) && !file_exists('/tmp/services.php')) {
-    copy($servicesCache, '/tmp/services.php');
-}
-
+// 2. Redirect bootstrap caches to /tmp so Laravel writes fresh production manifests
 putenv('APP_PACKAGES_CACHE=/tmp/packages.php');
 putenv('APP_SERVICES_CACHE=/tmp/services.php');
 putenv('APP_CONFIG_CACHE=/tmp/config.php');
