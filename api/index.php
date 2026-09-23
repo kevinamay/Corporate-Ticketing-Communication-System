@@ -10,6 +10,11 @@ $storageDirs = [
     '/tmp/storage',
     '/tmp/storage/app',
     '/tmp/storage/app/public',
+    '/tmp/storage/app/public/avatars',
+    '/tmp/storage/app/private',
+    '/tmp/storage/app/private/livewire-tmp',
+    '/tmp/storage/app/livewire-tmp',
+    '/tmp/livewire-tmp',
     '/tmp/storage/framework',
     '/tmp/storage/framework/views',
     '/tmp/storage/framework/cache',
@@ -21,7 +26,7 @@ $storageDirs = [
 ];
 
 foreach ($storageDirs as $dir) {
-    if (!is_dir($dir)) {
+    if (! is_dir($dir)) {
         @mkdir($dir, 0777, true);
     }
 }
@@ -36,8 +41,8 @@ $_SERVER['APP_SERVICES_CACHE'] = '/tmp/services.php';
 
 // 3. Prepare writable SQLite database in /tmp
 $tmpDb = '/tmp/database.sqlite';
-if (!file_exists($tmpDb) || filesize($tmpDb) === 0) {
-    $seededDb = __DIR__ . '/../database/database.sqlite';
+if (! file_exists($tmpDb) || filesize($tmpDb) === 0) {
+    $seededDb = __DIR__.'/../database/database.sqlite';
     if (file_exists($seededDb) && filesize($seededDb) > 0) {
         copy($seededDb, $tmpDb);
     } else {
@@ -51,10 +56,11 @@ $envDefaults = [
     'APP_KEY' => 'base64:QX6Shj9IM6P1zsqviSaEOOomvYB9raucqTLGNJYCDnA=',
     'APP_ENV' => 'production',
     'APP_DEBUG' => 'false',
-    'SESSION_DRIVER' => 'database',
+    'SESSION_DRIVER' => 'cookie',
     'CACHE_STORE' => 'database',
     'QUEUE_CONNECTION' => 'database',
     'DB_CONNECTION' => 'sqlite',
+    'FILESYSTEM_DISK' => 'local',
     'LOG_CHANNEL' => 'stderr',
     'VIEW_COMPILED_PATH' => '/tmp/storage/framework/views',
     'APP_MAINTENANCE_DRIVER' => 'file',
@@ -84,11 +90,11 @@ if (empty($dbConn) || $dbConn === 'sqlite' || $dbHost === '127.0.0.1' || $dbHost
 
 // 5. Forward request to Laravel public/index.php with debug catch
 try {
-    require __DIR__ . '/../public/index.php';
-} catch (\Throwable $e) {
+    require __DIR__.'/../public/index.php';
+} catch (Throwable $e) {
     http_response_code(500);
-    echo "<h1>Vercel Deployment Error</h1>";
-    echo "<p><strong>" . htmlspecialchars($e->getMessage()) . "</strong></p>";
-    echo "<p>" . htmlspecialchars($e->getFile()) . " (Line " . $e->getLine() . ")</p>";
-    echo "<pre>" . htmlspecialchars($e->getTraceAsString()) . "</pre>";
+    echo '<h1>Vercel Deployment Error</h1>';
+    echo '<p><strong>'.htmlspecialchars($e->getMessage()).'</strong></p>';
+    echo '<p>'.htmlspecialchars($e->getFile()).' (Line '.$e->getLine().')</p>';
+    echo '<pre>'.htmlspecialchars($e->getTraceAsString()).'</pre>';
 }
