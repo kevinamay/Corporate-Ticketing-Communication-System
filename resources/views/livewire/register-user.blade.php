@@ -10,7 +10,7 @@
         <!-- Corporate Top Bar -->
         <div class="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900 px-6 py-4 flex items-center justify-between text-white border-b border-blue-700/50">
             <a href="{{ url('/') }}" class="flex items-center group">
-                <img src="{{ asset('images/logo.webp') }}" alt="PT. Asia Plastik" class="h-10 sm:h-11 w-auto object-contain transition duration-200 group-hover:opacity-90">
+                <img src="{{ asset('images/logo2.webp') }}" alt="PT. Asia Plastik" class="h-10 sm:h-11 w-auto object-contain transition duration-200 group-hover:opacity-90">
             </a>
             <div class="text-right hidden sm:block">
                 <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold {{ $step === 1 ? 'bg-blue-500/30 text-blue-200 border border-blue-400/30' : 'bg-emerald-500/30 text-emerald-200 border border-emerald-400/30' }}">

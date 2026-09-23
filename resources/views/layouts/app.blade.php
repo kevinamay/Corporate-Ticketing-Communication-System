@@ -61,7 +61,7 @@
             <div class="h-24 flex items-center justify-between">
                 <!-- Left: ASIA PLASTIK Brand Logo -->
                 <a href="{{ url('/') }}" class="flex items-center group">
-                    <img src="{{ asset('images/logo.webp') }}" alt="Asia Plastik - Plastic Industry" class="h-11 sm:h-12 w-auto object-contain transition duration-200 group-hover:opacity-90">
+                    <img src="{{ asset('images/logo2.webp') }}" alt="Asia Plastik - Plastic Industry" class="h-11 sm:h-12 w-auto object-contain transition duration-200 group-hover:opacity-90">
                 </a>
 
                 <!-- Right: Search, Notifications, User Roster, Menu -->
