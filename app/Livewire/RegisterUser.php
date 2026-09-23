@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
@@ -66,13 +67,16 @@ class RegisterUser extends Component
     /**
      * @return array<string, string>
      */
+    /**
+     * @return array<string, string>
+     */
     protected function rules(): array
     {
         return [
             'name' => 'required|string|min:3|max:100',
-            'email' => 'required|email|max:150|unique:users,email',
+            'email' => 'required|email|max:150',
             'password' => 'required|string|min:8|confirmed',
-            'national_id_ktp' => 'required|string|min:16|max:16|regex:/^[0-9]+$/|unique:users,national_id_ktp',
+            'national_id_ktp' => 'required|string|min:16|max:16|regex:/^[0-9]+$/',
             'gender' => 'required|in:male,female',
             'whatsapp_number' => 'required|string|min:10|max:20|regex:/^[0-9+ ]+$/',
             'complete_address' => 'required|string|min:10|max:500',
@@ -88,14 +92,18 @@ class RegisterUser extends Component
     protected function messages(): array
     {
         return [
+            'name.required' => 'Nama lengkap wajib diisi.',
             'national_id_ktp.required' => 'Nomor KTP wajib diisi.',
             'national_id_ktp.min' => 'Nomor KTP harus terdiri dari 16 digit.',
             'national_id_ktp.max' => 'Nomor KTP harus terdiri dari 16 digit.',
-            'national_id_ktp.unique' => 'Nomor KTP ini sudah terdaftar di sistem.',
+            'national_id_ktp.regex' => 'Nomor KTP harus berupa 16 angka.',
             'department_id.required' => 'Silakan pilih departemen yang sesuai.',
             'whatsapp_number.required' => 'Nomor WhatsApp aktif wajib diisi.',
+            'password.required' => 'Password wajib diisi.',
+            'password.min' => 'Password minimal 8 karakter.',
             'password.confirmed' => 'Konfirmasi password tidak cocok.',
-            'email.unique' => 'Email ini telah digunakan oleh akun lain.',
+            'email.required' => 'Alamat email wajib diisi.',
+            'email.email' => 'Format alamat email tidak valid.',
             'avatar.max' => 'Ukuran foto profil tidak boleh lebih dari 10MB.',
             'avatar.image' => 'File harus berupa foto/gambar (JPG, JPEG, PNG, WEBP).',
         ];
@@ -111,13 +119,13 @@ class RegisterUser extends Component
 
     public function register(): void
     {
+        $this->errorMessage = null;
+
         // 1. Sanitize avatar on serverless if temporary file was purged or on another worker
         if ($this->avatar) {
             try {
-                if ($this->avatar instanceof TemporaryUploadedFile) {
-                    if (! $this->avatar->exists()) {
-                        $this->avatar = null;
-                    }
+                if (! ($this->avatar instanceof TemporaryUploadedFile) || ! $this->avatar->exists()) {
+                    $this->avatar = null;
                 }
             } catch (\Throwable $e) {
                 Log::warning('Temporary avatar check fallback: '.$e->getMessage());
@@ -125,117 +133,178 @@ class RegisterUser extends Component
             }
         }
 
+        // Validate basic rules
         $this->validate();
 
-        // 2. Generate genuinely random 6-digit secure OTP code
-        $otpCode = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        try {
+            $cleanEmail = strtolower(trim($this->email));
+            $cleanKtp = trim($this->national_id_ktp);
 
-        // 3. Handle optional avatar upload or generate UI avatar
-        $avatarUrl = null;
-        if ($this->avatar) {
-            try {
-                $path = $this->avatar->store('avatars', 'public');
-                $avatarUrl = '/storage/'.$path;
-            } catch (\Throwable $e) {
-                Log::warning('Avatar store fallback: '.$e->getMessage());
+            // 2. Check if verified user already exists with email or KTP
+            $userByEmail = User::where('email', $cleanEmail)->first();
+            if ($userByEmail && $userByEmail->email_verified_at !== null) {
+                $this->addError('email', 'Email ini telah terdaftar dan aktif. Silakan masuk melalui halaman login.');
+
+                return;
+            }
+
+            $userByKtp = User::where('national_id_ktp', $cleanKtp)->first();
+            if ($userByKtp && $userByKtp->email_verified_at !== null) {
+                $this->addError('national_id_ktp', 'Nomor KTP ini telah terdaftar dan aktif. Silakan masuk melalui halaman login.');
+
+                return;
+            }
+
+            // 3. Generate genuinely random 6-digit secure OTP code
+            $otpCode = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+
+            // 4. Handle optional avatar upload or generate UI avatar
+            $avatarUrl = null;
+            if ($this->avatar) {
+                try {
+                    $path = $this->avatar->store('avatars', 'public');
+                    $avatarUrl = '/storage/'.$path;
+                } catch (\Throwable $e) {
+                    Log::warning('Avatar store fallback: '.$e->getMessage());
+                    $avatarUrl = 'https://ui-avatars.com/api/?name='.urlencode($this->name).'&background=0284c7&color=fff';
+                }
+            } else {
                 $avatarUrl = 'https://ui-avatars.com/api/?name='.urlencode($this->name).'&background=0284c7&color=fff';
             }
-        } else {
-            $avatarUrl = 'https://ui-avatars.com/api/?name='.urlencode($this->name).'&background=0284c7&color=fff';
-        }
 
-        // 4. Exact User::create Eloquent statement storing ALL specified fields
-        $user = User::create([
-            'name' => trim($this->name),
-            'email' => strtolower(trim($this->email)),
-            'password' => Hash::make($this->password),
-            'national_id_ktp' => trim($this->national_id_ktp),
-            'gender' => $this->gender,
-            'whatsapp_number' => trim($this->whatsapp_number),
-            'complete_address' => trim($this->complete_address),
-            'postal_code' => trim($this->postal_code),
-            'department_id' => $this->department_id,
-            'avatar' => $avatarUrl,
-            'otp_code' => $otpCode,
-            'email_verified_at' => null,
-            'role' => 'staff',
-        ]);
+            // 5. Create or update unverified user
+            $targetUser = $userByEmail ?: $userByKtp;
+            if ($targetUser) {
+                $targetUser->update([
+                    'name' => trim($this->name),
+                    'email' => $cleanEmail,
+                    'password' => Hash::make($this->password),
+                    'national_id_ktp' => $cleanKtp,
+                    'gender' => $this->gender,
+                    'whatsapp_number' => trim($this->whatsapp_number),
+                    'complete_address' => trim($this->complete_address),
+                    'postal_code' => trim($this->postal_code),
+                    'department_id' => $this->department_id,
+                    'avatar' => $avatarUrl,
+                    'otp_code' => $otpCode,
+                    'email_verified_at' => null,
+                ]);
+                $user = $targetUser;
+            } else {
+                $user = User::create([
+                    'name' => trim($this->name),
+                    'email' => $cleanEmail,
+                    'password' => Hash::make($this->password),
+                    'national_id_ktp' => $cleanKtp,
+                    'gender' => $this->gender,
+                    'whatsapp_number' => trim($this->whatsapp_number),
+                    'complete_address' => trim($this->complete_address),
+                    'postal_code' => trim($this->postal_code),
+                    'department_id' => $this->department_id,
+                    'avatar' => $avatarUrl,
+                    'otp_code' => $otpCode,
+                    'email_verified_at' => null,
+                    'role' => 'staff',
+                ]);
+            }
 
-        $this->userId = $user->id;
-        $this->step = 2; // Transition to OTP Verification UI
-        $this->errorMessage = null;
+            $this->userId = $user->id;
+            $this->step = 2; // Transition to OTP Verification UI
+            $this->errorMessage = null;
 
-        // 5. Kirim email OTP ke alamat email pendaftar
-        try {
-            Mail::to($user->email)->send(new SendOtpMail($user->name, $otpCode));
-            $this->successMessage = 'Kode OTP 6-digit telah dikirim ke '.$user->email.'. Silakan periksa inbox atau folder spam email Anda.';
+            // 6. Kirim email OTP ke alamat email pendaftar
+            try {
+                Mail::to($user->email)->send(new SendOtpMail($user->name, $otpCode));
+                $this->successMessage = 'Kode OTP 6-digit telah dikirim ke '.$user->email.'. Silakan periksa inbox atau folder spam email Anda.';
+            } catch (\Throwable $e) {
+                Log::error('Gagal mengirim email OTP: '.$e->getMessage());
+                $this->errorMessage = 'Pendaftaran tersimpan! Pengiriman email ke '.$user->email.' terkendala SMTP server. Kode OTP Anda: '.$otpCode;
+            }
+        } catch (ValidationException $ve) {
+            throw $ve;
         } catch (\Throwable $e) {
-            Log::error('Gagal mengirim email OTP: '.$e->getMessage());
-            $this->errorMessage = 'Pendaftaran tersimpan! Pengiriman email ke '.$user->email.' gagal (SMTP belum aktif). Gunakan Kode OTP ini: '.$otpCode;
+            Log::error('Registrasi gagal: '.$e->getMessage()."\n".$e->getTraceAsString());
+            $this->errorMessage = 'Terjadi kesalahan sistem saat mendaftar: '.$e->getMessage();
         }
     }
 
     public function verifyOtp(): void
     {
-        $this->errorMessage = null;
+        try {
+            $this->errorMessage = null;
 
-        $enteredOtp = trim($this->otp1.$this->otp2.$this->otp3.$this->otp4.$this->otp5.$this->otp6);
+            $enteredOtp = trim($this->otp1.$this->otp2.$this->otp3.$this->otp4.$this->otp5.$this->otp6);
 
-        if (strlen($enteredOtp) !== 6) {
-            $this->errorMessage = 'Silakan masukkan 6 digit kode OTP secara lengkap.';
+            if (strlen($enteredOtp) !== 6) {
+                $this->errorMessage = 'Silakan masukkan 6 digit kode OTP secara lengkap.';
 
-            return;
+                return;
+            }
+
+            $user = User::find($this->userId);
+
+            if (! $user) {
+                $this->errorMessage = 'Data pengguna tidak ditemukan. Silakan registrasi ulang.';
+                $this->step = 1;
+
+                return;
+            }
+
+            if ($user->otp_code !== $enteredOtp) {
+                $this->errorMessage = 'Kode OTP tidak cocok atau tidak valid. Silakan periksa kembali.';
+
+                return;
+            }
+
+            // OTP Verified successfully
+            $user->update([
+                'email_verified_at' => now(),
+                'otp_code' => null,
+            ]);
+
+            // Login user
+            Auth::login($user);
+            session(['active_user_id' => $user->id]);
+
+            session()->flash('status', 'Registrasi dan verifikasi berhasil! Selamat datang di Portal Ticketing.');
+            $this->redirect(route('dashboard'), navigate: true);
+        } catch (\Throwable $e) {
+            Log::error('Verifikasi OTP gagal: '.$e->getMessage());
+            $this->errorMessage = 'Terjadi kesalahan saat memverifikasi OTP: '.$e->getMessage();
         }
-
-        $user = User::find($this->userId);
-
-        if (! $user) {
-            $this->errorMessage = 'Data pengguna tidak ditemukan. Silakan registrasi ulang.';
-            $this->step = 1;
-
-            return;
-        }
-
-        if ($user->otp_code !== $enteredOtp) {
-            $this->errorMessage = 'Kode OTP tidak cocok atau tidak valid. Silakan periksa kembali.';
-
-            return;
-        }
-
-        // OTP Verified successfully
-        $user->update([
-            'email_verified_at' => now(),
-            'otp_code' => null,
-        ]);
-
-        // Login user
-        Auth::login($user);
-        session(['active_user_id' => $user->id]);
-
-        session()->flash('status', 'Registrasi dan verifikasi berhasil! Selamat datang di Portal Ticketing.');
-        $this->redirect(route('dashboard'), navigate: true);
     }
 
     public function resendOtp(): void
     {
         if (! $this->userId) {
+            $this->errorMessage = 'Sesi pendaftaran tidak ditemukan. Silakan isi form kembali.';
+            $this->step = 1;
+
             return;
         }
 
-        $user = User::find($this->userId);
-        if ($user) {
-            $newOtp = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-            $user->update(['otp_code' => $newOtp]);
-            $this->reset(['otp1', 'otp2', 'otp3', 'otp4', 'otp5', 'otp6']);
-            $this->errorMessage = null;
+        try {
+            $user = User::find($this->userId);
+            if ($user) {
+                $newOtp = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+                $user->update(['otp_code' => $newOtp]);
+                $this->reset(['otp1', 'otp2', 'otp3', 'otp4', 'otp5', 'otp6']);
+                $this->errorMessage = null;
 
-            try {
-                Mail::to($user->email)->send(new SendOtpMail($user->name, $newOtp));
-                $this->successMessage = 'Kode OTP baru telah berhasil dikirimkan ke '.$user->email.'.';
-            } catch (\Throwable $e) {
-                Log::error('Gagal mengirim ulang email OTP: '.$e->getMessage());
-                $this->errorMessage = 'Pengiriman ulang email gagal (SMTP belum aktif). Kode OTP Baru Anda: '.$newOtp;
+                try {
+                    Mail::to($user->email)->send(new SendOtpMail($user->name, $newOtp));
+                    $this->successMessage = 'Kode OTP baru telah berhasil dikirimkan ke '.$user->email.'.';
+                } catch (\Throwable $e) {
+                    Log::error('Gagal mengirim ulang email OTP: '.$e->getMessage());
+                    $this->errorMessage = 'Pengiriman ulang email terkendala SMTP server. Kode OTP Baru Anda: '.$newOtp;
+                }
+            } else {
+                $this->errorMessage = 'Data pengguna tidak ditemukan. Silakan registrasi ulang.';
+                $this->step = 1;
             }
+        } catch (\Throwable $e) {
+            Log::error('Resend OTP error: '.$e->getMessage());
+            $this->errorMessage = 'Terjadi kesalahan saat membuat kode OTP baru: '.$e->getMessage();
         }
     }
 

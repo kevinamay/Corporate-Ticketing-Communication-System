@@ -41,22 +41,22 @@ $_SERVER['APP_SERVICES_CACHE'] = '/tmp/services.php';
 
 // 3. Prepare writable SQLite database in /tmp
 $tmpDb = '/tmp/database.sqlite';
+$seededDb = __DIR__.'/../database/database.sqlite';
 if (! file_exists($tmpDb) || filesize($tmpDb) === 0) {
-    $seededDb = __DIR__.'/../database/database.sqlite';
     if (file_exists($seededDb) && filesize($seededDb) > 0) {
         copy($seededDb, $tmpDb);
     } else {
         touch($tmpDb);
     }
-    @chmod($tmpDb, 0666);
 }
+@chmod($tmpDb, 0666);
 
 // 4. Ensure essential environment variables have valid non-empty defaults
 $envDefaults = [
     'APP_NAME' => 'Corporate Ticketing',
     'APP_KEY' => 'base64:QX6Shj9IM6P1zsqviSaEOOomvYB9raucqTLGNJYCDnA=',
     'APP_ENV' => 'production',
-    'APP_DEBUG' => 'false',
+    'APP_DEBUG' => 'true',
     'SESSION_DRIVER' => 'file',
     'SESSION_COOKIE' => 'corporate_ticketing_session',
     'CACHE_STORE' => 'database',
