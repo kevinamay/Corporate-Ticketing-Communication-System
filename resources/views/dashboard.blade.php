@@ -7,7 +7,7 @@
         <!-- 1. Tiket Aktif -->
         <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-md p-4 flex items-center justify-between transition-colors">
             <div>
-                <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tiket Aktif</p>
+                <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{{ __('Tiket Aktif') }}</p>
                 <p class="text-2xl font-black text-slate-900 dark:text-white mt-1">{{ \App\Models\Ticket::where('status', '!=', 'Resolved')->count() }}</p>
             </div>
             <div class="w-11 h-11 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/60 flex items-center justify-center">
@@ -20,7 +20,7 @@
         <!-- 2. Menunggu Penanganan -->
         <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-md p-4 flex items-center justify-between transition-colors">
             <div>
-                <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Menunggu Penanganan</p>
+                <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{{ __('Menunggu Penanganan') }}</p>
                 <p class="text-2xl font-black text-amber-600 dark:text-amber-400 mt-1">{{ \App\Models\Ticket::where('status', 'Pending')->count() }}</p>
             </div>
             <div class="w-11 h-11 rounded-lg bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-900/60 flex items-center justify-center">
@@ -33,7 +33,7 @@
         <!-- 3. Sedang Diproses -->
         <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-md p-4 flex items-center justify-between transition-colors">
             <div>
-                <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Sedang Dikerjakan</p>
+                <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{{ __('Sedang Dikerjakan') }}</p>
                 <p class="text-2xl font-black text-blue-600 dark:text-blue-400 mt-1">{{ \App\Models\Ticket::where('status', 'In Progress')->count() }}</p>
             </div>
             <div class="w-11 h-11 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/60 flex items-center justify-center">
@@ -46,7 +46,7 @@
         <!-- 4. Tiket Selesai -->
         <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-md p-4 flex items-center justify-between transition-colors">
             <div>
-                <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Terselesaikan</p>
+                <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{{ __('Terselesaikan') }}</p>
                 <p class="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">{{ \App\Models\Ticket::where('status', 'Resolved')->count() }}</p>
             </div>
             <div class="w-11 h-11 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/60 flex items-center justify-center">
@@ -60,7 +60,7 @@
     <!-- Department Quick Navigation Ribbon -->
     <div id="departments-list" class="scroll-mt-24 bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm p-4 flex flex-col md:flex-row items-center justify-between gap-4 transition-colors">
         <div class="flex items-center gap-2">
-            <span class="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Unit Operasional:</span>
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">{{ __('Unit Operasional:') }}</span>
             <div class="flex flex-wrap items-center gap-2">
                 @foreach (\App\Models\Department::all() as $dept)
                     <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-slate-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200">
@@ -73,8 +73,8 @@
         </div>
 
         <div class="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-3">
-            <span>SLA Standar Pabrik: <strong class="text-slate-700 dark:text-slate-200">&lt; 15 Menit</strong></span>
-            <span class="text-emerald-600 dark:text-emerald-400 font-bold">&bull; Online 24/7</span>
+            <span>{{ __('SLA Standar Pabrik:') }} <strong class="text-slate-700 dark:text-slate-200">&lt; 15 Menit</strong></span>
+            <span class="text-emerald-600 dark:text-emerald-400 font-bold">&bull; {{ __('Online 24/7') }}</span>
         </div>
     </div>
 

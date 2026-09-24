@@ -7,47 +7,47 @@
                 </svg>
             </div>
             <div>
-                <h3 class="font-bold text-slate-900 dark:text-white text-sm">Active Incident & Request Queue</h3>
-                <p class="text-[11px] text-slate-500 dark:text-slate-400">Select any record to link into the live communication desk</p>
+                <h3 class="font-bold text-slate-900 dark:text-white text-sm">{{ __('Active Incident & Request Queue') }}</h3>
+                <p class="text-[11px] text-slate-500 dark:text-slate-400">{{ __('Select any record to link into the live communication desk') }}</p>
             </div>
         </div>
 
         <!-- Search Bar -->
         <div class="w-full sm:w-64">
-            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search ticket title or details..."
+            <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ __('Search ticket title or details...') }}"
                 class="w-full px-3 py-1.5 text-xs text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition shadow-xs placeholder:text-slate-400 dark:placeholder:text-slate-500" />
         </div>
     </div>
 
     <!-- Filters Row -->
     <div class="flex flex-wrap items-center gap-2 mb-4 pb-3 border-b border-gray-100 dark:border-slate-800 text-xs">
-        <span class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status:</span>
+        <span class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{{ __('Status:') }}</span>
         <button wire:click="$set('statusFilter', 'all')" 
             class="px-2.5 py-1 rounded-md font-semibold text-xs transition cursor-pointer {{ $statusFilter === 'all' ? 'bg-blue-600 text-white shadow-xs' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700' }}">
-            All
+            {{ __('All') }}
         </button>
         <button wire:click="$set('statusFilter', 'Pending')" 
             class="px-2.5 py-1 rounded-md font-semibold text-xs transition cursor-pointer {{ $statusFilter === 'Pending' ? 'bg-amber-500 text-white shadow-xs' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700' }}">
-            Pending
+            {{ __('Pending') }}
         </button>
         <button wire:click="$set('statusFilter', 'Open')" 
             class="px-2.5 py-1 rounded-md font-semibold text-xs transition cursor-pointer {{ $statusFilter === 'Open' ? 'bg-blue-500 text-white shadow-xs' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700' }}">
-            Open
+            {{ __('Open') }}
         </button>
         <button wire:click="$set('statusFilter', 'In Progress')" 
             class="px-2.5 py-1 rounded-md font-semibold text-xs transition cursor-pointer {{ $statusFilter === 'In Progress' ? 'bg-purple-600 text-white shadow-xs' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700' }}">
-            In Progress
+            {{ __('In Progress') }}
         </button>
         <button wire:click="$set('statusFilter', 'Resolved')" 
             class="px-2.5 py-1 rounded-md font-semibold text-xs transition cursor-pointer {{ $statusFilter === 'Resolved' ? 'bg-emerald-600 text-white shadow-xs' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700' }}">
-            Resolved
+            {{ __('Resolved') }}
         </button>
 
         <div class="h-4 w-[1px] bg-gray-200 dark:bg-slate-700 mx-1 hidden sm:block"></div>
 
-        <span class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Department:</span>
+        <span class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{{ __('Department:') }}</span>
         <select wire:model.live="departmentFilter" class="px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-xs text-slate-700 dark:text-slate-300 border border-gray-200 dark:border-slate-700 focus:ring-1 focus:ring-blue-500 focus:outline-none">
-            <option value="all">All Departments</option>
+            <option value="all">{{ __('All Departments') }}</option>
             @foreach ($departments as $dept)
                 <option value="{{ $dept->id }}">{{ $dept->name }}</option>
             @endforeach
@@ -70,7 +70,7 @@
                 class="p-4 rounded-xl cursor-pointer transition border text-left {{ $isSelected ? 'bg-blue-50/70 dark:bg-blue-950/40 border-blue-500 dark:border-blue-500 ring-2 ring-blue-500/20 shadow-md' : 'bg-white dark:bg-slate-800/80 border-gray-200 dark:border-slate-700/80 hover:border-blue-300 dark:hover:border-blue-500 hover:shadow-xs' }}">
                 <div class="flex items-center justify-between mb-2">
                     <span class="text-[10px] font-bold px-2 py-0.5 rounded border {{ $priorityBadge }}">
-                        {{ $t->priority }}
+                        {{ __($t->priority) }}
                     </span>
                     <span class="text-[10px] text-slate-400 dark:text-slate-500 font-mono">#{{ $t->id }}</span>
                 </div>
@@ -90,7 +90,7 @@
                             {{ $t->messages->count() }}
                         </span>
                         <span class="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-700/70 text-slate-700 dark:text-slate-300 font-medium border border-gray-200 dark:border-slate-600">
-                            {{ $t->status }}
+                            {{ __($t->status) }}
                         </span>
                     </div>
                 </div>
@@ -102,8 +102,8 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
                 </div>
-                <h4 class="text-sm font-bold text-slate-800 dark:text-white">Belum Ada Tiket yang Dibuat</h4>
-                <p class="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto mt-1">Antrean tiket antar divisi saat ini masih bersih. Silakan buat tiket pertama Anda melalui formulir di atas untuk memulai koordinasi antar divisi.</p>
+                <h4 class="text-sm font-bold text-slate-800 dark:text-white">{{ __('Belum Ada Tiket yang Dibuat') }}</h4>
+                <p class="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto mt-1">{{ __('Antrean tiket antar divisi saat ini masih bersih. Silakan buat tiket pertama Anda melalui formulir di atas untuk memulai koordinasi antar divisi.') }}</p>
             </div>
         @endforelse
     </div>

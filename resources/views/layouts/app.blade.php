@@ -25,6 +25,16 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
 </head>
+@php
+    $currentLocale = app()->getLocale();
+    $languages = [
+        'id' => ['name' => 'Bahasa Indonesia', 'short' => 'ID', 'flag' => '🇮🇩'],
+        'en' => ['name' => 'English', 'short' => 'EN', 'flag' => '🇬🇧'],
+        'ja' => ['name' => '日本語', 'short' => 'JA', 'flag' => '🇯🇵'],
+        'zh' => ['name' => '简体中文', 'short' => 'ZH', 'flag' => '🇨🇳'],
+    ];
+    $currentLang = $languages[$currentLocale] ?? $languages['id'];
+@endphp
 <body class="min-h-screen font-sans antialiased text-slate-800 dark:text-slate-100 bg-[#f4f6fa] dark:bg-[#0b1120] flex flex-col transition-colors duration-200" x-data="{ mobileMenuOpen: false, darkMode: document.documentElement.classList.contains('dark') }">
 
     <!-- TOP HERO SECTION (Asia Plastik industrial manufacturing entrance) -->
@@ -48,37 +58,75 @@
                 </a>
                 <span class="text-white/40 hidden sm:inline">|</span>
                 @auth
-                    <span class="text-emerald-300 font-semibold truncate max-w-[140px] sm:max-w-none">Aktif: {{ Auth::user()->name }}</span>
+                    <span class="text-emerald-300 font-semibold truncate max-w-[140px] sm:max-w-none">{{ __('Aktif: ') }}{{ Auth::user()->name }}</span>
                     <span class="text-white/40">|</span>
                     <form action="{{ route('logout') }}" method="POST" class="inline">
                         @csrf
-                        <button type="submit" class="hover:text-rose-300 text-rose-200 transition cursor-pointer font-bold">Logout</button>
+                        <button type="submit" class="hover:text-rose-300 text-rose-200 transition cursor-pointer font-bold">{{ __('Logout') }}</button>
                     </form>
                 @else
-                    <a href="{{ route('login') }}" class="hover:text-white font-bold text-blue-200 transition">Masuk (Login)</a>
+                    <a href="{{ route('login') }}" class="hover:text-white font-bold text-blue-200 transition">{{ __('Masuk (Login)') }}</a>
                     <span class="text-white/40">|</span>
-                    <a href="{{ route('register') }}" class="hover:text-white font-bold text-white transition">Registrasi KTP</a>
+                    <a href="{{ route('register') }}" class="hover:text-white font-bold text-white transition">{{ __('Registrasi KTP') }}</a>
                 @endauth
                 <span class="text-white/40">|</span>
 
                 <!-- Dark Mode Interactive Toggle Switch -->
                 <button type="button" @click="darkMode = !darkMode; if (darkMode) { document.documentElement.classList.add('dark'); localStorage.setItem('theme', 'dark'); } else { document.documentElement.classList.remove('dark'); localStorage.setItem('theme', 'light'); }" 
                     class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/10 hover:bg-white/25 border border-white/20 transition cursor-pointer text-white font-bold text-[10px] sm:text-[11px] shadow-xs"
-                    :title="darkMode ? 'Beralih ke Mode Terang' : 'Beralih ke Mode Gelap'">
+                    :title="darkMode ? '{{ __('Mode Terang') }}' : '{{ __('Mode Gelap') }}'">
                     <span x-show="darkMode" class="flex items-center gap-1.5 text-amber-300">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                        <span>Mode Terang</span>
+                        <span>{{ __('Mode Terang') }}</span>
                     </span>
                     <span x-show="!darkMode" class="flex items-center gap-1.5 text-blue-200">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-                        <span>Mode Gelap</span>
+                        <span>{{ __('Mode Gelap') }}</span>
                     </span>
                 </button>
 
                 <span class="text-white/40">|</span>
-                <div class="flex items-center gap-1 cursor-pointer hover:text-white font-bold">
-                    <span>ID</span>
-                    <svg class="w-3 h-3 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+
+                <!-- Multi-Language Dropdown Selector -->
+                <div class="relative" x-data="{ langOpen: false }" @click.away="langOpen = false">
+                    <button type="button" @click="langOpen = !langOpen" 
+                        class="flex items-center gap-1.5 px-2 py-0.5 rounded hover:bg-white/10 text-white font-bold transition cursor-pointer select-none"
+                        title="{{ __('Pilih Bahasa') }}">
+                        <span class="text-xs leading-none">{{ $currentLang['flag'] }}</span>
+                        <span>{{ $currentLang['short'] }}</span>
+                        <svg class="w-3 h-3 text-white/70 transition-transform duration-200" :class="{ 'rotate-180': langOpen }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+
+                    <!-- Dropdown Menu -->
+                    <div x-show="langOpen" 
+                         x-transition:enter="transition ease-out duration-150"
+                         x-transition:enter-start="opacity-0 translate-y-1 scale-95"
+                         x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                         x-transition:leave="transition ease-in duration-100"
+                         x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                         x-transition:leave-end="opacity-0 translate-y-1 scale-95"
+                         class="absolute right-0 mt-2 w-48 rounded-xl bg-slate-900/95 dark:bg-slate-900/95 backdrop-blur-md border border-white/20 shadow-2xl py-1 z-50 overflow-hidden" 
+                         style="display: none;">
+                        <div class="px-3 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-white/10">
+                            {{ __('Pilih Bahasa') }}
+                        </div>
+                        @foreach($languages as $code => $lang)
+                            <a href="{{ route('locale.switch', $code) }}" 
+                               class="flex items-center justify-between px-3 py-2 text-xs font-semibold transition hover:bg-white/15 {{ $currentLocale === $code ? 'text-blue-400 bg-white/10 font-bold' : 'text-slate-200' }}">
+                                <span class="flex items-center gap-2">
+                                    <span class="text-sm leading-none">{{ $lang['flag'] }}</span>
+                                    <span>{{ $lang['name'] }}</span>
+                                </span>
+                                @if($currentLocale === $code)
+                                    <svg class="w-3.5 h-3.5 text-blue-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                @endif
+                            </a>
+                        @endforeach
+                    </div>
                 </div>
             </div>
 
@@ -130,29 +178,44 @@
                  class="bg-slate-900/95 backdrop-blur-md rounded-2xl p-4 border border-white/15 mb-4 grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs shadow-2xl" 
                  style="display: none;">
                 <a href="{{ url('/') }}" class="p-3 rounded-xl bg-white/10 text-white font-bold text-center hover:bg-blue-600 transition">
-                    Dashboard Utama
+                    {{ __('Dashboard Utama') }}
                 </a>
                 <a href="#new-ticket" @click="mobileMenuOpen = false" class="p-3 rounded-xl bg-white/5 text-blue-200 font-bold text-center hover:bg-blue-600 hover:text-white transition">
-                    Form Buat Tiket
+                    {{ __('Form Buat Tiket') }}
                 </a>
                 <a href="#chat-pane" @click="mobileMenuOpen = false" class="p-3 rounded-xl bg-white/5 text-blue-200 font-bold text-center hover:bg-blue-600 hover:text-white transition">
-                    Komunikasi Real-Time
+                    {{ __('Komunikasi Real-Time') }}
                 </a>
                 <a href="#queue" @click="mobileMenuOpen = false" class="p-3 rounded-xl bg-white/5 text-blue-200 font-bold text-center hover:bg-blue-600 hover:text-white transition">
-                    Daftar Antrean Tiket
+                    {{ __('Daftar Antrean Tiket') }}
                 </a>
                 <a href="#departments-list" @click="mobileMenuOpen = false" class="p-3 rounded-xl bg-white/5 text-blue-200 font-bold text-center hover:bg-blue-600 hover:text-white transition">
-                    Direktori Departemen
+                    {{ __('Direktori Departemen') }}
                 </a>
+
+                <!-- Mobile Language Selector Row -->
+                <div class="col-span-2 sm:col-span-5 p-2.5 rounded-xl bg-white/5 border border-white/10">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 text-center">{{ __('Pilih Bahasa') }}</p>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                        @foreach($languages as $code => $lang)
+                            <a href="{{ route('locale.switch', $code) }}" 
+                               class="py-2 px-2.5 rounded-lg text-center flex items-center justify-center gap-1.5 text-xs font-semibold transition {{ $currentLocale === $code ? 'bg-blue-600 text-white font-bold shadow-xs' : 'bg-white/10 text-slate-200 hover:bg-white/20' }}">
+                                <span class="text-sm leading-none">{{ $lang['flag'] }}</span>
+                                <span>{{ $lang['name'] }}</span>
+                            </a>
+                        @endforeach
+                    </div>
+                </div>
+
                 <button type="button" @click="darkMode = !darkMode; if (darkMode) { document.documentElement.classList.add('dark'); localStorage.setItem('theme', 'dark'); } else { document.documentElement.classList.remove('dark'); localStorage.setItem('theme', 'light'); }" 
                     class="col-span-2 sm:col-span-5 p-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-center transition flex items-center justify-center gap-2 cursor-pointer border border-white/15">
                     <span x-show="darkMode" class="flex items-center gap-2 text-amber-300">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                        <span>Ganti ke Mode Terang (Light Mode)</span>
+                        <span>{{ __('Ganti ke Mode Terang (Light Mode)') }}</span>
                     </span>
                     <span x-show="!darkMode" class="flex items-center gap-2 text-blue-200">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-                        <span>Ganti ke Mode Gelap (Dark Mode)</span>
+                        <span>{{ __('Ganti ke Mode Gelap (Dark Mode)') }}</span>
                     </span>
                 </button>
             </div>
@@ -167,37 +230,51 @@
 
                         <!-- Main Giant Headline from Screenshot -->
                         <h1 class="text-3xl sm:text-5xl md:text-6xl font-black text-white tracking-tight uppercase leading-[1.08] font-sans">
-                            PERUSAHAAN<br>
-                            MANUFAKTUR<br>
-                            PENGEMASAN<br>
-                            PLASTIK
+                            @if(app()->getLocale() === 'en')
+                                PLASTIC<br>
+                                PACKAGING<br>
+                                MANUFACTURING<br>
+                                ENTERPRISE
+                            @elseif(app()->getLocale() === 'ja')
+                                プラスチック<br>
+                                包装資材<br>
+                                製造企業
+                            @elseif(app()->getLocale() === 'zh')
+                                塑料包装<br>
+                                制造企业
+                            @else
+                                PERUSAHAAN<br>
+                                MANUFAKTUR<br>
+                                PENGEMASAN<br>
+                                PLASTIK
+                            @endif
                         </h1>
 
                         <!-- Subtitle from Screenshot -->
                         <div class="mt-5 text-white tracking-wider text-xs sm:text-sm font-extrabold uppercase space-y-0.5">
-                            <p class="text-white/95">KAMI ADALAH AHLI</p>
-                            <p class="text-blue-300">DALAM INJECTION DAN BLOW MOLDING</p>
+                            <p class="text-white/95">{{ __('KAMI ADALAH AHLI') }}</p>
+                            <p class="text-blue-300">{{ __('DALAM INJECTION DAN BLOW MOLDING') }}</p>
                         </div>
                     </div>
 
                     <!-- System Portal Headline & Fast Action Buttons -->
                     <div class="mt-8 pl-7 flex flex-wrap items-center gap-3">
                         <div class="w-full text-xs text-blue-200 font-medium mb-1">
-                            Sistem Ticketing &amp; Komunikasi Antar-Departemen Terpadu
+                            {{ __('Sistem Ticketing & Komunikasi Antar-Departemen Terpadu') }}
                         </div>
                         <a href="#new-ticket" 
                            class="px-5 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs uppercase tracking-wider shadow-lg transition flex items-center gap-2 cursor-pointer">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
-                            <span>Buat Tiket Dukungan</span>
+                            <span>{{ __('Buat Tiket Dukungan') }}</span>
                         </a>
                         <a href="#chat-pane" 
                            class="px-5 py-3 rounded-xl bg-white/15 hover:bg-white/25 backdrop-blur-md text-white font-bold text-xs uppercase tracking-wider border border-white/25 transition flex items-center gap-2 cursor-pointer">
                             <svg class="w-4 h-4 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
-                            <span>Live Chat Desk</span>
+                            <span>{{ __('Live Chat Desk') }}</span>
                         </a>
                         <a href="#queue" 
                            class="px-4 py-3 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-md text-white/90 font-semibold text-xs tracking-wider border border-white/15 transition cursor-pointer">
-                            Antrean Tiket ({{ \App\Models\Ticket::count() }})
+                            {{ __('Antrean Tiket') }} ({{ \App\Models\Ticket::count() }})
                         </a>
                     </div>
                 </div>
@@ -216,7 +293,7 @@
     <!-- Floating "Butuh Bantuan?" Action Button (Exact as screenshot in bottom right) -->
     <div class="fixed bottom-6 right-6 z-50 flex items-center shadow-2xl rounded-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 overflow-hidden hover:scale-105 transition-transform duration-200 group">
         <a href="#chat-pane" class="flex items-center">
-            <span class="px-4 py-2.5 text-xs font-black text-slate-800 dark:text-slate-100 tracking-tight">Butuh Bantuan?</span>
+            <span class="px-4 py-2.5 text-xs font-black text-slate-800 dark:text-slate-100 tracking-tight">{{ __('Butuh Bantuan?') }}</span>
             <span class="w-11 h-11 bg-emerald-500 group-hover:bg-emerald-600 transition flex items-center justify-center text-white shadow-inner">
                 <svg class="w-5 h-5 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
@@ -231,13 +308,13 @@
             <div class="flex items-center gap-3">
                 <div class="w-7 h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-xs">AP</div>
                 <div>
-                    <span class="font-bold text-slate-800 dark:text-slate-100">PT. ASIA PLASTIK</span> &bull; Sistem Manajemen Tiket &amp; Komunikasi Internal Manufaktur
+                    <span class="font-bold text-slate-800 dark:text-slate-100">PT. ASIA PLASTIK</span> &bull; {{ __('PT. ASIA PLASTIK • Sistem Manajemen Tiket & Komunikasi Internal Manufaktur') }}
                 </div>
             </div>
             <div class="flex items-center gap-5 text-[11px] text-slate-400 dark:text-slate-500">
-                <span>Kantor &amp; Pabrik: Rungkut Industri, Surabaya</span>
-                <span>Telp: +6231 8433078</span>
-                <span>&copy; {{ date('Y') }} All Rights Reserved</span>
+                <span>{{ __('Kantor & Pabrik: Rungkut Industri, Surabaya') }}</span>
+                <span>{{ __('Telp: +6231 8433078') }}</span>
+                <span>&copy; {{ date('Y') }} {{ __('All Rights Reserved') }}</span>
             </div>
         </div>
     </footer>

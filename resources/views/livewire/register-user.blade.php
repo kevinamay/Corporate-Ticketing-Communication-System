@@ -14,7 +14,7 @@
             </a>
             <div class="text-right hidden sm:block">
                 <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold {{ $step === 1 ? 'bg-blue-500/30 text-blue-200 border border-blue-400/30' : 'bg-emerald-500/30 text-emerald-200 border border-emerald-400/30' }}">
-                    {{ $step === 1 ? 'Langkah 1: Formulir Data Diri' : 'Langkah 2: Verifikasi OTP' }}
+                    {{ $step === 1 ? __('Langkah 1: Formulir Data Diri') : __('Langkah 2: Verifikasi OTP') }}
                 </span>
             </div>
         </div>
@@ -23,8 +23,8 @@
             <!-- ================= STEP 1: REGISTRATION FORM ================= -->
             <div class="p-6 sm:p-8 lg:p-10">
                 <div class="mb-6 text-center sm:text-left">
-                    <h1 class="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">Pendaftaran Akun Karyawan</h1>
-                    <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">Lengkapi data pribadi dan kredensial untuk mengakses sistem komunikasi & ticketing internal.</p>
+                    <h1 class="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">{{ __('Pendaftaran Akun Karyawan') }}</h1>
+                    <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">{{ __('Lengkapi data pribadi dan kredensial untuk mengakses sistem komunikasi & ticketing internal.') }}</p>
                 </div>
 
                 @if ($errorMessage)
@@ -50,8 +50,8 @@
                             </div>
                         </div>
                         <div class="flex-1 text-center sm:text-left">
-                            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">Foto Profil Karyawan (Opsional)</label>
-                            <p class="text-[11px] text-slate-500 dark:text-slate-400 mb-2">Format: JPG, JPEG, PNG, atau WEBP (Maksimum 10MB). Jika dikosongkan, avatar inisial akan digenerate otomatis.</p>
+                            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">{{ __('Foto Profil Karyawan (Opsional)') }}</label>
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400 mb-2">{{ __('Format: JPG, JPEG, PNG, atau WEBP (Maksimum 10MB). Jika dikosongkan, avatar inisial akan digenerate otomatis.') }}</p>
                             <input type="file" wire:model="avatar" accept="image/*" id="avatar_input" class="text-xs text-slate-500 dark:text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 dark:file:bg-slate-700 file:text-blue-700 dark:file:text-blue-300 hover:file:bg-blue-100 dark:hover:file:bg-slate-600 cursor-pointer">
                             @error('avatar') <p class="text-[11px] text-rose-600 dark:text-rose-400 mt-1">{{ $message }}</p> @enderror
                         </div>
@@ -65,29 +65,29 @@
                             <div class="border-b border-slate-200 dark:border-slate-800 pb-2 mb-2">
                                 <h3 class="text-xs font-black uppercase tracking-wider text-blue-800 dark:text-blue-400 flex items-center gap-1.5">
                                     <svg class="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-                                    1. Informasi Pribadi &amp; Kontak
+                                    {{ __('1. Informasi Pribadi & Kontak') }}
                                 </h3>
                             </div>
 
                             <!-- 1. Full Name -->
                             <div>
-                                <label for="name" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Nama Lengkap <span class="text-rose-500">*</span></label>
-                                <input type="text" id="name" wire:model="name" placeholder="Contoh: Budi Santoso"
+                                <label for="name" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">{{ __('Nama Lengkap') }} <span class="text-rose-500">*</span></label>
+                                <input type="text" id="name" wire:model="name" placeholder="{{ __('Contoh: Budi Santoso') }}"
                                        class="w-full text-xs px-3.5 py-2.5 rounded-lg border @error('name') border-rose-400 bg-rose-50 dark:bg-rose-950/30 @else border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 @enderror focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition">
                                 @error('name') <p class="text-[11px] text-rose-600 dark:text-rose-400 mt-1">{{ $message }}</p> @enderror
                             </div>
 
                             <!-- 2. Gender -->
                             <div>
-                                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Jenis Kelamin <span class="text-rose-500">*</span></label>
+                                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">{{ __('Jenis Kelamin') }} <span class="text-rose-500">*</span></label>
                                 <div class="grid grid-cols-2 gap-3">
                                     <label class="flex items-center gap-2 p-2.5 rounded-lg border cursor-pointer transition text-xs {{ $gender === 'male' ? 'border-blue-600 bg-blue-50/60 dark:bg-blue-950/60 font-bold text-blue-900 dark:text-blue-200' : 'border-gray-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300' }}">
                                         <input type="radio" wire:model.live="gender" value="male" class="text-blue-600 focus:ring-blue-500">
-                                        <span>Laki-laki (Male)</span>
+                                        <span>{{ __('Laki-laki (Male)') }}</span>
                                     </label>
                                     <label class="flex items-center gap-2 p-2.5 rounded-lg border cursor-pointer transition text-xs {{ $gender === 'female' ? 'border-blue-600 bg-blue-50/60 dark:bg-blue-950/60 font-bold text-blue-900 dark:text-blue-200' : 'border-gray-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300' }}">
                                         <input type="radio" wire:model.live="gender" value="female" class="text-blue-600 focus:ring-blue-500">
-                                        <span>Perempuan (Female)</span>
+                                        <span>{{ __('Perempuan (Female)') }}</span>
                                     </label>
                                 </div>
                                 @error('gender') <p class="text-[11px] text-rose-600 dark:text-rose-400 mt-1">{{ $message }}</p> @enderror
@@ -95,27 +95,27 @@
 
                             <!-- 3. WhatsApp Number -->
                             <div>
-                                <label for="whatsapp_number" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Nomor WhatsApp Aktif <span class="text-rose-500">*</span></label>
+                                <label for="whatsapp_number" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">{{ __('Nomor WhatsApp Aktif') }} <span class="text-rose-500">*</span></label>
                                 <div class="relative">
-                                    <input type="tel" id="whatsapp_number" wire:model="whatsapp_number" placeholder="Contoh: 081234567890"
+                                    <input type="tel" id="whatsapp_number" wire:model="whatsapp_number" placeholder="{{ __('Contoh: 081234567890') }}"
                                            class="w-full text-xs px-3.5 py-2.5 rounded-lg border @error('whatsapp_number') border-rose-400 bg-rose-50 dark:bg-rose-950/30 @else border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 @enderror focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition">
                                 </div>
-                                <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">Kode OTP dan notifikasi tiket akan dikirimkan ke nomor ini.</p>
+                                <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">{{ __('Kode OTP dan notifikasi tiket akan dikirimkan ke nomor ini.') }}</p>
                                 @error('whatsapp_number') <p class="text-[11px] text-rose-600 dark:text-rose-400 mt-1">{{ $message }}</p> @enderror
                             </div>
 
                             <!-- 4. Complete Address -->
                             <div>
-                                <label for="complete_address" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Alamat Lengkap Domisili <span class="text-rose-500">*</span></label>
-                                <textarea id="complete_address" wire:model="complete_address" rows="3" placeholder="Nama Jalan, RT/RW, Kelurahan, Kecamatan, Kota/Kabupaten"
+                                <label for="complete_address" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">{{ __('Alamat Lengkap Domisili') }} <span class="text-rose-500">*</span></label>
+                                <textarea id="complete_address" wire:model="complete_address" rows="3" placeholder="{{ __('Nama Jalan, RT/RW, Kelurahan, Kecamatan, Kota/Kabupaten') }}"
                                           class="w-full text-xs px-3.5 py-2 rounded-lg border @error('complete_address') border-rose-400 bg-rose-50 dark:bg-rose-950/30 @else border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 @enderror focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition resize-none"></textarea>
                                 @error('complete_address') <p class="text-[11px] text-rose-600 dark:text-rose-400 mt-1">{{ $message }}</p> @enderror
                             </div>
 
                             <!-- 5. Postal Code -->
                             <div>
-                                <label for="postal_code" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Kode Pos <span class="text-rose-500">*</span></label>
-                                <input type="text" id="postal_code" wire:model="postal_code" maxlength="10" placeholder="Contoh: 60293"
+                                <label for="postal_code" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">{{ __('Kode Pos') }} <span class="text-rose-500">*</span></label>
+                                <input type="text" id="postal_code" wire:model="postal_code" maxlength="10" placeholder="{{ __('Contoh: 60293') }}"
                                        class="w-full text-xs px-3.5 py-2.5 rounded-lg border @error('postal_code') border-rose-400 bg-rose-50 dark:bg-rose-950/30 @else border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 @enderror focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition">
                                 @error('postal_code') <p class="text-[11px] text-rose-600 dark:text-rose-400 mt-1">{{ $message }}</p> @enderror
                             </div>
@@ -126,25 +126,25 @@
                             <div class="border-b border-slate-200 dark:border-slate-800 pb-2 mb-2">
                                 <h3 class="text-xs font-black uppercase tracking-wider text-blue-800 dark:text-blue-400 flex items-center gap-1.5">
                                     <svg class="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                                    2. Kredensial &amp; Akses Sistem
+                                    {{ __('2. Kredensial & Akses Sistem') }}
                                 </h3>
                             </div>
 
                             <!-- 6. National ID (KTP) -->
                             <div>
-                                <label for="national_id_ktp" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Nomor KTP (NIK 16 Digit) <span class="text-rose-500">*</span></label>
-                                <input type="text" id="national_id_ktp" wire:model="national_id_ktp" maxlength="16" placeholder="Contoh: 3578012345670001"
+                                <label for="national_id_ktp" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">{{ __('Nomor KTP (NIK 16 Digit)') }} <span class="text-rose-500">*</span></label>
+                                <input type="text" id="national_id_ktp" wire:model="national_id_ktp" maxlength="16" placeholder="{{ __('Contoh: 3578012345670001') }}"
                                        class="w-full text-xs px-3.5 py-2.5 rounded-lg border @error('national_id_ktp') border-rose-400 bg-rose-50 dark:bg-rose-950/30 @else border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 @enderror focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition font-mono">
-                                <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">Dapat digunakan sebagai identitas login utama ke portal ticketing.</p>
+                                <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">{{ __('Dapat digunakan sebagai identitas login utama ke portal ticketing.') }}</p>
                                 @error('national_id_ktp') <p class="text-[11px] text-rose-600 dark:text-rose-400 mt-1">{{ $message }}</p> @enderror
                             </div>
 
                             <!-- 7. Department Dropdown -->
                             <div>
-                                <label for="department_id" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Departemen / Divisi <span class="text-rose-500">*</span></label>
+                                <label for="department_id" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">{{ __('Departemen / Divisi') }} <span class="text-rose-500">*</span></label>
                                 <select id="department_id" wire:model="department_id"
                                         class="w-full text-xs px-3.5 py-2.5 rounded-lg border @error('department_id') border-rose-400 bg-rose-50 dark:bg-rose-950/30 @else border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 @enderror focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition">
-                                    <option value="">-- Pilih Departemen Penugasan --</option>
+                                    <option value="">{{ __('-- Pilih Departemen Penugasan --') }}</option>
                                     @foreach ($departments as $dept)
                                         <option value="{{ $dept->id }}">{{ $dept->name }}</option>
                                     @endforeach
@@ -154,24 +154,24 @@
 
                             <!-- 8. Email Address -->
                             <div>
-                                <label for="email" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Alamat Email Perusahaan / Pribadi <span class="text-rose-500">*</span></label>
-                                <input type="email" id="email" wire:model="email" placeholder="nama@perusahaan.com"
+                                <label for="email" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">{{ __('Alamat Email Perusahaan / Pribadi') }} <span class="text-rose-500">*</span></label>
+                                <input type="email" id="email" wire:model="email" placeholder="{{ __('nama@perusahaan.com') }}"
                                        class="w-full text-xs px-3.5 py-2.5 rounded-lg border @error('email') border-rose-400 bg-rose-50 dark:bg-rose-950/30 @else border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 @enderror focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition">
                                 @error('email') <p class="text-[11px] text-rose-600 dark:text-rose-400 mt-1">{{ $message }}</p> @enderror
                             </div>
 
                             <!-- 9. Password -->
                             <div>
-                                <label for="password" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Password Akses <span class="text-rose-500">*</span></label>
-                                <input type="password" id="password" wire:model="password" placeholder="Minimal 8 karakter"
+                                <label for="password" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">{{ __('Password Akses') }} <span class="text-rose-500">*</span></label>
+                                <input type="password" id="password" wire:model="password" placeholder="{{ __('Minimal 8 karakter') }}"
                                        class="w-full text-xs px-3.5 py-2.5 rounded-lg border @error('password') border-rose-400 bg-rose-50 dark:bg-rose-950/30 @else border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 @enderror focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition">
                                 @error('password') <p class="text-[11px] text-rose-600 dark:text-rose-400 mt-1">{{ $message }}</p> @enderror
                             </div>
 
                             <!-- 10. Confirm Password -->
                             <div>
-                                <label for="password_confirmation" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Konfirmasi Password <span class="text-rose-500">*</span></label>
-                                <input type="password" id="password_confirmation" wire:model="password_confirmation" placeholder="Ulangi password di atas"
+                                <label for="password_confirmation" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">{{ __('Konfirmasi Password') }} <span class="text-rose-500">*</span></label>
+                                <input type="password" id="password_confirmation" wire:model="password_confirmation" placeholder="{{ __('Ulangi password di atas') }}"
                                        class="w-full text-xs px-3.5 py-2.5 rounded-lg border @error('password_confirmation') border-rose-400 bg-rose-50 dark:bg-rose-950/30 @else border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 @enderror focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition">
                                 @error('password_confirmation') <p class="text-[11px] text-rose-600 dark:text-rose-400 mt-1">{{ $message }}</p> @enderror
                             </div>
@@ -182,19 +182,19 @@
                     <!-- SUBMIT BUTTON & FOOTER ACTIONS -->
                     <div class="pt-6 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
                         <div class="text-xs text-slate-600 dark:text-slate-400">
-                            Sudah memiliki akun terdaftar? 
-                            <a href="{{ route('login') }}" class="font-bold text-blue-600 dark:text-blue-400 hover:text-blue-800 transition underline">
-                                Masuk ke Sistem
+                            {{ __('Sudah memiliki akun terdaftar?') }}
+                            <a href="{{ route('login') }}" class="font-bold text-blue-600 dark:text-blue-400 hover:text-blue-800 transition underline ml-1">
+                                {{ __('Masuk ke Sistem') }}
                             </a>
                         </div>
                         
                         <button type="submit" 
                                 wire:loading.attr="disabled"
                                 class="w-full sm:w-auto px-8 py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold text-xs uppercase tracking-wider rounded-lg shadow-md transition flex items-center justify-center gap-2 cursor-pointer">
-                            <span wire:loading.remove wire:target="register">Kirim Pendaftaran &amp; Dapatkan OTP</span>
+                            <span wire:loading.remove wire:target="register">{{ __('Kirim Pendaftaran & Dapatkan OTP') }}</span>
                             <span wire:loading wire:target="register" class="flex items-center gap-2">
                                 <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
-                                Memproses Data...
+                                {{ __('Memproses Data...') }}
                             </span>
                         </button>
                     </div>
@@ -211,13 +211,13 @@
                     </svg>
                 </div>
 
-                <h2 class="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Verifikasi Kode Keamanan (OTP)</h2>
+                <h2 class="text-2xl font-black text-slate-900 dark:text-white tracking-tight">{{ __('Verifikasi Kode Keamanan (OTP)') }}</h2>
                 <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-2">
-                    Kode verifikasi 6 digit telah dikirimkan ke email: 
+                    {{ __('Kode verifikasi 6 digit telah dikirimkan ke email:') }} 
                     <strong class="text-blue-600 dark:text-blue-400 font-bold">{{ $email }}</strong>
                 </p>
                 <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
-                    Silakan periksa kotak masuk (Inbox) atau folder Spam email Anda. Kontak WhatsApp terdaftar: <span class="font-medium text-slate-600 dark:text-slate-300">{{ $whatsapp_number }}</span>.
+                    {{ __('Silakan periksa kotak masuk (Inbox) atau folder Spam email Anda. Kontak WhatsApp terdaftar:') }} <span class="font-medium text-slate-600 dark:text-slate-300">{{ $whatsapp_number }}</span>.
                 </p>
 
                 @if ($successMessage)
@@ -234,7 +234,7 @@
 
                 <!-- 6 ROUNDED INPUT BOXES -->
                 <div class="my-8" x-data="otpForm()">
-                    <label class="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-3">Masukkan 6-Digit Kode OTP</label>
+                    <label class="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-3">{{ __('Masukkan 6-Digit Kode OTP') }}</label>
                     <div class="flex justify-center items-center gap-2 sm:gap-3">
                         <input type="text" maxlength="1" id="otp-1" wire:model.defer="otp1"
                                x-ref="otp1" @input="onInput(1, $event)" @keydown="onKeydown(1, $event)" @paste="onPaste($event)"
@@ -263,19 +263,19 @@
                             wire:click="verifyOtp" 
                             wire:loading.attr="disabled"
                             class="w-full py-3.5 px-6 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold text-xs uppercase tracking-wider rounded-lg shadow-md transition flex items-center justify-center gap-2 cursor-pointer">
-                        <span wire:loading.remove wire:target="verifyOtp">Verifikasi Akun &amp; Masuk</span>
+                        <span wire:loading.remove wire:target="verifyOtp">{{ __('Verifikasi Akun & Masuk') }}</span>
                         <span wire:loading wire:target="verifyOtp" class="flex items-center gap-2">
                             <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
-                            Memverifikasi OTP...
+                            {{ __('Memverifikasi OTP...') }}
                         </span>
                     </button>
 
                     <div class="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-200 dark:border-slate-800">
                         <button type="button" wire:click="$set('step', 1)" class="text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 font-medium underline cursor-pointer">
-                            &larr; Ubah Data Registrasi
+                            &larr; {{ __('Ubah Data Registrasi') }}
                         </button>
                         <button type="button" wire:click="resendOtp" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 font-bold transition cursor-pointer">
-                            Kirim Ulang Kode OTP
+                            {{ __('Kirim Ulang Kode OTP') }}
                         </button>
                     </div>
                 </div>

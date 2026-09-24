@@ -16,7 +16,13 @@ $app = Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             'livewire/*',
         ]);
+        $middleware->encryptCookies(except: [
+            'locale',
+        ]);
         $middleware->append(\App\Http\Middleware\CleanLegacyCookies::class);
+        $middleware->web(append: [
+            \App\Http\Middleware\SetLocale::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

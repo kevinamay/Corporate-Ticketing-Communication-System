@@ -61,3 +61,24 @@ Route::get('/storage/{path}', function (string $path) {
 
     return response()->file($filePath);
 })->where('path', '.*')->name('storage.local');
+
+Route::get('/set-locale/{locale}', function (string $locale) {
+    $allowed = \App\Http\Middleware\SetLocale::SUPPORTED_LOCALES;
+    if (! in_array($locale, $allowed, true)) {
+        $locale = 'id';
+    }
+
+    if (request()->hasSession()) {
+        session(['locale' => $locale]);
+    }
+
+    $cookie = cookie('locale', $locale, 60 * 24 * 365, '/', null, false, false);
+
+    $referer = request()->header('referer');
+    if ($referer && str_starts_with($referer, request()->getSchemeAndHttpHost())) {
+        return redirect($referer)->withCookie($cookie);
+    }
+
+    return redirect()->route('dashboard')->withCookie($cookie);
+})->name('locale.switch');
+
