@@ -60,6 +60,8 @@ $envDefaults = [
     'APP_KEY' => 'base64:QX6Shj9IM6P1zsqviSaEOOomvYB9raucqTLGNJYCDnA=',
     'APP_ENV' => 'production',
     'APP_DEBUG' => 'true',
+    'APP_LOCALE' => 'id',
+    'APP_FALLBACK_LOCALE' => 'id',
     'SESSION_DRIVER' => 'file',
     'SESSION_COOKIE' => 'corporate_ticketing_session',
     'SESSION_LIFETIME' => '120',
