@@ -95,5 +95,10 @@
     <div id="queue" class="scroll-mt-24 mt-8">
         <livewire:ticket-list />
     </div>
+
+    <!-- Global Tickets (Cross-Department Transparency & Department-Restricted Actions) -->
+    <div id="global-tickets" class="scroll-mt-24 mt-8">
+        <livewire:global-tickets />
+    </div>
 </div>
 @endsection
