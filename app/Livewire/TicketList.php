@@ -34,6 +34,17 @@ class TicketList extends Component
         $this->selectedTicketId = $ticketId;
     }
 
+    #[On('ticketDeleted')]
+    public function onTicketDeleted(int $ticketId): void
+    {
+        if ($this->selectedTicketId === $ticketId) {
+            $this->selectedTicketId = Ticket::latest()->first()?->id;
+            if ($this->selectedTicketId) {
+                $this->dispatch('ticketSelected', ticketId: $this->selectedTicketId);
+            }
+        }
+    }
+
     public function selectTicket(int $id): void
     {
         $this->selectedTicketId = $id;

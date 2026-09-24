@@ -77,7 +77,7 @@
             <!-- Select Dropdown: Target Department -->
             <div>
                 <label for="target_department_id" class="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">{{ __('Target Department') }}</label>
-                <select id="target_department_id" wire:model="target_department_id" 
+                <select id="target_department_id" wire:model.live="target_department_id" 
                     class="w-full px-3 py-2.5 text-xs md:text-sm text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-800/90 rounded-lg border border-gray-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition shadow-xs">
                     @foreach ($departments as $dept)
                         <option value="{{ $dept->id }}">{{ $dept->name }}</option>
@@ -86,15 +86,14 @@
                 @error('target_department_id') <span class="text-xs text-rose-600 dark:text-rose-400 mt-1 block font-medium">{{ $message }}</span> @enderror
             </div>
 
-            <!-- Select Dropdown: Request Category -->
+            <!-- Select Dropdown: Request Category (Dependent on Target Department) -->
             <div>
                 <label for="category" class="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">{{ __('Request Category') }}</label>
-                <select id="category" wire:model="category" wire:change="setCategory($event.target.value)"
+                <select id="category" wire:model="category"
                     class="w-full px-3 py-2.5 text-xs md:text-sm text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-800/90 rounded-lg border border-gray-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition shadow-xs">
-                    <option value="IT">IT Support</option>
-                    <option value="HR">Human Resources</option>
-                    <option value="Maintenance">Facility & Maintenance</option>
-                    <option value="General">General Operations</option>
+                    @foreach ($this->availableCategories as $cat)
+                        <option value="{{ $cat }}">{{ __($cat) }}</option>
+                    @endforeach
                 </select>
                 @error('category') <span class="text-xs text-rose-600 dark:text-rose-400 mt-1 block font-medium">{{ $message }}</span> @enderror
             </div>
@@ -238,4 +237,105 @@
             @endauth
         </div>
     </form>
+
+    <!-- ========================================== -->
+    <!-- FEATURE 2: "My Tickets" Table & Delete Feature -->
+    <!-- ========================================== -->
+    <div class="mt-8 pt-6 border-t border-gray-100 dark:border-slate-800">
+        <div class="flex items-center justify-between mb-3.5">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/60 flex items-center justify-center">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-sm font-bold text-slate-900 dark:text-white">{{ __('My Tickets') }}</h3>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400">{{ __('Daftar tiket yang Anda ajukan beserta status penanganannya') }}</p>
+                </div>
+            </div>
+            @if (session()->has('ticket_deleted'))
+                <span class="text-xs text-rose-600 dark:text-rose-400 font-semibold bg-rose-50 dark:bg-rose-950/40 px-3 py-1 rounded-lg border border-rose-200 dark:border-rose-800 animate-fade-in">
+                    {{ session('ticket_deleted') }}
+                </span>
+            @endif
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-slate-800 text-left text-xs">
+                <thead class="bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 uppercase tracking-wider font-bold text-[10px]">
+                    <tr>
+                        <th scope="col" class="py-3 px-3.5">{{ __('Ticket ID') }}</th>
+                        <th scope="col" class="py-3 px-3.5">{{ __('Title') }}</th>
+                        <th scope="col" class="py-3 px-3.5">{{ __('Target Department') }}</th>
+                        <th scope="col" class="py-3 px-3.5">{{ __('Category') }}</th>
+                        <th scope="col" class="py-3 px-3.5">{{ __('Priority') }}</th>
+                        <th scope="col" class="py-3 px-3.5">{{ __('Status') }}</th>
+                        <th scope="col" class="py-3 px-3.5 text-right">{{ __('Action') }}</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 dark:divide-slate-800/80 text-slate-700 dark:text-slate-300">
+                    @forelse ($myTickets as $ticket)
+                        @php
+                            $priorityStyle = match($ticket->priority) {
+                                'Critical' => 'bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800',
+                                'High' => 'bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800',
+                                'Medium' => 'bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800',
+                                default => 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800',
+                            };
+                            $statusStyle = match($ticket->status) {
+                                'Resolved' => 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800',
+                                'In Progress' => 'bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800',
+                                'Open' => 'bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800',
+                                default => 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-gray-200 dark:border-slate-700',
+                            };
+                        @endphp
+                        <tr class="hover:bg-slate-50/70 dark:hover:bg-slate-800/50 transition">
+                            <td class="py-3 px-3.5 font-mono font-bold text-slate-500 dark:text-slate-400">
+                                #{{ $ticket->id }}
+                            </td>
+                            <td class="py-3 px-3.5 font-semibold text-slate-900 dark:text-white max-w-[200px] truncate" title="{{ $ticket->title }}">
+                                {{ $ticket->title }}
+                            </td>
+                            <td class="py-3 px-3.5 text-slate-600 dark:text-slate-300">
+                                {{ $ticket->targetDepartment->name ?? '-' }}
+                            </td>
+                            <td class="py-3 px-3.5">
+                                <span class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium border border-gray-200 dark:border-slate-700 text-[11px]">
+                                    {{ $ticket->category }}
+                                </span>
+                            </td>
+                            <td class="py-3 px-3.5">
+                                <span class="px-2 py-0.5 rounded border font-bold text-[10px] {{ $priorityStyle }}">
+                                    {{ __($ticket->priority) }}
+                                </span>
+                            </td>
+                            <td class="py-3 px-3.5">
+                                <span class="px-2 py-0.5 rounded border font-semibold text-[10px] {{ $statusStyle }}">
+                                    {{ __($ticket->status) }}
+                                </span>
+                            </td>
+                            <td class="py-3 px-3.5 text-right whitespace-nowrap">
+                                <button type="button" 
+                                    wire:click="deleteTicket({{ $ticket->id }})" 
+                                    wire:confirm="{{ __('Apakah Anda yakin ingin menghapus tiket ini secara permanen?') }}"
+                                    class="text-red-500 hover:text-red-700 font-semibold cursor-pointer transition inline-flex items-center gap-1 text-xs">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    </svg>
+                                    <span>{{ __('Delete') }}</span>
+                                </button>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="7" class="py-8 text-center text-slate-400 dark:text-slate-500">
+                                <p class="text-xs">{{ __('Belum ada tiket yang diajukan oleh akun Anda.') }}</p>
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>

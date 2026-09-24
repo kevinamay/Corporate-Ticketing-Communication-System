@@ -16,11 +16,11 @@ class TicketForm extends Component
 
     public string $title = '';
 
-    public string $category = 'IT';
-
     public ?int $sender_department_id = null;
 
     public ?int $target_department_id = null;
+
+    public string $category = '';
 
     public string $priority = 'Medium';
 
@@ -33,6 +33,16 @@ class TicketForm extends Component
     public bool $isSuccess = false;
 
     /**
+     * Exact department to categories mapping.
+     */
+    public array $departmentCategories = [
+        'IT' => ['Network', 'Hardware', 'Software', 'Account', 'Other'],
+        'HR' => ['Payroll', 'Leave', 'Attendance', 'Other'],
+        'Maintenance' => ['AC', 'Electrical', 'Plumbing', 'Other'],
+        'General' => ['Supplies', 'Meeting Room', 'Transport', 'Other'],
+    ];
+
+    /**
      * @return array<string, string>
      */
     protected function rules(): array
@@ -41,7 +51,7 @@ class TicketForm extends Component
             'title' => 'required|min:5|max:150',
             'sender_department_id' => 'required|exists:departments,id',
             'target_department_id' => 'required|exists:departments,id',
-            'category' => 'required|in:IT,HR,Maintenance,General',
+            'category' => 'required|string|max:50',
             'priority' => 'required|in:Low,Medium,High,Critical',
             'status' => 'required|in:Pending,Open,In Progress,Resolved',
             'description' => 'required|min:10',
@@ -65,33 +75,52 @@ class TicketForm extends Component
                 $this->sender_department_id = $currentUser->department_id;
             }
         }
+
+        // Initialize category based on current target department
+        $categories = $this->availableCategories;
+        $this->category = $categories[0] ?? 'Other';
+    }
+
+    /**
+     * Dependent dropdown hook when target_department_id changes.
+     */
+    public function updatedTargetDepartmentId($value): void
+    {
+        $categories = $this->availableCategories;
+        $this->category = $categories[0] ?? 'Other';
+    }
+
+    /**
+     * Get categories list dynamically based on selected target department.
+     */
+    public function getAvailableCategoriesProperty(): array
+    {
+        if (! $this->target_department_id) {
+            return $this->departmentCategories['General'] ?? ['Other'];
+        }
+
+        $dept = Department::find($this->target_department_id);
+        if (! $dept) {
+            return $this->departmentCategories['General'] ?? ['Other'];
+        }
+
+        $deptKey = 'General';
+        if (str_contains($dept->name, 'IT')) {
+            $deptKey = 'IT';
+        } elseif (str_contains($dept->name, 'Human') || str_contains($dept->name, 'HR')) {
+            $deptKey = 'HR';
+        } elseif (str_contains($dept->name, 'Facility') || str_contains($dept->name, 'Maintenance')) {
+            $deptKey = 'Maintenance';
+        } elseif (isset($this->departmentCategories[$dept->name])) {
+            $deptKey = $dept->name;
+        }
+
+        return $this->departmentCategories[$deptKey] ?? ['Other'];
     }
 
     public function setPriority(string $level): void
     {
         $this->priority = $level;
-    }
-
-    public function setCategory(string $cat): void
-    {
-        $this->category = $cat;
-        // Auto match target department if possible
-        if ($cat === 'IT') {
-            $dept = Department::where('name', 'like', '%IT%')->first();
-            if ($dept) {
-                $this->target_department_id = $dept->id;
-            }
-        } elseif ($cat === 'HR') {
-            $dept = Department::where('name', 'like', '%Human%')->first();
-            if ($dept) {
-                $this->target_department_id = $dept->id;
-            }
-        } elseif ($cat === 'Maintenance') {
-            $dept = Department::where('name', 'like', '%Facility%')->first();
-            if ($dept) {
-                $this->target_department_id = $dept->id;
-            }
-        }
     }
 
     public function removePhoto(): void
@@ -128,12 +157,14 @@ class TicketForm extends Component
         }
 
         $ticket = Ticket::create([
+            'user_id' => $currentUserId,
             'sender_id' => $currentUserId,
             'target_department_id' => $this->target_department_id,
             'title' => $this->title,
             'category' => $this->category,
             'description' => $this->description,
             'photo_path' => $photoPath,
+            'attachment_path' => $photoPath,
             'priority' => $this->priority,
             'status' => $this->status,
         ]);
@@ -142,15 +173,49 @@ class TicketForm extends Component
         $this->photo = null;
         $this->priority = 'Medium';
         $this->status = 'Pending';
+        $this->category = $this->availableCategories[0] ?? 'Other';
         $this->isSuccess = true;
 
         $this->dispatch('ticketCreated', ticketId: $ticket->id);
     }
 
+    /**
+     * Delete user ticket and refresh view.
+     */
+    public function deleteTicket(int $id): void
+    {
+        $currentUserId = Auth::id() ?? session('active_user_id');
+        if (! $currentUserId) {
+            return;
+        }
+
+        $ticket = Ticket::where('id', $id)
+            ->where(function ($query) use ($currentUserId) {
+                $query->where('user_id', $currentUserId)
+                      ->orWhere('sender_id', $currentUserId);
+            })
+            ->first();
+
+        if ($ticket) {
+            $ticket->delete();
+            session()->flash('ticket_deleted', 'Tiket berhasil dihapus.');
+            $this->dispatch('ticketDeleted', ticketId: $id);
+        }
+    }
+
     public function render()
     {
+        $currentUserId = Auth::id() ?? session('active_user_id');
+        $myTickets = $currentUserId
+            ? Ticket::where(function ($query) use ($currentUserId) {
+                $query->where('user_id', $currentUserId)
+                      ->orWhere('sender_id', $currentUserId);
+            })->with('targetDepartment')->latest()->get()
+            : collect();
+
         return view('livewire.ticket-form', [
             'departments' => Department::all(),
+            'myTickets' => $myTickets,
         ]);
     }
 }

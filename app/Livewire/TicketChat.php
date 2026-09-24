@@ -37,6 +37,16 @@ class TicketChat extends Component
         $this->callSeconds = 0;
     }
 
+    #[On('ticketDeleted')]
+    public function onTicketDeleted(int $ticketId): void
+    {
+        if ($this->ticketId === $ticketId) {
+            $this->ticketId = Ticket::latest()->first()?->id;
+            $this->isCalling = false;
+            $this->callSeconds = 0;
+        }
+    }
+
     public function selectTicket(int $id): void
     {
         $this->ticketId = $id;
