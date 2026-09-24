@@ -233,88 +233,120 @@
                 @endif
 
                 <!-- 6 ROUNDED INPUT BOXES -->
-                <div class="my-8" x-data="otpForm()">
-                    <label class="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-3">{{ __('Masukkan 6-Digit Kode OTP') }}</label>
-                    <div class="flex justify-center items-center gap-2 sm:gap-3">
-                        <input type="text" maxlength="1" id="otp-1" wire:model.defer="otp1"
-                               x-ref="otp1" @input="onInput(1, $event)" @keydown="onKeydown(1, $event)" @paste="onPaste($event)"
-                               class="w-11 h-14 sm:w-14 sm:h-16 text-center text-xl sm:text-2xl font-black rounded-xl border-2 border-slate-200 dark:border-slate-700 focus:border-blue-600 focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/40 text-blue-900 dark:text-blue-100 bg-slate-50 dark:bg-slate-800 transition outline-none" autocomplete="off" autofocus>
-                        <input type="text" maxlength="1" id="otp-2" wire:model.defer="otp2"
-                               x-ref="otp2" @input="onInput(2, $event)" @keydown="onKeydown(2, $event)" @paste="onPaste($event)"
-                               class="w-11 h-14 sm:w-14 sm:h-16 text-center text-xl sm:text-2xl font-black rounded-xl border-2 border-slate-200 dark:border-slate-700 focus:border-blue-600 focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/40 text-blue-900 dark:text-blue-100 bg-slate-50 dark:bg-slate-800 transition outline-none" autocomplete="off">
-                        <input type="text" maxlength="1" id="otp-3" wire:model.defer="otp3"
-                               x-ref="otp3" @input="onInput(3, $event)" @keydown="onKeydown(3, $event)" @paste="onPaste($event)"
-                               class="w-11 h-14 sm:w-14 sm:h-16 text-center text-xl sm:text-2xl font-black rounded-xl border-2 border-slate-200 dark:border-slate-700 focus:border-blue-600 focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/40 text-blue-900 dark:text-blue-100 bg-slate-50 dark:bg-slate-800 transition outline-none" autocomplete="off">
-                        <input type="text" maxlength="1" id="otp-4" wire:model.defer="otp4"
-                               x-ref="otp4" @input="onInput(4, $event)" @keydown="onKeydown(4, $event)" @paste="onPaste($event)"
-                               class="w-11 h-14 sm:w-14 sm:h-16 text-center text-xl sm:text-2xl font-black rounded-xl border-2 border-slate-200 dark:border-slate-700 focus:border-blue-600 focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/40 text-blue-900 dark:text-blue-100 bg-slate-50 dark:bg-slate-800 transition outline-none" autocomplete="off">
-                        <input type="text" maxlength="1" id="otp-5" wire:model.defer="otp5"
-                               x-ref="otp5" @input="onInput(5, $event)" @keydown="onKeydown(5, $event)" @paste="onPaste($event)"
-                               class="w-11 h-14 sm:w-14 sm:h-16 text-center text-xl sm:text-2xl font-black rounded-xl border-2 border-slate-200 dark:border-slate-700 focus:border-blue-600 focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/40 text-blue-900 dark:text-blue-100 bg-slate-50 dark:bg-slate-800 transition outline-none" autocomplete="off">
-                        <input type="text" maxlength="1" id="otp-6" wire:model.defer="otp6"
-                               x-ref="otp6" @input="onInput(6, $event)" @keydown="onKeydown(6, $event)" @paste="onPaste($event)"
-                               class="w-11 h-14 sm:w-14 sm:h-16 text-center text-xl sm:text-2xl font-black rounded-xl border-2 border-slate-200 dark:border-slate-700 focus:border-blue-600 focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/40 text-blue-900 dark:text-blue-100 bg-slate-50 dark:bg-slate-800 transition outline-none" autocomplete="off">
-                    </div>
-                </div>
+                 <!-- 6 ROUNDED INPUT BOXES WITH AUTO-ADVANCE & BACKSPACE NAVIGATION -->
+                 <div class="my-8" 
+                      x-data="{
+                          init() {
+                              this.$nextTick(() => {
+                                  this.$refs.otp1?.focus();
+                              });
+                          },
+                          handleInput(index, event) {
+                              const input = event.target;
+                              let val = input.value.replace(/\D/g, '');
+                              if (val.length > 1) {
+                                  val = val.slice(-1);
+                              }
+                              input.value = val;
+                              this.$wire.set('otp' + index, val, false);
 
-                <!-- VERIFY BUTTON -->
-                <div class="space-y-4">
-                    <button type="button" 
-                            wire:click="verifyOtp" 
-                            wire:loading.attr="disabled"
-                            class="w-full py-3.5 px-6 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold text-xs uppercase tracking-wider rounded-lg shadow-md transition flex items-center justify-center gap-2 cursor-pointer">
-                        <span wire:loading.remove wire:target="verifyOtp">{{ __('Verifikasi Akun & Masuk') }}</span>
-                        <span wire:loading wire:target="verifyOtp" class="flex items-center gap-2">
-                            <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
-                            {{ __('Memverifikasi OTP...') }}
-                        </span>
-                    </button>
+                              if (val && index < 6) {
+                                  this.$nextTick(() => {
+                                      const next = this.$refs['otp' + (index + 1)];
+                                      if (next) {
+                                          next.focus();
+                                          next.select();
+                                      }
+                                  });
+                              }
+                          },
+                          handleKeydown(index, event) {
+                              const input = event.target;
+                              if (event.key === 'Backspace') {
+                                  if (!input.value && index > 1) {
+                                      event.preventDefault();
+                                      const prev = this.$refs['otp' + (index - 1)];
+                                      if (prev) {
+                                          prev.focus();
+                                          prev.value = '';
+                                          this.$wire.set('otp' + (index - 1), '', false);
+                                      }
+                                  }
+                              } else if (event.key === 'ArrowLeft' && index > 1) {
+                                  event.preventDefault();
+                                  this.$refs['otp' + (index - 1)]?.focus();
+                              } else if (event.key === 'ArrowRight' && index < 6) {
+                                  event.preventDefault();
+                                  this.$refs['otp' + (index + 1)]?.focus();
+                              } else if (event.key === 'Enter') {
+                                  event.preventDefault();
+                                  this.$wire.verifyOtp();
+                              }
+                          },
+                          handlePaste(event) {
+                              event.preventDefault();
+                              const pasteData = (event.clipboardData || window.clipboardData).getData('text').trim();
+                              const digits = pasteData.replace(/\D/g, '');
+                              if (digits.length > 0) {
+                                  for (let i = 1; i <= 6; i++) {
+                                      const digit = digits[i - 1] || '';
+                                      const ref = this.$refs['otp' + i];
+                                      if (ref) {
+                                          ref.value = digit;
+                                          this.$wire.set('otp' + i, digit, false);
+                                      }
+                                  }
+                                  const focusIndex = Math.min(digits.length + 1, 6);
+                                  this.$refs['otp' + focusIndex]?.focus();
+                              }
+                          }
+                      }">
+                     <label class="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-3">{{ __('Masukkan 6-Digit Kode OTP') }}</label>
+                     <div class="flex justify-center items-center gap-2 sm:gap-3">
+                         <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" id="otp-1" wire:model="otp1"
+                                x-ref="otp1" @focus="$event.target.select()" @input="handleInput(1, $event)" @keydown="handleKeydown(1, $event)" @paste="handlePaste($event)"
+                                class="w-11 h-14 sm:w-14 sm:h-16 text-center text-xl sm:text-2xl font-black rounded-xl border-2 border-slate-200 dark:border-slate-700 focus:border-blue-600 focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/40 text-blue-900 dark:text-blue-100 bg-slate-50 dark:bg-slate-800 transition outline-none" autocomplete="one-time-code" autofocus>
+                         <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" id="otp-2" wire:model="otp2"
+                                x-ref="otp2" @focus="$event.target.select()" @input="handleInput(2, $event)" @keydown="handleKeydown(2, $event)" @paste="handlePaste($event)"
+                                class="w-11 h-14 sm:w-14 sm:h-16 text-center text-xl sm:text-2xl font-black rounded-xl border-2 border-slate-200 dark:border-slate-700 focus:border-blue-600 focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/40 text-blue-900 dark:text-blue-100 bg-slate-50 dark:bg-slate-800 transition outline-none" autocomplete="one-time-code">
+                         <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" id="otp-3" wire:model="otp3"
+                                x-ref="otp3" @focus="$event.target.select()" @input="handleInput(3, $event)" @keydown="handleKeydown(3, $event)" @paste="handlePaste($event)"
+                                class="w-11 h-14 sm:w-14 sm:h-16 text-center text-xl sm:text-2xl font-black rounded-xl border-2 border-slate-200 dark:border-slate-700 focus:border-blue-600 focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/40 text-blue-900 dark:text-blue-100 bg-slate-50 dark:bg-slate-800 transition outline-none" autocomplete="one-time-code">
+                         <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" id="otp-4" wire:model="otp4"
+                                x-ref="otp4" @focus="$event.target.select()" @input="handleInput(4, $event)" @keydown="handleKeydown(4, $event)" @paste="handlePaste($event)"
+                                class="w-11 h-14 sm:w-14 sm:h-16 text-center text-xl sm:text-2xl font-black rounded-xl border-2 border-slate-200 dark:border-slate-700 focus:border-blue-600 focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/40 text-blue-900 dark:text-blue-100 bg-slate-50 dark:bg-slate-800 transition outline-none" autocomplete="one-time-code">
+                         <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" id="otp-5" wire:model="otp5"
+                                x-ref="otp5" @focus="$event.target.select()" @input="handleInput(5, $event)" @keydown="handleKeydown(5, $event)" @paste="handlePaste($event)"
+                                class="w-11 h-14 sm:w-14 sm:h-16 text-center text-xl sm:text-2xl font-black rounded-xl border-2 border-slate-200 dark:border-slate-700 focus:border-blue-600 focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/40 text-blue-900 dark:text-blue-100 bg-slate-50 dark:bg-slate-800 transition outline-none" autocomplete="one-time-code">
+                         <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" id="otp-6" wire:model="otp6"
+                                x-ref="otp6" @focus="$event.target.select()" @input="handleInput(6, $event)" @keydown="handleKeydown(6, $event)" @paste="handlePaste($event)"
+                                class="w-11 h-14 sm:w-14 sm:h-16 text-center text-xl sm:text-2xl font-black rounded-xl border-2 border-slate-200 dark:border-slate-700 focus:border-blue-600 focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/40 text-blue-900 dark:text-blue-100 bg-slate-50 dark:bg-slate-800 transition outline-none" autocomplete="one-time-code">
+                     </div>
+                 </div>
 
-                    <div class="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-200 dark:border-slate-800">
-                        <button type="button" wire:click="$set('step', 1)" class="text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 font-medium underline cursor-pointer">
-                            &larr; {{ __('Ubah Data Registrasi') }}
-                        </button>
-                        <button type="button" wire:click="resendOtp" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 font-bold transition cursor-pointer">
-                            {{ __('Kirim Ulang Kode OTP') }}
-                        </button>
-                    </div>
-                </div>
-            </div>
+                 <!-- VERIFY BUTTON -->
+                 <div class="space-y-4">
+                     <button type="button" 
+                             wire:click="verifyOtp" 
+                             wire:loading.attr="disabled"
+                             class="w-full py-3.5 px-6 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold text-xs uppercase tracking-wider rounded-lg shadow-md transition flex items-center justify-center gap-2 cursor-pointer">
+                         <span wire:loading.remove wire:target="verifyOtp">{{ __('Verifikasi Akun & Masuk') }}</span>
+                         <span wire:loading wire:target="verifyOtp" class="flex items-center gap-2">
+                             <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+                             {{ __('Memverifikasi OTP...') }}
+                         </span>
+                     </button>
 
-            <!-- Auto-advance OTP Alpine.js Component -->
-            <script>
-                function otpForm() {
-                    return {
-                        onInput(index, event) {
-                            const val = event.target.value;
-                            if (val.length === 1 && index < 6) {
-                                const nextInput = this.$refs['otp' + (index + 1)];
-                                if (nextInput) nextInput.focus();
-                            }
-                        },
-                        onKeydown(index, event) {
-                            if (event.key === 'Backspace' && !event.target.value && index > 1) {
-                                const prevInput = this.$refs['otp' + (index - 1)];
-                                if (prevInput) {
-                                    prevInput.focus();
-                                }
-                            }
-                        },
-                        onPaste(event) {
-                            event.preventDefault();
-                            const pasteData = (event.clipboardData || window.clipboardData).getData('text').trim();
-                            if (/^\d{6}$/.test(pasteData)) {
-                                for (let i = 1; i <= 6; i++) {
-                                    const digit = pasteData[i - 1];
-                                    this.$refs['otp' + i].value = digit;
-                                    this.$wire.set('otp' + i, digit);
-                                }
-                                this.$refs.otp6.focus();
-                            }
-                        }
-                    };
-                }
-            </script>
+                     <div class="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-200 dark:border-slate-800">
+                         <button type="button" wire:click="$set('step', 1)" class="text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 font-medium underline cursor-pointer">
+                             &larr; {{ __('Ubah Data Registrasi') }}
+                         </button>
+                         <button type="button" wire:click="resendOtp" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 font-bold transition cursor-pointer">
+                             {{ __('Kirim Ulang Kode OTP') }}
+                         </button>
+                     </div>
+                 </div>
+             </div>
         @endif
 
         <!-- Card Footer -->
