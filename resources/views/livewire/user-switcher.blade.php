@@ -32,7 +32,7 @@
              x-transition:leave="transition ease-in duration-100"
              x-transition:leave-start="opacity-100 transform scale-100"
              x-transition:leave-end="opacity-0 transform scale-95"
-             class="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden z-50 text-slate-800"
+             class="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-gray-200 dark:border-slate-800 overflow-hidden z-50 text-slate-800 dark:text-slate-100"
              style="display: none;">
             
             <!-- User Identity Header Banner -->
@@ -60,16 +60,16 @@
             </div>
 
             <!-- Detail Profil Karyawan -->
-            <div class="p-3 space-y-2 text-xs bg-slate-50 border-b border-gray-100">
+            <div class="p-3 space-y-2 text-xs bg-slate-50 dark:bg-slate-800/60 border-b border-gray-100 dark:border-slate-800">
                 <div class="flex items-center justify-between text-[11px]">
-                    <span class="text-slate-500">Status Akun:</span>
+                    <span class="text-slate-500 dark:text-slate-400">Status Akun:</span>
                     @if ($currentUser->email_verified_at)
-                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-200">
-                            <svg class="w-3 h-3 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                            <svg class="w-3 h-3 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
                             Terverifikasi OTP
                         </span>
                     @else
-                        <span class="text-[10px] font-semibold text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                        <span class="text-[10px] font-semibold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/50 px-2 py-0.5 rounded border border-amber-200 dark:border-amber-800">
                             Belum Verifikasi
                         </span>
                     @endif
@@ -77,39 +77,39 @@
 
                 @if ($currentUser->national_id_ktp)
                     <div class="flex items-center justify-between text-[11px]">
-                        <span class="text-slate-500">Nomor KTP (NIK):</span>
-                        <span class="font-mono font-semibold text-slate-800">{{ $currentUser->national_id_ktp }}</span>
+                        <span class="text-slate-500 dark:text-slate-400">Nomor KTP (NIK):</span>
+                        <span class="font-mono font-semibold text-slate-800 dark:text-slate-200">{{ $currentUser->national_id_ktp }}</span>
                     </div>
                 @endif
 
                 @if ($currentUser->whatsapp_number)
                     <div class="flex items-center justify-between text-[11px]">
-                        <span class="text-slate-500">WhatsApp:</span>
-                        <span class="font-semibold text-slate-800">{{ $currentUser->whatsapp_number }}</span>
+                        <span class="text-slate-500 dark:text-slate-400">WhatsApp:</span>
+                        <span class="font-semibold text-slate-800 dark:text-slate-200">{{ $currentUser->whatsapp_number }}</span>
                     </div>
                 @endif
 
                 @if ($currentUser->complete_address)
-                    <div class="pt-1 border-t border-slate-200 text-[11px]">
-                        <span class="text-slate-500 block mb-0.5">Alamat:</span>
-                        <p class="text-slate-700 leading-tight text-[10px] line-clamp-2">{{ $currentUser->complete_address }}</p>
+                    <div class="pt-1 border-t border-slate-200 dark:border-slate-700 text-[11px]">
+                        <span class="text-slate-500 dark:text-slate-400 block mb-0.5">Alamat:</span>
+                        <p class="text-slate-700 dark:text-slate-300 leading-tight text-[10px] line-clamp-2">{{ $currentUser->complete_address }}</p>
                     </div>
                 @endif
             </div>
 
             @if ($users->count() > 1)
                 <!-- Perspective Switcher (Simulasi Role) -->
-                <div class="p-3 border-b border-gray-100 bg-white">
-                    <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">Ganti Akun Demo / Perspektif:</p>
+                <div class="p-3 border-b border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900">
+                    <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2">Ganti Akun Demo / Perspektif:</p>
                     <div class="space-y-1 max-h-36 overflow-y-auto">
                         @foreach ($users as $user)
                             <button wire:click="switchUser({{ $user->id }})" type="button"
-                                class="w-full text-left p-1.5 rounded-lg flex items-center justify-between text-xs transition cursor-pointer {{ $user->id === $currentUser->id ? 'bg-blue-50 text-blue-700 font-bold' : 'hover:bg-slate-50 text-slate-700' }}">
+                                class="w-full text-left p-1.5 rounded-lg flex items-center justify-between text-xs transition cursor-pointer {{ $user->id === $currentUser->id ? 'bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 font-bold' : 'hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300' }}">
                                 <div class="flex items-center gap-2 truncate">
-                                    <span class="w-2 h-2 rounded-full {{ $user->id === $currentUser->id ? 'bg-blue-600' : 'bg-slate-300' }}"></span>
+                                    <span class="w-2 h-2 rounded-full {{ $user->id === $currentUser->id ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-600' }}"></span>
                                     <span class="truncate">{{ $user->name }}</span>
                                 </div>
-                                <span class="text-[9px] uppercase px-1 py-0.2 rounded bg-slate-100 text-slate-500">
+                                <span class="text-[9px] uppercase px-1 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
                                     {{ $user->role }}
                                 </span>
                             </button>
@@ -119,12 +119,12 @@
             @endif
 
             <!-- Tombol Logout -->
-            <div class="p-2 bg-white">
+            <div class="p-2 bg-white dark:bg-slate-900">
                 <form action="{{ route('logout') }}" method="POST" class="w-full">
                     @csrf
-                    <button type="submit" class="w-full py-2 px-3 rounded-lg text-rose-600 hover:bg-rose-50 font-semibold transition text-xs flex items-center justify-between cursor-pointer">
+                    <button type="submit" class="w-full py-2 px-3 rounded-lg text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 font-semibold transition text-xs flex items-center justify-between cursor-pointer">
                         <span>Keluar Akun (Logout)</span>
-                        <svg class="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                        <svg class="w-4 h-4 text-rose-500 dark:text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
                     </button>
                 </form>
             </div>
@@ -161,7 +161,7 @@
              x-transition:leave="transition ease-in duration-100"
              x-transition:leave-start="opacity-100 transform scale-100"
              x-transition:leave-end="opacity-0 transform scale-95"
-             class="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden z-50 text-slate-800"
+             class="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-gray-200 dark:border-slate-800 overflow-hidden z-50 text-slate-800 dark:text-slate-100"
              style="display: none;">
             
             <!-- Guest Header Banner -->
@@ -182,12 +182,12 @@
             </div>
 
             <!-- Guest Info Body -->
-            <div class="p-4 text-xs text-slate-600 bg-slate-50 border-b border-gray-100 leading-relaxed">
+            <div class="p-4 text-xs text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/60 border-b border-gray-100 dark:border-slate-800 leading-relaxed">
                 Anda saat ini belum masuk ke akun. Silakan login atau daftarkan akun baru untuk mengirim tiket dan mengakses komunikasi tim.
             </div>
 
             <!-- Login / Register Action Buttons -->
-            <div class="p-3 bg-white space-y-2">
+            <div class="p-3 bg-white dark:bg-slate-900 space-y-2">
                 <a href="{{ route('login') }}" 
                    class="w-full py-2.5 px-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -196,8 +196,8 @@
                     <span>Masuk ke Akun (Login)</span>
                 </a>
                 <a href="{{ route('register') }}" 
-                   class="w-full py-2 px-3 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs flex items-center justify-center gap-2 border border-slate-300 transition">
-                    <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                   class="w-full py-2 px-3 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-xs flex items-center justify-center gap-2 border border-slate-300 dark:border-slate-700 transition">
+                    <svg class="w-4 h-4 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
                     </svg>
                     <span>Registrasi Akun Baru (KTP)</span>

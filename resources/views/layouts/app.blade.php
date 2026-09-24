@@ -1,11 +1,20 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="min-h-screen bg-slate-100 scroll-smooth">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="min-h-screen bg-slate-100 dark:bg-slate-950 scroll-smooth">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>{{ config('app.name', 'Asia Plastik - Corporate Ticketing & Communication System') }}</title>
+
+    <!-- Theme Initialization (Prevent FOUC) -->
+    <script>
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
 
     <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16,7 +25,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
 </head>
-<body class="min-h-screen font-sans antialiased text-slate-800 bg-[#f4f6fa] flex flex-col" x-data="{ mobileMenuOpen: false }">
+<body class="min-h-screen font-sans antialiased text-slate-800 dark:text-slate-100 bg-[#f4f6fa] dark:bg-[#0b1120] flex flex-col transition-colors duration-200" x-data="{ mobileMenuOpen: false, darkMode: document.documentElement.classList.contains('dark') }">
 
     <!-- TOP HERO SECTION (Asia Plastik industrial manufacturing entrance) -->
     <header class="relative w-full bg-slate-900 shadow-xl overflow-hidden" 
@@ -27,29 +36,45 @@
 
         <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <!-- Top Utility Bar (Email, Phone, Language) -->
-            <div class="py-2.5 flex items-center justify-end text-[11px] text-white/80 border-b border-white/10 gap-5 font-medium tracking-wide">
-                <a href="mailto:marketing@asiaplastik.com" class="hover:text-white transition flex items-center gap-1.5">
+            <div class="py-2.5 flex items-center justify-end text-[11px] text-white/80 border-b border-white/10 gap-4 sm:gap-5 font-medium tracking-wide">
+                <a href="mailto:marketing@asiaplastik.com" class="hover:text-white transition flex items-center gap-1.5 hidden md:flex">
                     <svg class="w-3.5 h-3.5 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
                     <span>marketing@asiaplastik.com</span>
                 </a>
-                <span class="text-white/40">|</span>
-                <a href="tel:+62318433078" class="hover:text-white transition flex items-center gap-1.5">
+                <span class="text-white/40 hidden md:inline">|</span>
+                <a href="tel:+62318433078" class="hover:text-white transition flex items-center gap-1.5 hidden sm:flex">
                     <svg class="w-3.5 h-3.5 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
                     <span>+6231 8433078</span>
                 </a>
-                <span class="text-white/40">|</span>
+                <span class="text-white/40 hidden sm:inline">|</span>
                 @auth
-                    <span class="text-emerald-300 font-semibold">Aktif: {{ Auth::user()->name }}</span>
+                    <span class="text-emerald-300 font-semibold truncate max-w-[140px] sm:max-w-none">Aktif: {{ Auth::user()->name }}</span>
                     <span class="text-white/40">|</span>
                     <form action="{{ route('logout') }}" method="POST" class="inline">
                         @csrf
-                        <button type="submit" class="hover:text-rose-300 text-rose-200 transition cursor-pointer">Logout</button>
+                        <button type="submit" class="hover:text-rose-300 text-rose-200 transition cursor-pointer font-bold">Logout</button>
                     </form>
                 @else
                     <a href="{{ route('login') }}" class="hover:text-white font-bold text-blue-200 transition">Masuk (Login)</a>
                     <span class="text-white/40">|</span>
                     <a href="{{ route('register') }}" class="hover:text-white font-bold text-white transition">Registrasi KTP</a>
                 @endauth
+                <span class="text-white/40">|</span>
+
+                <!-- Dark Mode Interactive Toggle Switch -->
+                <button type="button" @click="darkMode = !darkMode; if (darkMode) { document.documentElement.classList.add('dark'); localStorage.setItem('theme', 'dark'); } else { document.documentElement.classList.remove('dark'); localStorage.setItem('theme', 'light'); }" 
+                    class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/10 hover:bg-white/25 border border-white/20 transition cursor-pointer text-white font-bold text-[10px] sm:text-[11px] shadow-xs"
+                    :title="darkMode ? 'Beralih ke Mode Terang' : 'Beralih ke Mode Gelap'">
+                    <span x-show="darkMode" class="flex items-center gap-1.5 text-amber-300">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                        <span>Mode Terang</span>
+                    </span>
+                    <span x-show="!darkMode" class="flex items-center gap-1.5 text-blue-200">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                        <span>Mode Gelap</span>
+                    </span>
+                </button>
+
                 <span class="text-white/40">|</span>
                 <div class="flex items-center gap-1 cursor-pointer hover:text-white font-bold">
                     <span>ID</span>
@@ -119,6 +144,17 @@
                 <a href="#departments-list" @click="mobileMenuOpen = false" class="p-3 rounded-xl bg-white/5 text-blue-200 font-bold text-center hover:bg-blue-600 hover:text-white transition">
                     Direktori Departemen
                 </a>
+                <button type="button" @click="darkMode = !darkMode; if (darkMode) { document.documentElement.classList.add('dark'); localStorage.setItem('theme', 'dark'); } else { document.documentElement.classList.remove('dark'); localStorage.setItem('theme', 'light'); }" 
+                    class="col-span-2 sm:col-span-5 p-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-center transition flex items-center justify-center gap-2 cursor-pointer border border-white/15">
+                    <span x-show="darkMode" class="flex items-center gap-2 text-amber-300">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                        <span>Ganti ke Mode Terang (Light Mode)</span>
+                    </span>
+                    <span x-show="!darkMode" class="flex items-center gap-2 text-blue-200">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                        <span>Ganti ke Mode Gelap (Dark Mode)</span>
+                    </span>
+                </button>
             </div>
 
             <!-- HERO CENTER CONTENT (Exact typography and vertical guide-line from screenshot) -->
@@ -178,9 +214,9 @@
     </div>
 
     <!-- Floating "Butuh Bantuan?" Action Button (Exact as screenshot in bottom right) -->
-    <div class="fixed bottom-6 right-6 z-50 flex items-center shadow-2xl rounded-full bg-white border border-gray-200 overflow-hidden hover:scale-105 transition-transform duration-200 group">
+    <div class="fixed bottom-6 right-6 z-50 flex items-center shadow-2xl rounded-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 overflow-hidden hover:scale-105 transition-transform duration-200 group">
         <a href="#chat-pane" class="flex items-center">
-            <span class="px-4 py-2.5 text-xs font-black text-slate-800 tracking-tight">Butuh Bantuan?</span>
+            <span class="px-4 py-2.5 text-xs font-black text-slate-800 dark:text-slate-100 tracking-tight">Butuh Bantuan?</span>
             <span class="w-11 h-11 bg-emerald-500 group-hover:bg-emerald-600 transition flex items-center justify-center text-white shadow-inner">
                 <svg class="w-5 h-5 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
@@ -190,15 +226,15 @@
     </div>
 
     <!-- Corporate Footer -->
-    <footer class="mt-auto border-t border-gray-200 bg-white py-8 text-xs text-slate-500">
+    <footer class="mt-auto border-t border-gray-200 dark:border-slate-800/80 bg-white dark:bg-slate-900 py-8 text-xs text-slate-500 dark:text-slate-400 transition-colors duration-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
             <div class="flex items-center gap-3">
                 <div class="w-7 h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-xs">AP</div>
                 <div>
-                    <span class="font-bold text-slate-800">PT. ASIA PLASTIK</span> &bull; Sistem Manajemen Tiket &amp; Komunikasi Internal Manufaktur
+                    <span class="font-bold text-slate-800 dark:text-slate-100">PT. ASIA PLASTIK</span> &bull; Sistem Manajemen Tiket &amp; Komunikasi Internal Manufaktur
                 </div>
             </div>
-            <div class="flex items-center gap-5 text-[11px] text-slate-400">
+            <div class="flex items-center gap-5 text-[11px] text-slate-400 dark:text-slate-500">
                 <span>Kantor &amp; Pabrik: Rungkut Industri, Surabaya</span>
                 <span>Telp: +6231 8433078</span>
                 <span>&copy; {{ date('Y') }} All Rights Reserved</span>
