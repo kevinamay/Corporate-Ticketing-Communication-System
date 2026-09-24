@@ -32,6 +32,29 @@ class TicketForm extends Component
 
     public bool $isSuccess = false;
 
+    // Edit Ticket Modal State
+    public bool $isEditModalOpen = false;
+
+    public ?int $editingTicketId = null;
+
+    public string $editTitle = '';
+
+    public ?int $editTargetDepartmentId = null;
+
+    public string $editCategory = '';
+
+    public string $editPriority = 'Medium';
+
+    public string $editStatus = 'Pending';
+
+    public string $editDescription = '';
+
+    public $editPhoto = null;
+
+    public ?string $existingPhotoUrl = null;
+
+    public bool $removeExistingPhoto = false;
+
     /**
      * Exact department to categories mapping.
      */
@@ -201,6 +224,172 @@ class TicketForm extends Component
             session()->flash('ticket_deleted', 'Tiket berhasil dihapus.');
             $this->dispatch('ticketDeleted', ticketId: $id);
         }
+    }
+
+    /**
+     * Open the edit modal with the selected ticket data.
+     */
+    public function openEditModal(int $id): void
+    {
+        $currentUserId = Auth::id() ?? session('active_user_id');
+        if (! $currentUserId) {
+            return;
+        }
+
+        $ticket = Ticket::where('id', $id)
+            ->where(function ($query) use ($currentUserId) {
+                $query->where('user_id', $currentUserId)
+                      ->orWhere('sender_id', $currentUserId);
+            })
+            ->first();
+
+        if (! $ticket) {
+            return;
+        }
+
+        $this->editingTicketId = $ticket->id;
+        $this->editTitle = $ticket->title;
+        $this->editTargetDepartmentId = $ticket->target_department_id;
+        $this->editCategory = $ticket->category;
+        $this->editPriority = $ticket->priority;
+        $this->editStatus = $ticket->status;
+        $this->editDescription = $ticket->description;
+        $this->existingPhotoUrl = $ticket->photo_url;
+        $this->editPhoto = null;
+        $this->removeExistingPhoto = false;
+        $this->isEditModalOpen = true;
+    }
+
+    /**
+     * Close the edit modal and reset edit state.
+     */
+    public function closeEditModal(): void
+    {
+        $this->isEditModalOpen = false;
+        $this->editingTicketId = null;
+        $this->editPhoto = null;
+        $this->removeExistingPhoto = false;
+        $this->resetValidation();
+    }
+
+    /**
+     * Dependent dropdown hook when edit target department changes.
+     */
+    public function updatedEditTargetDepartmentId($value): void
+    {
+        $categories = $this->editAvailableCategories;
+        $this->editCategory = $categories[0] ?? 'Other';
+    }
+
+    /**
+     * Get available categories dynamically for the edit modal.
+     */
+    public function getEditAvailableCategoriesProperty(): array
+    {
+        if (! $this->editTargetDepartmentId) {
+            return $this->departmentCategories['General'] ?? ['Other'];
+        }
+
+        $dept = Department::find($this->editTargetDepartmentId);
+        if (! $dept) {
+            return $this->departmentCategories['General'] ?? ['Other'];
+        }
+
+        $deptKey = 'General';
+        if (str_contains($dept->name, 'IT')) {
+            $deptKey = 'IT';
+        } elseif (str_contains($dept->name, 'Human') || str_contains($dept->name, 'HR')) {
+            $deptKey = 'HR';
+        } elseif (str_contains($dept->name, 'Facility') || str_contains($dept->name, 'Maintenance')) {
+            $deptKey = 'Maintenance';
+        } elseif (isset($this->departmentCategories[$dept->name])) {
+            $deptKey = $dept->name;
+        }
+
+        return $this->departmentCategories[$deptKey] ?? ['Other'];
+    }
+
+    public function setEditPriority(string $level): void
+    {
+        $this->editPriority = $level;
+    }
+
+    public function markRemoveExistingPhoto(): void
+    {
+        $this->removeExistingPhoto = true;
+        $this->existingPhotoUrl = null;
+    }
+
+    /**
+     * Update the ticket in the database.
+     */
+    public function updateTicket(): void
+    {
+        $currentUserId = Auth::id() ?? session('active_user_id');
+        if (! $currentUserId || ! $this->editingTicketId) {
+            return;
+        }
+
+        $this->validate([
+            'editTitle' => 'required|min:5|max:150',
+            'editTargetDepartmentId' => 'required|exists:departments,id',
+            'editCategory' => 'required|string|max:50',
+            'editPriority' => 'required|in:Low,Medium,High,Critical',
+            'editStatus' => 'required|in:Pending,Open,In Progress,Resolved',
+            'editDescription' => 'required|min:10',
+            'editPhoto' => 'nullable|image|max:10240',
+        ]);
+
+        $ticket = Ticket::where('id', $this->editingTicketId)
+            ->where(function ($query) use ($currentUserId) {
+                $query->where('user_id', $currentUserId)
+                      ->orWhere('sender_id', $currentUserId);
+            })
+            ->first();
+
+        if (! $ticket) {
+            return;
+        }
+
+        $photoPath = $ticket->photo_path ?: $ticket->attachment_path;
+        if ($this->removeExistingPhoto) {
+            $photoPath = null;
+        }
+
+        if ($this->editPhoto) {
+            try {
+                $storedPath = $this->editPhoto->store('ticket_attachments', 'public');
+                $photoPath = '/storage/'.$storedPath;
+            } catch (\Throwable $e) {
+                Log::warning('Edit ticket photo store fallback: '.$e->getMessage());
+                try {
+                    $photoPath = 'data:'.$this->editPhoto->getMimeType().';base64,'.base64_encode(file_get_contents($this->editPhoto->getRealPath()));
+                } catch (\Throwable $ex) {
+                    // keep current
+                }
+            }
+        }
+
+        $ticket->update([
+            'title' => $this->editTitle,
+            'target_department_id' => $this->editTargetDepartmentId,
+            'category' => $this->editCategory,
+            'priority' => $this->editPriority,
+            'status' => $this->editStatus,
+            'description' => $this->editDescription,
+            'photo_path' => $photoPath,
+            'attachment_path' => $photoPath,
+        ]);
+
+        $ticketId = $ticket->id;
+
+        $this->isEditModalOpen = false;
+        $this->editingTicketId = null;
+        $this->editPhoto = null;
+        $this->removeExistingPhoto = false;
+
+        session()->flash('ticket_updated', 'Tiket #'.$ticketId.' berhasil diperbarui.');
+        $this->dispatch('ticketUpdated', ticketId: $ticketId);
     }
 
     public function render()

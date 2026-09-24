@@ -45,6 +45,12 @@ class TicketList extends Component
         }
     }
 
+    #[On('ticketUpdated')]
+    public function onTicketUpdated(int $ticketId): void
+    {
+        // Re-renders view and keeps selected ticket
+    }
+
     public function selectTicket(int $id): void
     {
         $this->selectedTicketId = $id;
