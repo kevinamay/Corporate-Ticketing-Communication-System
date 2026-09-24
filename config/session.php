@@ -32,9 +32,9 @@ return [
     |
     */
 
-    'lifetime' => (int) env('SESSION_LIFETIME', 120),
+    'lifetime' => (int) (env('SESSION_LIFETIME') ?: 120) > 0 ? (int) (env('SESSION_LIFETIME') ?: 120) : 120,
 
-    'expire_on_close' => env('SESSION_EXPIRE_ON_CLOSE', false),
+    'expire_on_close' => filter_var(env('SESSION_EXPIRE_ON_CLOSE', false), FILTER_VALIDATE_BOOLEAN),
 
     /*
     |--------------------------------------------------------------------------
@@ -156,7 +156,7 @@ return [
     |
     */
 
-    'domain' => env('SESSION_DOMAIN'),
+    'domain' => env('SESSION_DOMAIN') === 'null' || empty(env('SESSION_DOMAIN')) ? null : env('SESSION_DOMAIN'),
 
     /*
     |--------------------------------------------------------------------------

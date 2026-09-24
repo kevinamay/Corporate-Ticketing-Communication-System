@@ -31,6 +31,28 @@ Route::post('/logout', function () {
     return redirect()->route('login');
 })->name('logout');
 
+Route::get('/reset-session', function () {
+    Auth::logout();
+    request()->session()->invalidate();
+    request()->session()->regenerateToken();
+
+    $response = redirect()->route('dashboard');
+
+    $cookiesToForget = [
+        'corporate_ticketing_session',
+        'corporate-ticketing-session',
+        'laravel_session',
+        'laravel-session',
+        'XSRF-TOKEN',
+    ];
+
+    foreach ($cookiesToForget as $cookie) {
+        $response->withCookie(cookie()->forget($cookie, '/', null));
+    }
+
+    return $response;
+})->name('reset.session');
+
 Route::get('/storage/{path}', function (string $path) {
     $filePath = storage_path('app/public/'.$path);
     if (! file_exists($filePath)) {

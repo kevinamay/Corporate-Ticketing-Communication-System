@@ -16,6 +16,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             'livewire/*',
         ]);
+        $middleware->append(\App\Http\Middleware\CleanLegacyCookies::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
@@ -39,6 +40,10 @@ $app->booting(function () use ($app, $isVercel) {
         $app['config']->set('session.driver', 'file');
         $app['config']->set('session.files', '/tmp/storage/framework/sessions');
         $app['config']->set('session.cookie', 'corporate_ticketing_session');
+        $app['config']->set('session.lifetime', 120);
+        $app['config']->set('session.expire_on_close', false);
+        $app['config']->set('session.domain', null);
+        $app['config']->set('session.path', '/');
         $app['config']->set('livewire.temporary_file_upload.disk', 'local');
         $app['config']->set('livewire.temporary_file_upload.directory', 'livewire-tmp');
     } elseif (empty($app['config']['session.driver'])) {
