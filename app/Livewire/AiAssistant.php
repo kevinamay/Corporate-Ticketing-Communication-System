@@ -32,16 +32,84 @@ class AiAssistant extends Component
         '🏭 Info pabrik PT Asia Plastik',
     ];
 
-    public function mount(): void
+    public bool $showSettings = false;
+
+    public string $aiProvider = 'gemini';
+
+    public string $apiKey = '';
+
+    public bool $isLiveConnected = false;
+
+    public string $activeProviderName = 'Gemini';
+
+    public function mount(AiChatbotService $aiService = new AiChatbotService): void
     {
+        $info = $aiService->getActiveProviderInfo();
+        $this->aiProvider = $info['provider'];
+        $this->isLiveConnected = $info['is_live'];
+        $this->activeProviderName = match ($this->aiProvider) {
+            'openai' => 'OpenAI ChatGPT',
+            'groq' => 'Groq (Llama 3.3)',
+            default => 'Google Gemini',
+        };
+
         if (empty($this->messages)) {
+            $welcomeExtra = $this->isLiveConnected
+                ? "\n\n✨ *AI Live Mode Aktif:* Saya terhubung langsung dengan AI API ({$this->activeProviderName}) dan siap menjawab pertanyaan apapun secara cerdas!"
+                : '';
+
             $this->messages[] = [
                 'id' => uniqid('msg_', true),
                 'sender' => 'bot',
-                'text' => "Halo! 👋 Saya **AsiaBot**, Asisten AI pintar PT. Asia Plastik.\n\nAda yang bisa saya bantu terkait pembuatan tiket dukungan, status perbaikan mesin, info departemen, atau operasional pabrik?",
+                'text' => "Halo! 👋 Saya **AsiaBot**, Asisten AI pintar PT. Asia Plastik.\n\nAda yang bisa saya bantu terkait pembuatan tiket dukungan, status perbaikan mesin, info departemen, operasional pabrik, maupun obrolan santai?{$welcomeExtra}",
                 'time' => now()->format('H:i'),
             ];
         }
+    }
+
+    public function toggleSettings(): void
+    {
+        $this->showSettings = ! $this->showSettings;
+    }
+
+    public function saveSettings(AiChatbotService $aiService = new AiChatbotService): void
+    {
+        $this->validate([
+            'aiProvider' => 'required|in:gemini,openai,groq',
+            'apiKey' => 'nullable|string|max:255',
+        ]);
+
+        cache()->forever('ai_provider', $this->aiProvider);
+
+        if (! empty($this->apiKey)) {
+            $trimmedKey = trim($this->apiKey);
+            cache()->forever("ai_{$this->aiProvider}_key", $trimmedKey);
+            cache()->forever('ai_api_key', $trimmedKey);
+        }
+
+        $info = $aiService->getActiveProviderInfo();
+        $this->isLiveConnected = $info['is_live'];
+        $this->activeProviderName = match ($this->aiProvider) {
+            'openai' => 'OpenAI ChatGPT',
+            'groq' => 'Groq (Llama 3.3)',
+            default => 'Google Gemini',
+        };
+
+        $this->showSettings = false;
+        $this->apiKey = '';
+
+        $statusMsg = $this->isLiveConnected
+            ? "✅ **Pengaturan AI Berhasil Diaktifkan!**\n\nAsiaBot kini terhubung langsung dengan **{$this->activeProviderName}**. Silakan tanyakan hal apapun secara bebas (rekomendasi, kuliner, analisis, tips, dll), saya siap menjawab!"
+            : "ℹ️ Provider disimpan ke **{$this->activeProviderName}**.\n\nMasukkan API Key untuk mengaktifkan respons AI real-time tanpa batas.";
+
+        $this->messages[] = [
+            'id' => uniqid('msg_', true),
+            'sender' => 'bot',
+            'text' => $statusMsg,
+            'time' => now()->format('H:i'),
+        ];
+
+        $this->dispatch('chat-updated');
     }
 
     public function toggleChat(): void

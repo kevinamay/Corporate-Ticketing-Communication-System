@@ -99,7 +99,16 @@
                 <div>
                     <div class="flex items-center gap-1.5">
                         <h4 class="text-xs sm:text-sm font-black tracking-tight text-white leading-tight">AsiaBot AI</h4>
-                        <span class="text-[9px] uppercase font-extrabold px-1.5 py-0.2 rounded-full bg-emerald-500/40 text-emerald-200 border border-emerald-400/30">24/7</span>
+                        @if($isLiveConnected)
+                            <span class="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded-full bg-emerald-500/40 text-emerald-200 border border-emerald-400/30 flex items-center gap-1" title="Terhubung ke API AI Asli">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                                Live: {{ $activeProviderName }}
+                            </span>
+                        @else
+                            <span class="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded-full bg-blue-500/40 text-blue-200 border border-blue-400/30" title="Klik tombol gerigi ⚙️ untuk menghubungkan API AI">
+                                Mode Standar
+                            </span>
+                        @endif
                     </div>
                     <p class="text-[10px] text-blue-200 leading-tight flex items-center gap-1 mt-0.5">
                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
@@ -110,6 +119,20 @@
 
             <!-- Header Action Controls -->
             <div class="flex items-center gap-1">
+                <!-- Settings Button -->
+                <button type="button" 
+                        wire:click="toggleSettings" 
+                        title="{{ __('Pengaturan API AI') }}"
+                        class="p-1.5 rounded-lg hover:bg-white/15 text-blue-200 hover:text-white transition cursor-pointer relative {{ $showSettings ? 'bg-white/20 text-white' : '' }}">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                    @if($isLiveConnected)
+                        <span class="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                    @endif
+                </button>
+
                 <!-- Reset Chat Button -->
                 <button type="button" 
                         wire:click="resetChat" 
@@ -131,6 +154,79 @@
                 </button>
             </div>
         </div>
+
+        @if($showSettings)
+            <!-- Settings Configuration Overlay -->
+            <div class="p-4 bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 space-y-3 shrink-0 max-h-[360px] overflow-y-auto">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-base">⚙️</span>
+                        <h5 class="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-slate-100">Koneksi API AI Asli</h5>
+                    </div>
+                    <button type="button" wire:click="toggleSettings" class="text-xs font-bold text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">✕ Tutup</button>
+                </div>
+
+                <p class="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
+                    Hubungkan AsiaBot dengan API AI resmi agar dapat menjawab semua pertanyaan random, makanan, kuliner, analisis, dan percakapan bebas tanpa batas.
+                </p>
+
+                <!-- Provider Choice -->
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Pilih Provider AI</label>
+                    <div class="grid grid-cols-3 gap-1.5">
+                        <button type="button" 
+                                wire:click="$set('aiProvider', 'gemini')" 
+                                class="px-2 py-1.5 rounded-xl border text-[11px] font-bold transition flex flex-col items-center gap-0.5 {{ $aiProvider === 'gemini' ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-500 text-blue-600 dark:text-blue-400 shadow-xs' : 'border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
+                            <span>✨ Gemini</span>
+                            <span class="text-[9px] font-normal opacity-80">(Gratis)</span>
+                        </button>
+                        <button type="button" 
+                                wire:click="$set('aiProvider', 'openai')" 
+                                class="px-2 py-1.5 rounded-xl border text-[11px] font-bold transition flex flex-col items-center gap-0.5 {{ $aiProvider === 'openai' ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-500 text-blue-600 dark:text-blue-400 shadow-xs' : 'border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
+                            <span>⚡ OpenAI</span>
+                            <span class="text-[9px] font-normal opacity-80">(GPT-4o)</span>
+                        </button>
+                        <button type="button" 
+                                wire:click="$set('aiProvider', 'groq')" 
+                                class="px-2 py-1.5 rounded-xl border text-[11px] font-bold transition flex flex-col items-center gap-0.5 {{ $aiProvider === 'groq' ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-500 text-blue-600 dark:text-blue-400 shadow-xs' : 'border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
+                            <span>🚀 Groq</span>
+                            <span class="text-[9px] font-normal opacity-80">(Llama 3.3)</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- API Key Input -->
+                <div class="space-y-1">
+                    <div class="flex items-center justify-between">
+                        <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Masukkan API Key</label>
+                        @if($aiProvider === 'gemini')
+                            <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-[10px] font-semibold text-blue-600 hover:underline">
+                                Dapatkan Kunci Gemini Gratis ↗
+                            </a>
+                        @elseif($aiProvider === 'groq')
+                            <a href="https://console.groq.com/keys" target="_blank" class="text-[10px] font-semibold text-blue-600 hover:underline">
+                                Dapatkan Kunci Groq Gratis ↗
+                            </a>
+                        @endif
+                    </div>
+                    <input type="password" 
+                           wire:model="apiKey" 
+                           placeholder="{{ $aiProvider === 'gemini' ? 'AIzaSy... (atau atur di .env)' : ($aiProvider === 'openai' ? 'sk-... (atau atur di .env)' : 'gsk_... (atau atur di .env)') }}" 
+                           class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:outline-hidden">
+                </div>
+
+                <div class="flex items-center justify-between pt-1">
+                    <span class="text-[10px] text-slate-400">
+                        Status: <strong class="{{ $isLiveConnected ? 'text-emerald-500' : 'text-amber-500' }}">{{ $isLiveConnected ? 'Terhubung (' . $activeProviderName . ')' : 'Belum Terhubung' }}</strong>
+                    </span>
+                    <button type="button" 
+                            wire:click="saveSettings" 
+                            class="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-sm transition cursor-pointer">
+                        Simpan & Hubungkan
+                    </button>
+                </div>
+            </div>
+        @endif
 
         <!-- Chat Messages Container -->
         <div x-ref="chatMessages" 

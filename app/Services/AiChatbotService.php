@@ -11,6 +11,40 @@ use Illuminate\Support\Facades\Log;
 class AiChatbotService
 {
     /**
+     * Get information about the active AI provider and whether a live external API is ready.
+     *
+     * @return array{provider: string, is_live: bool, active_key_source: string, has_gemini: bool, has_openai: bool, has_groq: bool}
+     */
+    public function getActiveProviderInfo(): array
+    {
+        $provider = cache('ai_provider') ?: env('AI_PROVIDER') ?: Config::get('services.ai.provider', 'gemini');
+        $hasGemini = ! empty(cache('ai_gemini_key') ?: env('GEMINI_API_KEY') ?: Config::get('services.ai.gemini_key'));
+        $hasOpenAi = ! empty(cache('ai_openai_key') ?: env('OPENAI_API_KEY') ?: Config::get('services.ai.openai_key'));
+        $hasGroq = ! empty(cache('ai_groq_key') ?: env('GROQ_API_KEY') ?: Config::get('services.ai.groq_key'));
+
+        $isLive = match ($provider) {
+            'gemini' => $hasGemini,
+            'openai' => $hasOpenAi,
+            'groq' => $hasGroq,
+            default => ($hasGemini || $hasOpenAi || $hasGroq),
+        };
+
+        $keySource = 'none';
+        if ($isLive) {
+            $keySource = (cache("ai_{$provider}_key") || cache('ai_api_key')) ? 'ui_cache' : 'env';
+        }
+
+        return [
+            'provider' => $provider,
+            'is_live' => $isLive,
+            'active_key_source' => $keySource,
+            'has_gemini' => $hasGemini,
+            'has_openai' => $hasOpenAi,
+            'has_groq' => $hasGroq,
+        ];
+    }
+
+    /**
      * Main entry point to get an AI answer.
      *
      * @param  array<int, array{sender: string, text: string, time: string}>  $history
@@ -40,28 +74,48 @@ class AiChatbotService
      */
     protected function tryExternalAi(string $message, array $history = []): ?string
     {
-        $geminiKey = env('GEMINI_API_KEY') ?: Config::get('services.ai.gemini_key');
-        $openaiKey = env('OPENAI_API_KEY') ?: Config::get('services.ai.openai_key');
-        $groqKey = env('GROQ_API_KEY') ?: Config::get('services.ai.groq_key');
+        $preferredProvider = cache('ai_provider') ?: env('AI_PROVIDER') ?: Config::get('services.ai.provider', 'gemini');
 
-        // Priority 1: Google Gemini (generous free tier)
-        if (! empty($geminiKey)) {
+        $geminiKey = cache('ai_gemini_key') ?: env('GEMINI_API_KEY') ?: (cache('ai_api_key') && $preferredProvider === 'gemini' ? cache('ai_api_key') : null) ?: Config::get('services.ai.gemini_key');
+        $openaiKey = cache('ai_openai_key') ?: env('OPENAI_API_KEY') ?: (cache('ai_api_key') && $preferredProvider === 'openai' ? cache('ai_api_key') : null) ?: Config::get('services.ai.openai_key');
+        $groqKey = cache('ai_groq_key') ?: env('GROQ_API_KEY') ?: (cache('ai_api_key') && $preferredProvider === 'groq' ? cache('ai_api_key') : null) ?: Config::get('services.ai.groq_key');
+
+        // Priority 1: Preferred Provider
+        if ($preferredProvider === 'gemini' && ! empty($geminiKey)) {
+            $res = $this->callGemini($geminiKey, $message, $history);
+            if ($res !== null) {
+                return $res;
+            }
+        } elseif ($preferredProvider === 'openai' && ! empty($openaiKey)) {
+            $res = $this->callOpenAi($openaiKey, $message, $history);
+            if ($res !== null) {
+                return $res;
+            }
+        } elseif ($preferredProvider === 'groq' && ! empty($groqKey)) {
+            $res = $this->callGroq($groqKey, $message, $history);
+            if ($res !== null) {
+                return $res;
+            }
+        }
+
+        // Priority 2: Google Gemini (Free & High Capacity)
+        if (! empty($geminiKey) && $preferredProvider !== 'gemini') {
             $geminiResponse = $this->callGemini($geminiKey, $message, $history);
             if ($geminiResponse !== null) {
                 return $geminiResponse;
             }
         }
 
-        // Priority 2: OpenAI API
-        if (! empty($openaiKey)) {
+        // Priority 3: OpenAI API
+        if (! empty($openaiKey) && $preferredProvider !== 'openai') {
             $openaiResponse = $this->callOpenAi($openaiKey, $message, $history);
             if ($openaiResponse !== null) {
                 return $openaiResponse;
             }
         }
 
-        // Priority 3: Groq API
-        if (! empty($groqKey)) {
+        // Priority 4: Groq API
+        if (! empty($groqKey) && $preferredProvider !== 'groq') {
             $groqResponse = $this->callGroq($groqKey, $message, $history);
             if ($groqResponse !== null) {
                 return $groqResponse;
@@ -222,12 +276,16 @@ class AiChatbotService
         $inProgressCount = Ticket::where('status', 'In Progress')->count();
 
         return <<<PROMPT
-Anda adalah "AsiaBot", asisten AI resmi dan ramah dari PT. ASIA PLASTIK (Perusahaan manufaktur terkemuka di bidang Plastic Packaging, Blow Molding, dan Injection Molding di Surabaya).
-Fokus utama Anda adalah membantu karyawan, staf produksi, teknisi, dan manajemen dalam sistem Corporate Ticketing & Communication.
+Anda adalah "AsiaBot", asisten AI resmi yang cerdas, ramah, dan serba bisa dari PT. ASIA PLASTIK (Perusahaan manufaktur kemasan plastik terkemuka di bidang Plastic Packaging, Blow Molding, dan Injection Molding di Surabaya, Jawa Timur).
 
-Informasi Internal Terkini:
+Pengetahuan & Kapabilitas Anda:
+1. Menjawab semua pertanyaan operasional pabrik, sistem tiket (Corporate Ticketing), status tiket, kendala mesin injection/blow molding, keselamatan kerja (K3), IT, QC, dan divisi lainnya.
+2. Mampu menjawab dan berdiskusi tentang TOPIK APAPUN secara bebas, luwes, dan cerdas (pertanyaan random, rekomendasi makanan/kuliner, tips harian, motivasi kerja, humor, sains, pemrograman, dll). Anda BUKAN bot kaku yang hanya punya jawaban siap saji, melainkan Large Language Model penuh yang responsif dan berwawasan luas!
+3. Jika ditanya hal santai atau random (seperti "mau makan apa ya enaknya"), berikan jawaban yang asik, relevan, lengkap dengan variasi pilihan menarik dan nada bicara yang hangat.
+
+Informasi Internal Terkini PT. Asia Plastik:
 - Total Tiket di Sistem: {$ticketCount} (Menunggu: {$pendingCount}, Dikerjakan: {$inProgressCount}).
-- Departemen yang Tersedia: Information Technology (IT), Maintenance / Mekanik Mesin, Quality Control (QC), Produksi, Logistik & Gudang, HR & GA, Finance, Purchasing.
+- Departemen: Information Technology (IT), Maintenance / Mekanik Mesin, Quality Control (QC), Produksi, Logistik & Gudang, HR & GA, Finance, Purchasing.
 - Tingkat Prioritas Tiket:
   * Emergency: Menghentikan lini pabrik / kecelakaan kerja (respon < 15 menit).
   * High: Menghambat kapasitas lini > 30% (respon < 1 jam).
@@ -235,9 +293,9 @@ Informasi Internal Terkini:
   * Low: Permintaan operasional/administrasi rutin (respon < 24 jam).
 
 Gaya Komunikasi:
-- Ramah, profesional, solutif, ringkas, dan jelas.
+- Ramah, antusias, solutif, dan natural layaknya asisten pribadi terpercaya.
 - Menggunakan bahasa yang sama dengan pengguna (default: Bahasa Indonesia).
-- Format jawaban dengan rapi menggunakan poin atau teks tebal bila diperlukan.
+- Format jawaban dengan rapi menggunakan markdown, poin-poin, atau teks tebal agar enak dibaca.
 PROMPT;
     }
 
@@ -407,19 +465,45 @@ PROMPT;
 
         // 10. Greetings & Friendly chat
         if (str_contains($lower, 'halo') || str_contains($lower, 'hai') || str_contains($lower, 'hello') || str_contains($lower, 'selamat pagi') || str_contains($lower, 'selamat siang') || str_contains($lower, 'selamat malam')) {
-            return "Halo! 👋 Selamat datang di Layanan Bantuan Asisten AI PT. Asia Plastik.\n\n"
-                ."Ada yang bisa saya bantu hari ini? Anda bisa menanyakan:\n"
-                ."• *'Cara buat tiket baru'*\n"
-                ."• *'Cek status tiket #1'*\n"
-                ."• *'Kendala mesin injection/blow'* \n"
-                ."• *'Kontak bantuan departemen IT / Maintenance'*";
+            return "Halo! 👋 Senang bertemu dengan Anda. Saya **AsiaBot**, asisten AI PT. Asia Plastik.\n\n"
+                ."Ada yang bisa saya bantu hari ini? Anda bisa berkonsultasi tentang operasional pabrik, pembuatan tiket, ataupun ngobrol santai!";
         }
 
         if (str_contains($lower, 'terima kasih') || str_contains($lower, 'makasih') || str_contains($lower, 'thanks') || str_contains($lower, 'ok') || str_contains($lower, 'siap')) {
-            return "Sama-sama! Senang bisa membantu Anda. 😊\n\nJika ada pertanyaan atau kendala operasional lainnya di pabrik, jangan ragu untuk bertanya kembali kapan saja. Selamat bekerja dan selalu utamakan keselamatan kerja (K3)!";
+            return "Sama-sama! Senang bisa membantu Anda. 😊\n\nJika ada pertanyaan atau kendala operasional lainnya di pabrik, jangan ragu untuk bertanya kembali kapan saja. Tetap semangat dan selalu utamakan keselamatan kerja (K3)!";
         }
 
-        // 11. Multi-language quick responses
+        // 11. Food & Culinary Recommendations (Casual Chit-chat)
+        if (str_contains($lower, 'makan') || str_contains($lower, 'kuliner') || str_contains($lower, 'laper') || str_contains($lower, 'lapar') || str_contains($lower, 'menu') || str_contains($lower, 'sarapan') || str_contains($lower, 'lunch') || str_contains($lower, 'makan siang') || str_contains($lower, 'makan malam')) {
+            return "Wah, pertanyaan yang bikin laper nih! 😋🍛\n\n"
+                ."Kalau bingung mau makan apa, ini beberapa rekomendasi mantap yang cocok dinikmati:\n\n"
+                ."1. 🍲 **Rawon Daging Surabaya:** Kuah kluwek hitam gurih hangat, disajikan dengan tauge pendek, sambal terasi, dan empal daging.\n"
+                ."2. 🍗 **Bebek Goreng / Bebek Sinjay:** Gurih garing dengan serundeng bumbu bebek dan sambal pencit mangga muda.\n"
+                ."3. 🍛 **Nasi Padang Komplit:** Rendang empuk dengan gulai daun singkong dan sambal ijo.\n"
+                ."4. 🍜 **Mie Ayam Jamur / Bakso Urat:** Pilihan hangat dan segar untuk istirahat shift kerja.\n"
+                ."5. 🥗 **Gado-Gado / Tahu Tek Surabaya:** Opsi lezat dan segar dengan siraman saus kacang petis khas.\n\n"
+                ."Lagi pengen yang berkuah hangat atau yang pedas gurih nih? 😊\n\n"
+                ."*💡 Tips: Hubungkan API Key Gemini/OpenAI di tombol ⚙️ Pengaturan di pojok kanan atas agar AsiaBot bisa memberikan resep masakan lengkap dan rekomendasi kuliner spesifik di sekitarmu!*";
+        }
+
+        // 12. Jokes, Riddles & Humor
+        if (str_contains($lower, 'lucu') || str_contains($lower, 'lelucon') || str_contains($lower, 'pantun') || str_contains($lower, 'tebak')) {
+            return "Biar kerjaan nggak tegang, nih AsiaBot punya pantun spesial buat Anda! 😄\n\n"
+                ."*Pergi ke Rungkut membeli palu,*\n"
+                ."*Singgah sebentar membeli roti,*\n"
+                ."*Tetap semangat bekerja selalu,*\n"
+                ."*Tiket beres hati pun senang sekali!* 🎉\n\n"
+                ."Ada kendala mesin atau sistem yang perlu dibantu hari ini?";
+        }
+
+        // 13. Motivation & Work Morale
+        if (str_contains($lower, 'semangat') || str_contains($lower, 'capek') || str_contains($lower, 'lelah') || str_contains($lower, 'bosan') || str_contains($lower, 'pusing')) {
+            return "Tarik napas dalam-dalam sejenak kawan! ☕💪\n\n"
+                ."Kerja kerasmu di PT. Asia Plastik sangat berarti untuk menjaga kelancaran produksi dan kualitas produk kemasan terbaik. Jangan lupa minum air putih, istirahat sejenak bila lelah, dan utamakan keselamatan kerja (K3).\n\n"
+                ."Kalau ada kendala di mesin atau sistem kantor yang bikin pusing, langsung buat tiket saja biar segera dibereskan oleh tim terkait!";
+        }
+
+        // 14. Multi-language quick responses
         if (preg_match('/[a-zA-Z]/', $query) && (str_contains($lower, 'how to') || str_contains($lower, 'ticket') || str_contains($lower, 'help'))) {
             return "Hello! 👋 I am **AsiaBot**, the AI Support Assistant for PT. Asia Plastik.\n\n"
                 ."I can assist you with:\n"
@@ -430,12 +514,12 @@ PROMPT;
         }
 
         // Default intelligent fallback
-        return "Terima kasih atas pesan Anda! 🤖\n\n"
-            ."Saya adalah **AsiaBot**, Asisten Cerdas PT. Asia Plastik. Untuk membantu Anda dengan tepat, silakan pilih topik berikut:\n\n"
-            ."1. **Tiket Dukungan:** Ketik *'Cara buat tiket'* atau *'Cek tiket #[nomor]'*.\n"
-            ."2. **Kendala Mesin:** Ketik *'Masalah mesin injection'* atau *'Masalah blow molding'*.\n"
-            ."3. **Divisi Internal:** Ketik *'Kontak IT'*, *'Divisi Maintenance'*, atau *'Info QC'*.\n"
-            ."4. **Status Antrean:** Ketik *'Cek status tiket'* untuk melihat ringkasan antrean saat ini.\n\n"
-            ."Apa yang ingin Anda ketahui lebih lanjut?";
+        return "Pertanyaan yang menarik! 🤖💬\n\n"
+            ."AsiaBot siap membantu Anda. Untuk mendapatkan jawaban bebas dan kecerdasan penuh seperti ChatGPT/Gemini secara real-time pada semua topik random, silakan masukkan **API Key (Google Gemini Gratis / OpenAI / Groq)** via tombol gerigi **⚙️ Pengaturan** di pojok kanan atas obrolan ini.\n\n"
+            ."Sementara itu, Anda juga dapat menanyakan seputar:\n"
+            ."• *'Cara buat tiket dukungan'*\n"
+            ."• *'Cek tiket #[nomor]'*\n"
+            ."• *'Masalah mesin injection / blow molding'*\n"
+            ."• *'Kontak divisi IT & Maintenance PT. Asia Plastik'*";
     }
 }
