@@ -7,7 +7,6 @@ use App\Models\Department;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
@@ -213,11 +212,11 @@ class RegisterUser extends Component
 
             // 6. Kirim email OTP ke alamat email pendaftar
             try {
-                Mail::to($user->email)->send(new SendOtpMail($user->name, $otpCode));
+                SendOtpMail::sendTo($user->email, $user->name, $otpCode);
                 $this->successMessage = 'Kode OTP 6-digit telah dikirim ke '.$user->email.'. Silakan periksa inbox atau folder spam email Anda.';
             } catch (\Throwable $e) {
                 Log::error('Gagal mengirim email OTP: '.$e->getMessage());
-                $this->errorMessage = 'Pendaftaran tersimpan, namun gagal mengirim email verifikasi ke '.$user->email.'. Pastikan server SMTP email aktif, lalu klik "Kirim Ulang OTP".';
+                $this->errorMessage = 'Pendaftaran tersimpan, namun gagal mengirim email verifikasi ke '.$user->email.'. Pastikan koneksi internet atau server email aktif, lalu klik "Kirim Ulang OTP".';
             }
         } catch (ValidationException $ve) {
             throw $ve;
@@ -291,11 +290,11 @@ class RegisterUser extends Component
                 $this->errorMessage = null;
 
                 try {
-                    Mail::to($user->email)->send(new SendOtpMail($user->name, $newOtp));
+                    SendOtpMail::sendTo($user->email, $user->name, $newOtp);
                     $this->successMessage = 'Kode OTP baru telah berhasil dikirimkan ke '.$user->email.'.';
                 } catch (\Throwable $e) {
                     Log::error('Gagal mengirim ulang email OTP: '.$e->getMessage());
-                    $this->errorMessage = 'Gagal mengirim ulang email OTP ke '.$user->email.'. Pastikan server SMTP email aktif.';
+                    $this->errorMessage = 'Gagal mengirim ulang email OTP ke '.$user->email.'. Pastikan koneksi internet atau server email aktif.';
                 }
             } else {
                 $this->errorMessage = 'Data pengguna tidak ditemukan. Silakan registrasi ulang.';
