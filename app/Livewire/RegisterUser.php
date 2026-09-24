@@ -216,7 +216,7 @@ class RegisterUser extends Component
                 $this->successMessage = 'Kode OTP 6-digit telah dikirim ke '.$user->email.'. Silakan periksa inbox atau folder spam email Anda.';
             } catch (\Throwable $e) {
                 Log::error('Gagal mengirim email OTP: '.$e->getMessage());
-                $this->errorMessage = 'Pendaftaran tersimpan, namun gagal mengirim email verifikasi ke '.$user->email.'. Pastikan koneksi internet atau server email aktif, lalu klik "Kirim Ulang OTP".';
+                $this->errorMessage = 'Pendaftaran tersimpan, namun pengiriman email ke '.$user->email.' mengalami kendala: '.$e->getMessage().'. Silakan klik "Kirim Ulang OTP".';
             }
         } catch (ValidationException $ve) {
             throw $ve;
@@ -291,10 +291,10 @@ class RegisterUser extends Component
 
                 try {
                     SendOtpMail::sendTo($user->email, $user->name, $newOtp);
-                    $this->successMessage = 'Kode OTP baru telah berhasil dikirimkan ke '.$user->email.'.';
+                    $this->successMessage = 'Kode OTP baru telah berhasil dikirimkan ke '.$user->email.'. Silakan periksa inbox atau folder spam Anda.';
                 } catch (\Throwable $e) {
                     Log::error('Gagal mengirim ulang email OTP: '.$e->getMessage());
-                    $this->errorMessage = 'Gagal mengirim ulang email OTP ke '.$user->email.'. Pastikan koneksi internet atau server email aktif.';
+                    $this->errorMessage = 'Pengiriman ulang email ke '.$user->email.' mengalami kendala: '.$e->getMessage().'.';
                 }
             } else {
                 $this->errorMessage = 'Data pengguna tidak ditemukan. Silakan registrasi ulang.';

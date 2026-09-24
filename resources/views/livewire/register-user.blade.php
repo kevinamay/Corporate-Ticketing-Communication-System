@@ -212,9 +212,12 @@
                 </div>
 
                 <h2 class="text-2xl font-black text-slate-900 tracking-tight">Verifikasi Kode Keamanan (OTP)</h2>
-                <p class="text-xs sm:text-sm text-slate-500 mt-2">
-                    Kami telah mengirimkan 6 digit kode verifikasi untuk memvalidasi akun 
-                    <strong class="text-slate-800 font-semibold">{{ $email }}</strong> (WhatsApp: <strong class="text-slate-800 font-semibold">{{ $whatsapp_number }}</strong>).
+                <p class="text-xs sm:text-sm text-slate-600 mt-2">
+                    Kode verifikasi 6 digit telah dikirimkan ke email: 
+                    <strong class="text-blue-600 font-bold">{{ $email }}</strong>
+                </p>
+                <p class="text-[11px] text-slate-400 mt-1">
+                    Silakan periksa kotak masuk (Inbox) atau folder Spam email Anda. Kontak WhatsApp terdaftar: <span class="font-medium text-slate-600">{{ $whatsapp_number }}</span>.
                 </p>
 
 

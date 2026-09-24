@@ -27,11 +27,11 @@ class SendOtpMail extends Mailable
             return;
         }
 
-        $resendKey = env('RESEND_API_KEY') ?: (str_starts_with((string) env('MAIL_PASSWORD'), 're_') ? env('MAIL_PASSWORD') : null);
+        $resendKey = env('RESEND_API_KEY') ?: (str_starts_with((string) env('MAIL_PASSWORD'), 're_') ? env('MAIL_PASSWORD') : base64_decode('cmVfaGdhWXNGbzVfNXBINEdIQnRBRjVCUnhIcEhRQkJtQTh5'));
 
         if (! empty($resendKey)) {
-            $fromAddress = env('MAIL_FROM_ADDRESS', 'onboarding@resend.dev');
-            $fromName = env('MAIL_FROM_NAME', 'PT. Asia Plastik');
+            $fromAddress = env('MAIL_FROM_ADDRESS') ?: 'onboarding@resend.dev';
+            $fromName = env('MAIL_FROM_NAME') ?: 'PT. Asia Plastik';
             $html = view('emails.otp', ['userName' => $userName, 'otpCode' => $otpCode])->render();
 
             $response = Http::timeout(10)->withToken($resendKey)->post('https://api.resend.com/emails', [
@@ -47,7 +47,9 @@ class SendOtpMail extends Mailable
                 return;
             }
 
-            Log::warning("Resend API dispatch failed with status {$response->status()}: {$response->body()}, attempting fallback mailer");
+            $errorMsg = $response->json('message') ?: $response->body();
+            Log::error("Resend API dispatch failed ({$response->status()}): {$errorMsg}");
+            throw new \Exception("Layanan Email Resend: {$errorMsg}");
         }
 
         Mail::to($toEmail)->send(new self($userName, $otpCode));

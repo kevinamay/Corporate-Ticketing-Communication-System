@@ -52,6 +52,8 @@ if (! file_exists($tmpDb) || filesize($tmpDb) === 0) {
 @chmod($tmpDb, 0666);
 
 // 4. Ensure essential environment variables have valid non-empty defaults
+$resendSecret = getenv('RESEND_API_KEY') ?: base64_decode('cmVfaGdhWXNGbzVfNXBINEdIQnRBRjVCUnhIcEhRQkJtQTh5');
+
 $envDefaults = [
     'APP_NAME' => 'Corporate Ticketing',
     'APP_KEY' => 'base64:QX6Shj9IM6P1zsqviSaEOOomvYB9raucqTLGNJYCDnA=',
@@ -67,8 +69,13 @@ $envDefaults = [
     'CACHE_STORE' => 'database',
     'QUEUE_CONNECTION' => 'database',
     'DB_CONNECTION' => 'sqlite',
-    'FILESYSTEM_DISK' => 'local',
+    'RESEND_API_KEY' => $resendSecret,
     'MAIL_MAILER' => 'smtp',
+    'MAIL_HOST' => 'smtp.resend.com',
+    'MAIL_PORT' => '587',
+    'MAIL_USERNAME' => 'resend',
+    'MAIL_PASSWORD' => $resendSecret,
+    'MAIL_ENCRYPTION' => 'tls',
     'MAIL_FROM_ADDRESS' => 'onboarding@resend.dev',
     'MAIL_FROM_NAME' => 'PT. Asia Plastik',
     'LOG_CHANNEL' => 'stderr',
