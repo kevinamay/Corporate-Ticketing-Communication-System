@@ -139,30 +139,51 @@ class AiChatbotService
             $systemInstruction = $this->getSystemPrompt();
 
             $contents = [];
-            // Add short history
-            $recentHistory = array_slice($history, -6);
+            $recentHistory = array_slice($history, -8);
+
+            // Filter turns to ensure Gemini rules:
+            // 1. Must start with 'user' (cannot start with 'model')
+            // 2. Must alternate strictly (no consecutive 'user' or 'model')
+            $turns = [];
+            $lastRole = null;
             foreach ($recentHistory as $item) {
                 $role = ($item['sender'] === 'user') ? 'user' : 'model';
-                $contents[] = [
+                if (empty($turns) && $role === 'model') {
+                    continue;
+                }
+                if ($role === $lastRole) {
+                    continue;
+                }
+                $turns[] = [
                     'role' => $role,
                     'parts' => [['text' => $item['text']]],
                 ];
+                $lastRole = $role;
             }
 
-            // Add current message
+            // If the last history turn is 'user', remove it so we don't have two consecutive user turns with $message
+            if (! empty($turns) && end($turns)['role'] === 'user') {
+                array_pop($turns);
+            }
+
+            foreach ($turns as $turn) {
+                $contents[] = $turn;
+            }
+
+            // Current user turn
             $contents[] = [
                 'role' => 'user',
                 'parts' => [['text' => $message]],
             ];
 
-            $response = Http::timeout(10)->post($url, [
+            $response = Http::timeout(12)->post($url, [
                 'system_instruction' => [
                     'parts' => [['text' => $systemInstruction]],
                 ],
                 'contents' => $contents,
                 'generationConfig' => [
                     'temperature' => 0.7,
-                    'maxOutputTokens' => 800,
+                    'maxOutputTokens' => 1000,
                 ],
             ]);
 
