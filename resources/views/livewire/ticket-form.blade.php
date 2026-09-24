@@ -108,6 +108,67 @@
             @error('description') <span class="text-xs text-rose-600 dark:text-rose-400 mt-1 block font-medium">{{ $message }}</span> @enderror
         </div>
 
+        <!-- Optional Photo Evidence Upload (Bukti Foto) -->
+        <div>
+            <div class="flex items-center justify-between mb-1.5">
+                <label for="ticket_photo" class="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                    {{ __('Bukti Foto / Lampiran (Opsional)') }}
+                </label>
+                <span class="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
+                    {{ __('Maks. 10MB (JPG, PNG, WEBP)') }}
+                </span>
+            </div>
+
+            @if ($photo)
+                <div class="p-3.5 rounded-xl border border-blue-200 dark:border-blue-800/80 bg-blue-50/60 dark:bg-blue-950/30 flex items-center justify-between gap-3 shadow-xs">
+                    <div class="flex items-center gap-3 min-w-0">
+                        @if (method_exists($photo, 'temporaryUrl'))
+                            <img src="{{ $photo->temporaryUrl() }}" alt="Preview Bukti Foto" class="w-14 h-14 rounded-lg object-cover border border-blue-300 dark:border-blue-700 shadow-xs shrink-0" />
+                        @else
+                            <div class="w-14 h-14 rounded-lg bg-blue-100 dark:bg-blue-900/60 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                            </div>
+                        @endif
+                        <div class="min-w-0">
+                            <p class="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{{ $photo->getClientOriginalName() }}</p>
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">{{ round($photo->getSize() / 1024, 1) }} KB • <span class="text-emerald-600 dark:text-emerald-400 font-semibold">{{ __('Foto Siap Diunggah') }}</span></p>
+                        </div>
+                    </div>
+                    <button type="button" wire:click="removePhoto" class="px-3 py-1.5 rounded-lg text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-950/60 transition cursor-pointer shrink-0 flex items-center gap-1 border border-rose-200 dark:border-rose-900">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        <span>{{ __('Hapus Foto') }}</span>
+                    </button>
+                </div>
+            @else
+                <div class="relative border-2 border-dashed border-gray-300 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-400 rounded-xl p-4 text-center transition bg-slate-50/50 dark:bg-slate-800/40 cursor-pointer group">
+                    <input id="ticket_photo" type="file" wire:model="photo" accept="image/jpeg,image/png,image/jpg,image/webp" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                    <div class="flex flex-col items-center justify-center pointer-events-none">
+                        <div class="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform flex items-center justify-center mb-2 shadow-xs">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                        </div>
+                        <p class="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                            <span class="text-blue-600 dark:text-blue-400 font-bold underline decoration-blue-400/50 underline-offset-2">{{ __('Pilih Bukti Foto') }}</span> {{ __('atau tarik file gambar ke sini') }}
+                        </p>
+                        <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
+                            {{ __('Tangkapan layar error, foto fisik alat, dsb. (Opsional)') }}
+                        </p>
+                    </div>
+                </div>
+            @endif
+
+            <!-- Loading indicator when uploading photo -->
+            <div wire:loading wire:target="photo" class="mt-2 text-xs text-blue-600 dark:text-blue-400 flex items-center gap-2">
+                <svg class="animate-spin h-3.5 w-3.5" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+                <span>{{ __('Sedang memproses & mengunggah foto...') }}</span>
+            </div>
+
+            @error('photo') 
+                <span class="text-xs text-rose-600 dark:text-rose-400 mt-1 block font-medium">{{ $message }}</span> 
+            @enderror
+        </div>
+
         <!-- Priority Level Badges & Ticket Status Select -->
         <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
             <!-- Radio/Badges: Priority Level -->

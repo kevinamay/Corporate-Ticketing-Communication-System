@@ -69,9 +69,17 @@
             <div wire:click="selectTicket({{ $t->id }})" 
                 class="p-4 rounded-xl cursor-pointer transition border text-left {{ $isSelected ? 'bg-blue-50/70 dark:bg-blue-950/40 border-blue-500 dark:border-blue-500 ring-2 ring-blue-500/20 shadow-md' : 'bg-white dark:bg-slate-800/80 border-gray-200 dark:border-slate-700/80 hover:border-blue-300 dark:hover:border-blue-500 hover:shadow-xs' }}">
                 <div class="flex items-center justify-between mb-2">
-                    <span class="text-[10px] font-bold px-2 py-0.5 rounded border {{ $priorityBadge }}">
-                        {{ __($t->priority) }}
-                    </span>
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded border {{ $priorityBadge }}">
+                            {{ __($t->priority) }}
+                        </span>
+                        @if ($t->photo_path)
+                            <span class="inline-flex items-center gap-1 text-[9px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-1.5 py-0.5 rounded border border-blue-200 dark:border-blue-800" title="{{ __('Ada Bukti Foto') }}">
+                                <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                <span>{{ __('Foto') }}</span>
+                            </span>
+                        @endif
+                    </div>
                     <span class="text-[10px] text-slate-400 dark:text-slate-500 font-mono">#{{ $t->id }}</span>
                 </div>
 

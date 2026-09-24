@@ -172,5 +172,18 @@
     "Nama Jalan, RT/RW, Kelurahan, Kecamatan, Kota/Kabupaten": "Nama Jalan, RT/RW, Kelurahan, Kecamatan, Kota/Kabupaten",
     "Format: JPG, JPEG, PNG, atau WEBP (Maksimum 10MB). Jika dikosongkan, avatar inisial akan digenerate otomatis.": "Format: JPG, JPEG, PNG, atau WEBP (Maksimum 10MB). Jika dikosongkan, avatar inisial akan digenerate otomatis.",
     "Kode OTP dan notifikasi tiket akan dikirimkan ke nomor ini.": "Kode OTP dan notifikasi tiket akan dikirimkan ke nomor ini.",
-    "Dapat digunakan sebagai identitas login utama ke portal ticketing.": "Dapat digunakan sebagai identitas login utama ke portal ticketing."
+    "Dapat digunakan sebagai identitas login utama ke portal ticketing.": "Dapat digunakan sebagai identitas login utama ke portal ticketing.",
+    "Bukti Foto / Lampiran (Opsional)": "Bukti Foto / Lampiran (Opsional)",
+    "Maks. 10MB (JPG, PNG, WEBP)": "Maks. 10MB (JPG, PNG, WEBP)",
+    "Foto Siap Diunggah": "Foto Siap Diunggah",
+    "Hapus Foto": "Hapus Foto",
+    "Pilih Bukti Foto": "Pilih Bukti Foto",
+    "atau tarik file gambar ke sini": "atau tarik file gambar ke sini",
+    "Tangkapan layar error, foto fisik alat, dsb. (Opsional)": "Tangkapan layar error, foto fisik alat, dsb. (Opsional)",
+    "Sedang memproses & mengunggah foto...": "Sedang memproses & mengunggah foto...",
+    "Ada Bukti Foto": "Ada Bukti Foto",
+    "Foto": "Foto",
+    "Bukti Foto Terlampir": "Bukti Foto Terlampir",
+    "Klik untuk memperbesar gambar": "Klik untuk memperbesar gambar",
+    "Tutup Pratinjau": "Tutup Pratinjau"
 }

@@ -76,9 +76,49 @@
         <!-- Chat Area (Scrollable area) -->
         <div id="chat-box" class="flex-1 p-4 overflow-y-auto space-y-3.5 bg-slate-50/50 dark:bg-slate-950/40 min-h-[360px] max-h-[500px]">
             <!-- Original Description Box -->
-            <div class="p-3 rounded-lg bg-white dark:bg-slate-800/90 border border-gray-200 dark:border-slate-700 shadow-xs">
+            <div class="p-3 rounded-lg bg-white dark:bg-slate-800/90 border border-gray-200 dark:border-slate-700 shadow-xs" x-data="{ imageModal: false }">
                 <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 block mb-1">{{ __('Issue Summary') }}</span>
                 <p class="text-xs text-slate-700 dark:text-slate-200 leading-relaxed">{{ $ticket->description }}</p>
+
+                @if ($ticket->photo_url)
+                    <div class="mt-3 pt-2.5 border-t border-gray-100 dark:border-slate-700/60">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 mb-1.5 flex items-center gap-1">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                            {{ __('Bukti Foto Terlampir') }}
+                        </span>
+                        <div class="inline-block relative group">
+                            <button type="button" @click="imageModal = true" class="relative block overflow-hidden rounded-lg border border-gray-200 dark:border-slate-700 shadow-xs cursor-pointer group-hover:border-blue-500 transition">
+                                <img src="{{ $ticket->photo_url }}" alt="Bukti Foto Masalah" class="w-36 h-24 object-cover group-hover:scale-105 transition-transform duration-200" />
+                                <span class="absolute inset-0 bg-slate-900/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-[10px] font-bold gap-1 px-1 text-center">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg>
+                                    {{ __('Klik untuk memperbesar gambar') }}
+                                </span>
+                            </button>
+                        </div>
+
+                        <!-- Image Lightbox Modal -->
+                        <div x-show="imageModal" 
+                             x-cloak
+                             @keydown.escape.window="imageModal = false"
+                             class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm"
+                             style="display: none;">
+                            <div class="relative max-w-4xl max-h-[90vh] bg-slate-900 rounded-2xl overflow-hidden shadow-2xl border border-white/20" @click.away="imageModal = false">
+                                <div class="flex items-center justify-between p-3 border-b border-white/10 bg-slate-900/90">
+                                    <span class="text-xs font-bold text-white flex items-center gap-1.5">
+                                        <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                        {{ __('Bukti Foto Terlampir') }} - {{ $ticket->title }}
+                                    </span>
+                                    <button type="button" @click="imageModal = false" class="text-white/70 hover:text-white p-1 rounded-lg hover:bg-white/10 transition cursor-pointer">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                    </button>
+                                </div>
+                                <div class="p-2 flex items-center justify-center overflow-auto max-h-[80vh]">
+                                    <img src="{{ $ticket->photo_url }}" alt="Bukti Foto Tiket" class="max-w-full max-h-[75vh] object-contain rounded-lg shadow-lg" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
             </div>
 
             @forelse ($ticket->messages as $msg)

@@ -14,12 +14,31 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'title',
     'category',
     'description',
+    'photo_path',
     'priority',
     'status',
 ])]
 class Ticket extends Model
 {
     use HasFactory;
+
+    /**
+     * Get photo URL or null.
+     */
+    public function getPhotoUrlAttribute(): ?string
+    {
+        if (! $this->photo_path) {
+            return null;
+        }
+
+        if (str_starts_with($this->photo_path, 'data:') || str_starts_with($this->photo_path, 'http://') || str_starts_with($this->photo_path, 'https://')) {
+            return $this->photo_path;
+        }
+
+        return str_starts_with($this->photo_path, '/storage/')
+            ? $this->photo_path
+            : '/storage/'.ltrim($this->photo_path, '/');
+    }
 
     /**
      * @return BelongsTo<User, $this>

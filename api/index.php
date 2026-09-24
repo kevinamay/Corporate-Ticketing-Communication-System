@@ -11,6 +11,7 @@ $storageDirs = [
     '/tmp/storage/app',
     '/tmp/storage/app/public',
     '/tmp/storage/app/public/avatars',
+    '/tmp/storage/app/public/ticket_attachments',
     '/tmp/storage/app/private',
     '/tmp/storage/app/private/livewire-tmp',
     '/tmp/storage/app/livewire-tmp',

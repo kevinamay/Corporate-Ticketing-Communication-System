@@ -6,10 +6,14 @@ use App\Models\Department;
 use App\Models\Ticket;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 class TicketForm extends Component
 {
+    use WithFileUploads;
+
     public string $title = '';
 
     public string $category = 'IT';
@@ -23,6 +27,8 @@ class TicketForm extends Component
     public string $status = 'Pending';
 
     public string $description = '';
+
+    public $photo = null;
 
     public bool $isSuccess = false;
 
@@ -39,6 +45,7 @@ class TicketForm extends Component
             'priority' => 'required|in:Low,Medium,High,Critical',
             'status' => 'required|in:Pending,Open,In Progress,Resolved',
             'description' => 'required|min:10',
+            'photo' => 'nullable|image|max:10240',
         ];
     }
 
@@ -87,6 +94,11 @@ class TicketForm extends Component
         }
     }
 
+    public function removePhoto(): void
+    {
+        $this->photo = null;
+    }
+
     public function submit(): void
     {
         $currentUserId = Auth::id() ?? session('active_user_id');
@@ -100,17 +112,34 @@ class TicketForm extends Component
 
         $this->validate();
 
+        $photoPath = null;
+        if ($this->photo) {
+            try {
+                $storedPath = $this->photo->store('ticket_attachments', 'public');
+                $photoPath = '/storage/'.$storedPath;
+            } catch (\Throwable $e) {
+                Log::warning('Ticket photo store fallback: '.$e->getMessage());
+                try {
+                    $photoPath = 'data:'.$this->photo->getMimeType().';base64,'.base64_encode(file_get_contents($this->photo->getRealPath()));
+                } catch (\Throwable $ex) {
+                    $photoPath = null;
+                }
+            }
+        }
+
         $ticket = Ticket::create([
             'sender_id' => $currentUserId,
             'target_department_id' => $this->target_department_id,
             'title' => $this->title,
             'category' => $this->category,
             'description' => $this->description,
+            'photo_path' => $photoPath,
             'priority' => $this->priority,
             'status' => $this->status,
         ]);
 
-        $this->reset(['title', 'description']);
+        $this->reset(['title', 'description', 'photo']);
+        $this->photo = null;
         $this->priority = 'Medium';
         $this->status = 'Pending';
         $this->isSuccess = true;
