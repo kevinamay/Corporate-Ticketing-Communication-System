@@ -290,17 +290,8 @@
         </main>
     </div>
 
-    <!-- Floating "Butuh Bantuan?" Action Button (Exact as screenshot in bottom right) -->
-    <div class="fixed bottom-6 right-6 z-50 flex items-center shadow-2xl rounded-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 overflow-hidden hover:scale-105 transition-transform duration-200 group">
-        <a href="#chat-pane" class="flex items-center">
-            <span class="px-4 py-2.5 text-xs font-black text-slate-800 dark:text-slate-100 tracking-tight">{{ __('Butuh Bantuan?') }}</span>
-            <span class="w-11 h-11 bg-emerald-500 group-hover:bg-emerald-600 transition flex items-center justify-center text-white shadow-inner">
-                <svg class="w-5 h-5 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
-                </svg>
-            </span>
-        </a>
-    </div>
+    <!-- Interactive AI Chatbot Assistant Widget ("Butuh Bantuan?" Floating Trigger & Modal) -->
+    <livewire:ai-assistant />
 
     <!-- Corporate Footer -->
     <footer class="mt-auto border-t border-gray-200 dark:border-slate-800/80 bg-white dark:bg-slate-900 py-8 text-xs text-slate-500 dark:text-slate-400 transition-colors duration-200">
