@@ -386,13 +386,22 @@ PROMPT;
                 ."3. Tim QC akan segera datang ke lini untuk uji dimensi, ketebalan ultrasonik, dan tes kebocoran (leak test).";
         }
 
-        // 9. About PT. Asia Plastik
+        // 9. About PT. Asia Plastik & Contact
+        if (str_contains($lower, 'wa') || str_contains($lower, 'whatsapp') || str_contains($lower, 'telepon') || str_contains($lower, 'kontak') || str_contains($lower, 'call') || str_contains($lower, 'hubungi')) {
+            return "📞 **Kontak Resmi & WhatsApp PT. ASIA PLASTIK:**\n\n"
+                ."• **Phone / WhatsApp:** +6231 8433078 / 8439998\n"
+                ."• **Kantor & Pabrik:** Kawasan Industri Rungkut, Surabaya, Jawa Timur\n"
+                ."• **Jam Layanan:** 24 Jam Operasional Pabrik\n\n"
+                ."💡 *Anda juga dapat langsung mengklik tombol hijau **WhatsApp** di sudut kanan bawah untuk terhubung langsung ke Customer Service kami.*";
+        }
+
         if (str_contains($lower, 'asia plastik') || str_contains($lower, 'profil') || str_contains($lower, 'perusahaan') || str_contains($lower, 'pabrik') || str_contains($lower, 'alamat')) {
             return "🏭 **Tentang PT. ASIA PLASTIK:**\n\n"
                 ."PT. Asia Plastik adalah perusahaan manufaktur kemasan plastik terintegrasi di Surabaya, Jawa Timur dengan spesialisasi:\n"
                 ."• **Injection Molding:** Tutup botol presisi, preform, wadah kemasan kaku.\n"
                 ."• **Blow Molding:** Botol HDPE, PET, botol agrokimia, dan jerigen industri.\n"
                 ."• **Alamat Pabrik & Kantor:** Kawasan Industri Rungkut, Surabaya, Jawa Timur, Indonesia.\n"
+                ."• **Phone / WhatsApp:** +6231 8433078 / 8439998\n"
                 ."• **Operasional:** 24 Jam Non-Stop (3 Shift) dengan standar manajemen mutu bersertifikasi ISO.";
         }
 
