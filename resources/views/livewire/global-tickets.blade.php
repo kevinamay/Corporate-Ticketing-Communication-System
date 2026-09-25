@@ -500,17 +500,7 @@
                                     @enderror
                                 </div>
 
-                                <div class="flex items-center justify-between pt-1">
-                                    <div class="flex items-center gap-2">
-                                        @if ($isAuthorized)
-                                            <select wire:model="ticketStatusToUpdate" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500">
-                                                <option value="In Progress">{{ __('Status: In Progress') }}</option>
-                                                <option value="Resolved">{{ __('Status: Resolved (Selesai)') }}</option>
-                                                <option value="Pending">{{ __('Status: Pending') }}</option>
-                                            </select>
-                                        @endif
-                                    </div>
-
+                                <div class="flex items-center justify-end pt-1">
                                     <button type="button" 
                                             wire:click="sendTicketReply({{ $viewingTicket->id }})" 
                                             wire:loading.attr="disabled"
