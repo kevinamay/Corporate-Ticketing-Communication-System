@@ -32,7 +32,12 @@ class TicketForm extends Component
 
     public bool $isSuccess = false;
 
-    // Edit Ticket Modal State
+    // Detail Modal State (Read)
+    public bool $isDetailModalOpen = false;
+
+    public ?int $viewingTicketId = null;
+
+    // Edit Ticket Modal State (Update)
     public bool $isEditModalOpen = false;
 
     public ?int $editingTicketId = null;
@@ -187,7 +192,22 @@ class TicketForm extends Component
     }
 
     /**
-     * Delete user ticket and refresh view.
+     * READ: Open ticket detail modal.
+     */
+    public function viewTicket(int $id): void
+    {
+        $this->viewingTicketId = $id;
+        $this->isDetailModalOpen = true;
+    }
+
+    public function closeDetailModal(): void
+    {
+        $this->isDetailModalOpen = false;
+        $this->viewingTicketId = null;
+    }
+
+    /**
+     * Delete user ticket and refresh view (Only if Pending / Belum di-acc admin).
      */
     public function deleteTicket(int $id): void
     {
@@ -203,15 +223,28 @@ class TicketForm extends Component
             })
             ->first();
 
-        if ($ticket) {
-            $ticket->delete();
-            session()->flash('ticket_deleted', 'Tiket berhasil dihapus.');
-            $this->dispatch('ticketDeleted', ticketId: $id);
+        if (! $ticket) {
+            return;
         }
+
+        // Syarat Mutlak: Laporan belum di-acc oleh admin
+        if ($ticket->status !== 'Pending') {
+            session()->flash('ticket_error', 'Laporan #'.$ticket->id.' tidak dapat dihapus karena sudah di-ACC dan diproses oleh admin.');
+
+            return;
+        }
+
+        $ticket->delete();
+        if ($this->viewingTicketId === $id) {
+            $this->closeDetailModal();
+        }
+
+        session()->flash('ticket_deleted', 'Laporan berhasil dihapus.');
+        $this->dispatch('ticketDeleted', ticketId: $id);
     }
 
     /**
-     * Open the edit modal with the selected ticket data.
+     * Open the edit modal with the selected ticket data (Only if Pending / Belum di-acc admin).
      */
     public function openEditModal(int $id): void
     {
@@ -231,6 +264,13 @@ class TicketForm extends Component
             return;
         }
 
+        // Syarat Mutlak: Laporan belum di-acc oleh admin
+        if ($ticket->status !== 'Pending') {
+            session()->flash('ticket_error', 'Laporan ini sudah di-ACC/diproses oleh admin sehingga tidak dapat diubah lagi.');
+
+            return;
+        }
+
         $this->editingTicketId = $ticket->id;
         $this->editTitle = $ticket->title;
         $this->editTargetDepartmentId = $ticket->target_department_id;
@@ -241,6 +281,8 @@ class TicketForm extends Component
         $this->existingPhotoUrl = $ticket->photo_url;
         $this->editPhoto = null;
         $this->removeExistingPhoto = false;
+
+        $this->isDetailModalOpen = false;
         $this->isEditModalOpen = true;
     }
 
@@ -311,6 +353,14 @@ class TicketForm extends Component
             ->first();
 
         if (! $ticket) {
+            return;
+        }
+
+        // Syarat Mutlak: Laporan belum di-acc oleh admin
+        if ($ticket->status !== 'Pending') {
+            session()->flash('ticket_error', 'Laporan tidak dapat diubah karena sudah di-ACC dan diproses oleh admin.');
+            $this->isEditModalOpen = false;
+
             return;
         }
 

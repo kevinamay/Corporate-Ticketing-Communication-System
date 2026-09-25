@@ -250,6 +250,11 @@
                         {{ session('ticket_deleted') }}
                     </span>
                 @endif
+                @if (session()->has('ticket_error'))
+                    <span class="text-xs text-rose-600 dark:text-rose-400 font-semibold bg-rose-50 dark:bg-rose-950/40 px-3 py-1 rounded-lg border border-rose-200 dark:border-rose-800 animate-fade-in">
+                        {{ session('ticket_error') }}
+                    </span>
+                @endif
             </div>
         </div>
 
@@ -308,26 +313,36 @@
                                 </span>
                             </td>
                             <td class="py-3 px-3.5 text-right whitespace-nowrap space-x-1 sm:space-x-2">
-                                <!-- Update/Edit Button -->
-                                <button type="button" 
-                                    wire:click="openEditModal({{ $ticket->id }})" 
-                                    class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-bold cursor-pointer transition inline-flex items-center gap-1 text-xs px-2 py-1 rounded hover:bg-blue-50 dark:hover:bg-blue-950/40">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                    </svg>
-                                    <span>{{ __('Edit') }}</span>
-                                </button>
+                                @if ($ticket->status === 'Pending')
+                                    <!-- Update/Edit Button (Belum di-acc Admin) -->
+                                    <button type="button" 
+                                        wire:click="openEditModal({{ $ticket->id }})" 
+                                        class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-bold cursor-pointer transition inline-flex items-center gap-1 text-xs px-2 py-1 rounded hover:bg-blue-50 dark:hover:bg-blue-950/40"
+                                        title="{{ __('Edit laporan (posisi belum di-acc admin)') }}">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                        </svg>
+                                        <span>{{ __('Edit') }}</span>
+                                    </button>
 
-                                <!-- Delete Button -->
-                                <button type="button" 
-                                    wire:click="deleteTicket({{ $ticket->id }})" 
-                                    wire:confirm="{{ __('Apakah Anda yakin ingin menghapus tiket ini secara permanen?') }}"
-                                    class="text-rose-500 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300 font-semibold cursor-pointer transition inline-flex items-center gap-1 text-xs px-2 py-1 rounded hover:bg-rose-50 dark:hover:bg-rose-950/40">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                    </svg>
-                                    <span>{{ __('Delete') }}</span>
-                                </button>
+                                    <!-- Delete Button (Belum di-acc Admin) -->
+                                    <button type="button" 
+                                        wire:click="deleteTicket({{ $ticket->id }})" 
+                                        wire:confirm="{{ __('Apakah Anda yakin ingin membatalkan & menghapus laporan ini?') }}"
+                                        class="text-rose-500 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300 font-semibold cursor-pointer transition inline-flex items-center gap-1 text-xs px-2 py-1 rounded hover:bg-rose-50 dark:hover:bg-rose-950/40"
+                                        title="{{ __('Hapus laporan (belum di-acc admin)') }}">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                        </svg>
+                                        <span>{{ __('Delete') }}</span>
+                                    </button>
+                                @else
+                                    <!-- Terkunci jika sudah di-acc admin -->
+                                    <span class="inline-flex items-center gap-1 text-[11px] text-slate-400 dark:text-slate-500 font-medium" title="{{ __('Laporan sudah di-acc oleh Admin sehingga tidak dapat diedit atau dihapus.') }}">
+                                        <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                                        <span>{{ __('Terkunci (Di-ACC Admin)') }}</span>
+                                    </span>
+                                @endif
                             </td>
                         </tr>
                     @empty
