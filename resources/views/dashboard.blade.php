@@ -101,17 +101,9 @@
         </div>
     </div>
 
-    <!-- Main Split-Screen Console: Left Form & Right Livewire Chat -->
-    <div id="split-screen" class="scroll-mt-24 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        <!-- Left/Center Card: Ticket Creation Component (7 Columns) -->
-        <div id="new-ticket" class="scroll-mt-24 lg:col-span-7">
-            <livewire:ticket-form />
-        </div>
-
-        <!-- Right Side Panel: Real-Time Communication / Chat Component (5 Columns) -->
-        <div id="chat-pane" class="scroll-mt-24 lg:col-span-5 h-full">
-            <livewire:ticket-chat />
-        </div>
+    <!-- Ticket Creation Component -->
+    <div id="new-ticket" class="scroll-mt-24">
+        <livewire:ticket-form />
     </div>
 
     <!-- Active Incident & Request Queue (TicketList Component) -->

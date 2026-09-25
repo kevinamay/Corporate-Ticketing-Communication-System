@@ -40,8 +40,8 @@
                 <svg class="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
                 <span>{{ session('handle_success') }}</span>
             </span>
-            <a href="#chat-pane" class="underline text-emerald-700 dark:text-emerald-400 hover:text-emerald-900 font-bold ml-2">
-                {{ __('Buka di Live Chat Desk &rarr;') }}
+            <a href="#queue" class="underline text-emerald-700 dark:text-emerald-400 hover:text-emerald-900 font-bold ml-2">
+                {{ __('Buka di Antrean Tiket &rarr;') }}
             </a>
         </div>
     @endif

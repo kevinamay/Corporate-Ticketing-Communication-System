@@ -189,16 +189,13 @@
                  x-transition:leave="transition ease-in duration-150"
                  x-transition:leave-start="opacity-100 translate-y-0"
                  x-transition:leave-end="opacity-0 -translate-y-2"
-                 class="bg-slate-900/95 backdrop-blur-md rounded-2xl p-4 border border-white/15 mb-4 grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs shadow-2xl" 
+                 class="bg-slate-900/95 backdrop-blur-md rounded-2xl p-4 border border-white/15 mb-4 grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs shadow-2xl" 
                  style="display: none;">
                 <a href="{{ url('/') }}" class="p-3 rounded-xl bg-white/10 text-white font-bold text-center hover:bg-blue-600 transition">
                     {{ __('Dashboard Utama') }}
                 </a>
                 <a href="#new-ticket" @click="mobileMenuOpen = false" class="p-3 rounded-xl bg-white/5 text-blue-200 font-bold text-center hover:bg-blue-600 hover:text-white transition">
                     {{ __('Form Buat Tiket') }}
-                </a>
-                <a href="#chat-pane" @click="mobileMenuOpen = false" class="p-3 rounded-xl bg-white/5 text-blue-200 font-bold text-center hover:bg-blue-600 hover:text-white transition">
-                    {{ __('Komunikasi Real-Time') }}
                 </a>
                 <a href="#queue" @click="mobileMenuOpen = false" class="p-3 rounded-xl bg-white/5 text-blue-200 font-bold text-center hover:bg-blue-600 hover:text-white transition">
                     {{ __('Daftar Antrean Tiket') }}
@@ -207,7 +204,7 @@
                     {{ __('Direktori Departemen') }}
                 </a>
                 @if (auth()->check() && (auth()->user()->email === 'siti.hrd@asiaplastik.com' || (int) auth()->user()->department_id === 2 || (int) auth()->user()->department_id === 4 || str_contains(strtolower(auth()->user()->department?->name ?? ''), 'hr')))
-                    <a href="{{ request()->is('/') ? '#hcm-master-section' : url('/#hcm-master-section') }}" @click="mobileMenuOpen = false" class="col-span-2 sm:col-span-5 p-3 rounded-xl bg-blue-600 text-white font-bold text-center hover:bg-blue-500 transition shadow-md">
+                    <a href="{{ request()->is('/') ? '#hcm-master-section' : url('/#hcm-master-section') }}" @click="mobileMenuOpen = false" class="col-span-2 sm:col-span-4 p-3 rounded-xl bg-blue-600 text-white font-bold text-center hover:bg-blue-500 transition shadow-md">
                         {{ __('🛡️ Master Data Karyawan & Upload CSV (HRD)') }}
                     </a>
                 @endif
@@ -286,11 +283,7 @@
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
                             <span>{{ __('Buat Tiket Dukungan') }}</span>
                         </a>
-                        <a href="#chat-pane" 
-                           class="px-5 py-3 rounded-xl bg-white/15 hover:bg-white/25 backdrop-blur-md text-white font-bold text-xs uppercase tracking-wider border border-white/25 transition flex items-center gap-2 cursor-pointer">
-                            <svg class="w-4 h-4 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
-                            <span>{{ __('Live Chat Desk') }}</span>
-                        </a>
+
                         <a href="#queue" 
                            class="px-4 py-3 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-md text-white/90 font-semibold text-xs tracking-wider border border-white/15 transition cursor-pointer">
                             {{ __('Antrean Tiket') }} ({{ \App\Models\Ticket::count() }})
