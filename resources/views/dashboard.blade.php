@@ -43,6 +43,27 @@
         </div>
     @endif
 
+    @guest
+        <div class="w-full bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 rounded-2xl p-4 sm:p-5 text-white shadow-xl border border-blue-800/40 relative overflow-hidden">
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="flex items-center gap-3.5">
+                    <div class="w-10 h-10 rounded-xl bg-blue-600/30 border border-blue-400/40 flex items-center justify-center shrink-0">
+                        <svg class="w-5 h-5 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-xs sm:text-sm font-bold text-white">{{ __('Anda Sedang Mengakses Sebagai Tamu (Belum Login)') }}</h3>
+                        <p class="text-[11px] text-blue-200 mt-0.5">{{ __('Modul Vault HRD (Tambah Karyawan & Upload CSV) khusus untuk Departemen HRD (Siti Rahmawati).') }}</p>
+                    </div>
+                </div>
+                <div class="shrink-0 flex items-center gap-2 w-full sm:w-auto">
+                    <a href="{{ route('login') }}" class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider text-center shadow-md transition">
+                        {{ __('Masuk Akun HRD &rarr;') }}
+                    </a>
+                </div>
+            </div>
+        </div>
+    @endguest
+
     <!-- Elevated KPI Metrics Strip -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <!-- 1. Tiket Aktif -->

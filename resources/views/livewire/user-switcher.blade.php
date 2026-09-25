@@ -216,6 +216,32 @@
                     <span>{{ __('Registrasi Akun Baru (KTP)') }}</span>
                 </a>
             </div>
+
+            <!-- Perspective Switcher (1-Klik Masuk Akun Demo untuk Pengujian) -->
+            @if ($users->count() > 0)
+                <div class="p-3 border-t border-gray-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+                    <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2">{{ __('Pilih Akun Demo (1-Klik Masuk):') }}</p>
+                    <div class="space-y-1.5 max-h-48 overflow-y-auto">
+                        @foreach ($users as $u)
+                            <button wire:click="switchUser({{ $u->id }})" type="button"
+                                class="w-full text-left p-2 rounded-lg flex items-center justify-between text-xs transition cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-950/60 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700">
+                                <div class="truncate">
+                                    <div class="flex items-center gap-1.5">
+                                        <p class="font-bold text-slate-800 dark:text-slate-100 truncate">{{ $u->name }}</p>
+                                        @if ((int) $u->department_id === 2 || (int) $u->department_id === 4 || str_contains(strtolower($u->department?->name ?? ''), 'hr'))
+                                            <span class="text-[9px] font-black uppercase px-1 py-0.2 rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">HRD</span>
+                                        @endif
+                                    </div>
+                                    <p class="text-[10px] text-blue-600 dark:text-blue-400 truncate">{{ $u->department?->name ?? 'Corporate' }}</p>
+                                </div>
+                                <span class="shrink-0 text-[9px] uppercase px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold border border-gray-200 dark:border-slate-700">
+                                    {{ $u->role }}
+                                </span>
+                            </button>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
         </div>
     @endif
 </div>

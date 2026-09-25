@@ -32,7 +32,7 @@ class UserSwitcher extends Component
     {
         $this->activeUserId = Auth::id() ?? session('active_user_id');
         $currentUser = $this->activeUserId ? User::with('department')->find($this->activeUserId) : null;
-        $users = $currentUser ? User::with('department')->get() : collect();
+        $users = User::with('department')->get();
 
         return view('livewire.user-switcher', [
             'users' => $users,
