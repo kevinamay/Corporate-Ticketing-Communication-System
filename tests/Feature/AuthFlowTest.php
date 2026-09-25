@@ -85,16 +85,15 @@ class AuthFlowTest extends TestCase
             ->set('otp5', $generatedOtp[4])
             ->set('otp6', $generatedOtp[5])
             ->call('verifyOtp')
-            ->assertRedirect(route('dashboard'));
+            ->assertRedirect(route('login'));
 
         // Refresh user from DB to verify verified status
         $user->refresh();
         $this->assertNotNull($user->email_verified_at);
         $this->assertNull($user->otp_code);
 
-        // Verify logged in
-        $this->assertTrue(Auth::check());
-        $this->assertEquals($user->id, Auth::id());
+        // Verify redirected back to login without auto-login per user requirement
+        $this->assertFalse(Auth::check());
     }
 
     public function test_login_with_ktp_and_email(): void

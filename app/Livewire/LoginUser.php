@@ -61,7 +61,7 @@ class LoginUser extends Component
             session(['active_user_id' => Auth::id()]);
             session(['auth.password_confirmed_at' => time()]);
 
-            $this->redirect('/', navigate: false);
+            $this->redirect(route('dashboard'), navigate: false);
             return;
         }
 

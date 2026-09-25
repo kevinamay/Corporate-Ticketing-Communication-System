@@ -191,21 +191,25 @@
                  x-transition:leave-end="opacity-0 -translate-y-2"
                  class="bg-slate-900/95 backdrop-blur-md rounded-2xl p-4 border border-white/15 mb-4 grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs shadow-2xl" 
                  style="display: none;">
-                <a href="{{ url('/') }}" class="p-3 rounded-xl bg-white/10 text-white font-bold text-center hover:bg-blue-600 transition">
+                <a href="{{ route('dashboard') }}" class="p-3 rounded-xl bg-white/10 text-white font-bold text-center hover:bg-blue-600 transition">
                     {{ __('Dashboard Utama') }}
                 </a>
-                <a href="#new-ticket" @click="mobileMenuOpen = false" class="p-3 rounded-xl bg-white/5 text-blue-200 font-bold text-center hover:bg-blue-600 hover:text-white transition">
-                    {{ __('Form Buat Tiket') }}
-                </a>
-                <a href="#queue" @click="mobileMenuOpen = false" class="p-3 rounded-xl bg-white/5 text-blue-200 font-bold text-center hover:bg-blue-600 hover:text-white transition">
-                    {{ __('Daftar Antrean Tiket') }}
-                </a>
-                <a href="#departments-list" @click="mobileMenuOpen = false" class="p-3 rounded-xl bg-white/5 text-blue-200 font-bold text-center hover:bg-blue-600 hover:text-white transition">
-                    {{ __('Direktori Departemen') }}
-                </a>
-                @if (auth()->check() && (auth()->user()->email === 'siti.hrd@asiaplastik.com' || (int) auth()->user()->department_id === 2 || (int) auth()->user()->department_id === 4 || str_contains(strtolower(auth()->user()->department?->name ?? ''), 'hr')))
-                    <a href="{{ request()->is('/') ? '#hcm-master-section' : url('/#hcm-master-section') }}" @click="mobileMenuOpen = false" class="col-span-2 sm:col-span-4 p-3 rounded-xl bg-blue-600 text-white font-bold text-center hover:bg-blue-500 transition shadow-md">
-                        {{ __('🛡️ Master Data Karyawan & Upload CSV (HRD)') }}
+                @if (auth()->check() && (auth()->user()->role === 'admin' || auth()->user()->email === 'siti.hrd@asiaplastik.com' || (int) auth()->user()->department_id === 2 || (int) auth()->user()->department_id === 4 || str_contains(strtolower(auth()->user()->department?->name ?? ''), 'hr')))
+                    <a href="#hcm-master-section" @click="mobileMenuOpen = false" class="col-span-2 sm:col-span-2 p-3 rounded-xl bg-blue-600 text-white font-bold text-center hover:bg-blue-500 transition shadow-md">
+                        {{ __('🛡️ Input Data Karyawan (HCM)') }}
+                    </a>
+                    <a href="#global-tickets" @click="mobileMenuOpen = false" class="col-span-2 sm:col-span-2 p-3 rounded-xl bg-white/10 text-white font-bold text-center hover:bg-blue-600 transition">
+                        {{ __('✉️ Jawab & Tangani Tiket Masuk') }}
+                    </a>
+                @else
+                    <a href="#new-ticket" @click="mobileMenuOpen = false" class="p-3 rounded-xl bg-white/5 text-blue-200 font-bold text-center hover:bg-blue-600 hover:text-white transition">
+                        {{ __('Form Buat Tiket') }}
+                    </a>
+                    <a href="#queue" @click="mobileMenuOpen = false" class="p-3 rounded-xl bg-white/5 text-blue-200 font-bold text-center hover:bg-blue-600 hover:text-white transition">
+                        {{ __('Daftar Antrean Tiket') }}
+                    </a>
+                    <a href="#departments-list" @click="mobileMenuOpen = false" class="p-3 rounded-xl bg-white/5 text-blue-200 font-bold text-center hover:bg-blue-600 hover:text-white transition">
+                        {{ __('Direktori Departemen') }}
                     </a>
                 @endif
 
@@ -215,7 +219,7 @@
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
                         @foreach($languages as $code => $lang)
                             <a href="{{ route('locale.switch', $code) }}" 
-                               class="py-2 px-2.5 rounded-lg text-center flex items-center justify-center gap-1.5 text-xs font-semibold transition {{ $currentLocale === $code ? 'bg-blue-600 text-white font-bold shadow-xs' : 'bg-white/10 text-slate-200 hover:bg-white/20' }}">
+                                class="py-2 px-2.5 rounded-lg text-center flex items-center justify-center gap-1.5 text-xs font-semibold transition {{ $currentLocale === $code ? 'bg-blue-600 text-white font-bold shadow-xs' : 'bg-white/10 text-slate-200 hover:bg-white/20' }}">
                                 <span class="text-sm leading-none">{{ $lang['flag'] }}</span>
                                 <span>{{ $lang['name'] }}</span>
                             </a>
@@ -278,21 +282,46 @@
                         <div class="w-full text-xs text-blue-200 font-medium mb-1">
                             {{ __('Sistem Ticketing & Komunikasi Antar-Departemen Terpadu') }}
                         </div>
-                        <a href="#new-ticket" 
-                           class="px-5 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs uppercase tracking-wider shadow-lg transition flex items-center gap-2 cursor-pointer">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
-                            <span>{{ __('Buat Tiket Dukungan') }}</span>
-                        </a>
+                        @php
+                            $userForHero = auth()->user();
+                            $isHeroAdmin = $userForHero && (
+                                $userForHero->role === 'admin' ||
+                                $userForHero->email === 'siti.hrd@asiaplastik.com' ||
+                                (int) $userForHero->department_id === 2 ||
+                                (int) $userForHero->department_id === 4 ||
+                                str_contains(strtolower($userForHero->department?->name ?? ''), 'hr')
+                            );
+                        @endphp
 
-                        <a href="#queue" 
-                           class="px-4 py-3 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-md text-white/90 font-semibold text-xs tracking-wider border border-white/15 transition cursor-pointer">
-                            {{ __('Antrean Tiket') }} ({{ \App\Models\Ticket::count() }})
-                        </a>
-                        <a href="#global-tickets" 
-                           class="px-4 py-3 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-md text-blue-200 hover:text-white font-semibold text-xs tracking-wider border border-white/15 transition cursor-pointer flex items-center gap-1.5">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>
-                            <span>{{ __('Tiket Global') }}</span>
-                        </a>
+                        @if ($isHeroAdmin)
+                            <a href="#hcm-master-section" 
+                               class="px-5 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs uppercase tracking-wider shadow-lg transition flex items-center gap-2 cursor-pointer">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                                <span>{{ __('Input Data Karyawan (HCM)') }}</span>
+                            </a>
+
+                            <a href="#global-tickets" 
+                               class="px-4 py-3 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-md text-white font-semibold text-xs tracking-wider border border-white/15 transition cursor-pointer flex items-center gap-2">
+                                <svg class="w-4 h-4 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                                <span>{{ __('Jawab & Tangani Tiket Masuk') }} ({{ \App\Models\Ticket::count() }})</span>
+                            </a>
+                        @else
+                            <a href="#new-ticket" 
+                               class="px-5 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs uppercase tracking-wider shadow-lg transition flex items-center gap-2 cursor-pointer">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+                                <span>{{ __('Buat Tiket Dukungan') }}</span>
+                            </a>
+
+                            <a href="#queue" 
+                               class="px-4 py-3 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-md text-white/90 font-semibold text-xs tracking-wider border border-white/15 transition cursor-pointer">
+                                {{ __('Antrean Tiket') }} ({{ \App\Models\Ticket::count() }})
+                            </a>
+                            <a href="#global-tickets" 
+                               class="px-4 py-3 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-md text-blue-200 hover:text-white font-semibold text-xs tracking-wider border border-white/15 transition cursor-pointer flex items-center gap-1.5">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>
+                                <span>{{ __('Tiket Global') }}</span>
+                            </a>
+                        @endif
                     </div>
                 </div>
             </div>

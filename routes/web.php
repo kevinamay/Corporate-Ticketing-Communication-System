@@ -4,10 +4,30 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('dashboard');
-})->name('dashboard');
+    $activeUser = Auth::user();
+    if (! $activeUser && session('active_user_id')) {
+        $activeUser = \App\Models\User::find(session('active_user_id'));
+        if ($activeUser) {
+            Auth::login($activeUser);
+        }
+    }
+
+    if (! Auth::check()) {
+        return redirect()->route('login');
+    }
+
+    return redirect()->route('dashboard');
+});
 
 Route::get('/login', function () {
+    $activeUser = Auth::user();
+    if (! $activeUser && session('active_user_id')) {
+        $activeUser = \App\Models\User::find(session('active_user_id'));
+        if ($activeUser) {
+            Auth::login($activeUser);
+        }
+    }
+
     if (Auth::check()) {
         return redirect()->route('dashboard');
     }
@@ -16,12 +36,36 @@ Route::get('/login', function () {
 })->name('login');
 
 Route::get('/register', function () {
+    $activeUser = Auth::user();
+    if (! $activeUser && session('active_user_id')) {
+        $activeUser = \App\Models\User::find(session('active_user_id'));
+        if ($activeUser) {
+            Auth::login($activeUser);
+        }
+    }
+
     if (Auth::check()) {
         return redirect()->route('dashboard');
     }
 
     return view('auth.register');
 })->name('register');
+
+Route::get('/dashboard', function () {
+    $activeUser = Auth::user();
+    if (! $activeUser && session('active_user_id')) {
+        $activeUser = \App\Models\User::find(session('active_user_id'));
+        if ($activeUser) {
+            Auth::login($activeUser);
+        }
+    }
+
+    if (! Auth::check()) {
+        return redirect()->route('login');
+    }
+
+    return view('dashboard');
+})->name('dashboard');
 
 Route::post('/logout', function () {
     Auth::logout();
@@ -36,7 +80,7 @@ Route::get('/reset-session', function () {
     request()->session()->invalidate();
     request()->session()->regenerateToken();
 
-    $response = redirect()->route('dashboard');
+    $response = redirect()->route('login');
 
     $cookiesToForget = [
         'corporate_ticketing_session',

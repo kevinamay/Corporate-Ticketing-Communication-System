@@ -300,12 +300,12 @@ class RegisterUser extends Component
                 'otp_code' => null,
             ]);
 
-            // Login user
-            Auth::login($user);
-            session(['active_user_id' => $user->id]);
+            // Sesuai alur pengguna: setelah verifikasi OTP selesai, arahkan kembali ke halaman login
+            Auth::logout();
+            session()->forget('active_user_id');
 
-            session()->flash('status', 'Registrasi dan verifikasi berhasil! Selamat datang di Portal Ticketing.');
-            $this->redirect(route('dashboard'), navigate: true);
+            session()->flash('status', 'Pendaftaran & verifikasi OTP berhasil! Silakan masuk menggunakan Nomor KTP atau Alamat Email Anda.');
+            $this->redirect(route('login'), navigate: false);
         } catch (\Throwable $e) {
             Log::error('Verifikasi OTP gagal: '.$e->getMessage());
             $this->errorMessage = 'Terjadi kesalahan saat memverifikasi OTP: '.$e->getMessage();

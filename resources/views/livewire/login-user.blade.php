@@ -109,7 +109,7 @@
         <!-- Footer -->
         <div class="bg-slate-50 dark:bg-slate-800/80 px-6 py-3 border-t border-gray-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-500">
             <span>&copy; {{ date('Y') }} PT. Asia Plastik</span>
-            <a href="{{ url('/') }}" class="hover:text-blue-600 dark:hover:text-blue-400 font-medium transition">&larr; {{ __('Kembali ke Beranda') }}</a>
+            <span class="font-medium text-slate-400 dark:text-slate-500">{{ __('Sistem Komunikasi & Tiket Internal') }}</span>
         </div>
 
     </div>

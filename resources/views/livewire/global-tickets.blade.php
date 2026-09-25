@@ -184,26 +184,28 @@
                         </td>
 
                         <!-- ======================================================== -->
-                        <!-- CONDITIONAL ACTION / AUTHORIZATION LOGIC (CRUCIAL) -->
+                        <!-- CONDITIONAL ACTION / AUTHORIZATION LOGIC -->
                         <!-- ======================================================== -->
                         <td class="py-3 px-3.5 text-right whitespace-nowrap">
-                            @if (auth()->check() && auth()->user()->department_id === $ticket->target_department_id)
-                                <!-- If TRUE (Authorized): Show a "Handle Ticket" or "Reply" button (bg-blue-600) -->
+                            @php
+                                $canHandle = $this->isAuthorizedForTicket(auth()->user(), $ticket);
+                            @endphp
+
+                            @if ($canHandle)
                                 <button type="button" 
                                         wire:click="handleTicket({{ $ticket->id }})" 
                                         class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-sm transition-all duration-150 cursor-pointer active:scale-95">
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
                                     </svg>
-                                    <span>{{ __('Handle Ticket') }}</span>
+                                    <span>{{ __('Jawab & Proses Tiket') }}</span>
                                 </button>
                             @else
-                                <!-- If FALSE (Unauthorized): Hide all action buttons. Instead, show a grey badge that says "View Only - Not Your Dept" (bg-gray-200 text-gray-600) -->
                                 <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-gray-200 text-gray-600 dark:bg-slate-700 dark:text-slate-300">
                                     <svg class="w-3 h-3 text-gray-400 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
                                     </svg>
-                                    <span>{{ __('View Only - Not Your Dept') }}</span>
+                                    <span>{{ __('View Only') }}</span>
                                 </span>
                             @endif
 
@@ -237,9 +239,13 @@
     </div>
 
     <!-- ========================================== -->
-    <!-- TICKET DETAIL MODAL (With Authorization Check) -->
+    <!-- TICKET DETAIL & ANSWERING MODAL -->
     <!-- ========================================== -->
     @if ($isDetailModalOpen && $viewingTicket)
+        @php
+            $isAuthorized = $this->isAuthorizedForTicket(auth()->user(), $viewingTicket);
+            $isSender = auth()->check() && (int) auth()->id() === (int) $viewingTicket->sender_id;
+        @endphp
         <div class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 sm:p-6"
              x-data
              x-init="$el.focus()"
@@ -279,7 +285,15 @@
                 </div>
 
                 <!-- Modal Body -->
-                <div class="flex-1 overflow-y-auto p-6 space-y-4 text-xs">
+                <div class="flex-1 overflow-y-auto p-6 space-y-5 text-xs">
+                    <!-- Flash Message inside Modal -->
+                    @if (session()->has('reply_success'))
+                        <div class="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 font-semibold flex items-center gap-2">
+                            <svg class="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                            <span>{{ session('reply_success') }}</span>
+                        </div>
+                    @endif
+
                     <!-- Ticket Meta Badges Grid -->
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700">
                         <div>
@@ -303,7 +317,7 @@
                     <!-- Detailed Description -->
                     <div>
                         <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">{{ __('Deskripsi Kendala') }}</h4>
-                        <div class="p-3.5 rounded-xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 leading-relaxed whitespace-pre-line shadow-2xs">
+                        <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-gray-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 leading-relaxed whitespace-pre-line shadow-2xs">
                             {{ $viewingTicket->description }}
                         </div>
                     </div>
@@ -314,43 +328,141 @@
                             <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">{{ __('Bukti Lampiran Foto') }}</h4>
                             <div class="p-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40 inline-block">
                                 <a href="{{ $viewingTicket->photo_url }}" target="_blank" rel="noopener noreferrer">
-                                    <img src="{{ $viewingTicket->photo_url }}" alt="Bukti Foto Kendala" class="max-h-64 rounded-lg object-contain border border-gray-300 dark:border-slate-600 hover:opacity-95 transition">
+                                    <img src="{{ $viewingTicket->photo_url }}" alt="Bukti Foto Kendala" class="max-h-56 rounded-lg object-contain border border-gray-300 dark:border-slate-600 hover:opacity-95 transition">
                                 </a>
                             </div>
                         </div>
                     @endif
+
+                    <!-- ============================================== -->
+                    <!-- RIWAYAT JAWABAN & TANGGAPAN TIKET (THREAD) -->
+                    <!-- ============================================== -->
+                    <div class="pt-3 border-t border-gray-100 dark:border-slate-800">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-3 flex items-center justify-between">
+                            <span>{{ __('Riwayat Jawaban & Tanggapan Masuk') }} ({{ $viewingTicket->messages->count() }})</span>
+                            <span class="text-[10px] text-slate-400 font-normal">{{ __('Pembaruan Langsung') }}</span>
+                        </h4>
+
+                        @if ($viewingTicket->messages->isEmpty())
+                            <div class="p-4 rounded-xl border border-dashed border-gray-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 text-center text-slate-400 dark:text-slate-500 text-xs">
+                                <p>{{ __('Belum ada jawaban atau tanggapan untuk tiket ini.') }}</p>
+                                @if ($isAuthorized)
+                                    <p class="text-[11px] text-blue-600 dark:text-blue-400 mt-1 font-semibold">{{ __('Tuliskan jawaban atau konfirmasi solusi pada formulir di bawah.') }}</p>
+                                @endif
+                            </div>
+                        @else
+                            <div class="space-y-3 max-h-60 overflow-y-auto pr-1">
+                                @foreach ($viewingTicket->messages as $msg)
+                                    @php
+                                        $isMsgFromSender = (int) $msg->user_id === (int) $viewingTicket->sender_id;
+                                    @endphp
+                                    <div class="p-3 rounded-xl border {{ $isMsgFromSender ? 'bg-slate-50 dark:bg-slate-800/50 border-gray-200 dark:border-slate-700' : 'bg-blue-50/70 dark:bg-blue-950/40 border-blue-200 dark:border-blue-900/60' }}">
+                                        <div class="flex items-center justify-between gap-2 mb-1">
+                                            <div class="flex items-center gap-2">
+                                                <span class="font-bold text-slate-900 dark:text-white text-xs">
+                                                    {{ $msg->user?->name ?? 'Pengguna' }}
+                                                </span>
+                                                <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold {{ $isMsgFromSender ? 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300' : 'bg-blue-600 text-white' }}">
+                                                    {{ $isMsgFromSender ? __('Pelapor') : ($msg->user?->role === 'admin' ? __('Admin') : __('Petugas / Dept')) }}
+                                                </span>
+                                            </div>
+                                            <span class="text-[10px] text-slate-400 dark:text-slate-500">
+                                                {{ $msg->created_at ? $msg->created_at->diffForHumans() : '-' }}
+                                            </span>
+                                        </div>
+                                        <p class="text-xs text-slate-700 dark:text-slate-200 whitespace-pre-line leading-relaxed">
+                                            {{ $msg->message }}
+                                        </p>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
+                    </div>
+
+                    <!-- ============================================== -->
+                    <!-- FORM MENJAWAB TIKET (KHUSUS ADMIN / DEPT TERKAIT) -->
+                    <!-- ============================================== -->
+                    @if ($isAuthorized || $isSender)
+                        <div class="pt-3 border-t border-gray-100 dark:border-slate-800">
+                            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2">
+                                {{ $isAuthorized ? __('Tulis Jawaban / Tanggapan Petugas:') : __('Kirim Balasan / Info Tambahan:') }}
+                            </h4>
+
+                            @if ($isAuthorized)
+                                <!-- Quick Status Switcher for Authorized Admin/Agents -->
+                                <div class="mb-3 flex flex-wrap items-center gap-2">
+                                    <span class="text-[11px] font-bold text-slate-500 dark:text-slate-400">{{ __('Perbarui Status:') }}</span>
+                                    <div class="flex items-center gap-1.5">
+                                        <button type="button" 
+                                                wire:click="updateTicketStatus({{ $viewingTicket->id }}, 'In Progress')" 
+                                                class="px-2.5 py-1 rounded-md text-[11px] font-semibold transition cursor-pointer {{ $viewingTicket->status === 'In Progress' ? 'bg-purple-600 text-white shadow-xs' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200' }}">
+                                            {{ __('Sedang Dikerjakan (In Progress)') }}
+                                        </button>
+                                        <button type="button" 
+                                                wire:click="updateTicketStatus({{ $viewingTicket->id }}, 'Resolved')" 
+                                                class="px-2.5 py-1 rounded-md text-[11px] font-semibold transition cursor-pointer {{ $viewingTicket->status === 'Resolved' ? 'bg-emerald-600 text-white shadow-xs' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200' }}">
+                                            {{ __('Selesai (Resolved)') }}
+                                        </button>
+                                        <button type="button" 
+                                                wire:click="updateTicketStatus({{ $viewingTicket->id }}, 'Pending')" 
+                                                class="px-2.5 py-1 rounded-md text-[11px] font-semibold transition cursor-pointer {{ $viewingTicket->status === 'Pending' ? 'bg-amber-500 text-white shadow-xs' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200' }}">
+                                            {{ __('Pending') }}
+                                        </button>
+                                    </div>
+                                </div>
+                            @endif
+
+                            <div class="space-y-2">
+                                <textarea wire:model="replyMessage" 
+                                          rows="3" 
+                                          placeholder="{{ $isAuthorized ? __('Tuliskan jawaban, arahan teknis, atau solusi penanganan kendala untuk pelapor...') : __('Kirim pesan tanggapan atau informasi tambahan untuk petugas...') }}" 
+                                          class="w-full text-xs p-3 rounded-xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition shadow-2xs"></textarea>
+                                @error('replyMessage') 
+                                    <p class="text-[11px] text-rose-600 dark:text-rose-400">{{ $message }}</p> 
+                                @enderror
+
+                                <div class="flex items-center justify-between pt-1">
+                                    <div class="flex items-center gap-2">
+                                        @if ($isAuthorized)
+                                            <select wire:model="ticketStatusToUpdate" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                                <option value="In Progress">{{ __('Status: In Progress') }}</option>
+                                                <option value="Resolved">{{ __('Status: Resolved (Selesai)') }}</option>
+                                                <option value="Pending">{{ __('Status: Pending') }}</option>
+                                            </select>
+                                        @endif
+                                    </div>
+
+                                    <button type="button" 
+                                            wire:click="sendTicketReply({{ $viewingTicket->id }})" 
+                                            wire:loading.attr="disabled"
+                                            class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-md transition cursor-pointer active:scale-95 disabled:opacity-50">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                                        </svg>
+                                        <span wire:loading.remove wire:target="sendTicketReply">{{ __('Kirim Tanggapan / Jawaban') }}</span>
+                                        <span wire:loading wire:target="sendTicketReply">{{ __('Mengirim...') }}</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    @else
+                        <div class="p-3 rounded-xl bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-400 text-xs flex items-center gap-2">
+                            <svg class="w-4 h-4 text-gray-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <span>{{ __('Anda melihat tiket ini dalam mode transparan (bukan departemen tujuan Anda).') }}</span>
+                        </div>
+                    @endif
                 </div>
 
-                <!-- Modal Footer with Authorization Check -->
-                <div class="px-6 py-4 border-t border-gray-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/70 dark:bg-slate-800/40 shrink-0">
+                <!-- Modal Footer -->
+                <div class="px-6 py-3 border-t border-gray-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/70 dark:bg-slate-800/40 shrink-0">
                     <button type="button" 
                             wire:click="closeDetailModal" 
                             class="px-4 py-2 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-300 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition cursor-pointer">
                         {{ __('Tutup') }}
                     </button>
-
-                    <!-- Exact Authorization Conditional in Detail Modal -->
-                    <div>
-                        @if (auth()->check() && auth()->user()->department_id === $viewingTicket->target_department_id)
-                            <!-- Authorized Action -->
-                            <button type="button" 
-                                    wire:click="handleTicket({{ $viewingTicket->id }})" 
-                                    class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-sm transition cursor-pointer">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
-                                </svg>
-                                <span>{{ __('Handle Ticket') }}</span>
-                            </button>
-                        @else
-                            <!-- Unauthorized Badge -->
-                            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-200 text-gray-600 dark:bg-slate-700 dark:text-slate-300">
-                                <svg class="w-3.5 h-3.5 text-gray-400 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-                                </svg>
-                                <span>{{ __('View Only - Not Your Dept') }}</span>
-                            </span>
-                        @endif
-                    </div>
+                    <span class="text-[11px] text-slate-400 dark:text-slate-500">
+                        {{ __('ID Tiket:') }} #{{ $viewingTicket->id }} &bull; {{ $viewingTicket->category }}
+                    </span>
                 </div>
 
             </div>

@@ -26,56 +26,42 @@ class GlobalTickets extends Component
 
     public bool $isDetailModalOpen = false;
 
+    public string $replyMessage = '';
+
+    public string $ticketStatusToUpdate = '';
+
     /**
-     * Reset pagination when search or filters change.
+     * Check if a user has authority to process, handle, or reply to a ticket.
+     * Admin and Siti (HRD) have global authority across all departments.
+     * Department agents have authority for tickets directed to their department.
      */
-    public function updatingSearch(): void
+    public function isAuthorizedForTicket(?\App\Models\User $user, ?Ticket $ticket): bool
     {
-        $this->resetPage();
-    }
-
-    public function updatingStatusFilter(): void
-    {
-        $this->resetPage();
-    }
-
-    public function updatingDepartmentFilter(): void
-    {
-        $this->resetPage();
-    }
-
-    public function updatingPriorityFilter(): void
-    {
-        $this->resetPage();
-    }
-
-    #[On('ticketCreated')]
-    public function onTicketCreated(int $ticketId): void
-    {
-        // Re-renders view automatically
-    }
-
-    #[On('ticketUpdated')]
-    public function onTicketUpdated(int $ticketId): void
-    {
-        // Re-renders view automatically
-    }
-
-    #[On('ticketDeleted')]
-    public function onTicketDeleted(int $ticketId): void
-    {
-        if ($this->viewingTicketId === $ticketId) {
-            $this->isDetailModalOpen = false;
-            $this->viewingTicketId = null;
+        if (! $user || ! $ticket) {
+            return false;
         }
+
+        // Global admin & HR authority
+        if (
+            $user->role === 'admin' ||
+            $user->email === 'siti.hrd@asiaplastik.com' ||
+            (int) $user->department_id === 2 ||
+            (int) $user->department_id === 4 ||
+            str_contains(strtolower($user->department?->name ?? ''), 'hr')
+        ) {
+            return true;
+        }
+
+        // Target department staff/agent
+        return (int) $user->department_id === (int) $ticket->target_department_id;
     }
 
     /**
-     * Handle/process a ticket if authorized for the current user's department.
+     * Handle/process a ticket if authorized for the current user's department or admin.
      */
     public function handleTicket(int $ticketId): void
     {
-        $user = Auth::user();
+        $user = Auth::user() ?? (session('active_user_id') ? \App\Models\User::find(session('active_user_id')) : null);
 
         if (! $user) {
             session()->flash('unauthorized_error', 'Silakan login terlebih dahulu untuk memproses tiket.');
@@ -89,8 +75,8 @@ class GlobalTickets extends Component
             return;
         }
 
-        // Strict Authorization Check: User's department must match target department
-        if ((int) $user->department_id !== (int) $ticket->target_department_id) {
+        // Authorization Check
+        if (! $this->isAuthorizedForTicket($user, $ticket)) {
             session()->flash('unauthorized_error', 'Akses ditolak: Anda hanya dapat memproses tiket yang ditujukan untuk departemen Anda.');
 
             return;
@@ -102,13 +88,86 @@ class GlobalTickets extends Component
             $this->dispatch('ticketUpdated', ticketId: $ticket->id);
         }
 
-        // Dispatch selection to chat pane
-        $this->dispatch('ticketSelected', ticketId: $ticket->id);
+        $this->viewingTicketId = $ticket->id;
+        $this->ticketStatusToUpdate = $ticket->status;
+        $this->isDetailModalOpen = true;
 
-        session()->flash('handle_success', "Tiket #{$ticket->id} berhasil diambil dan kini sedang ditangani oleh divisi Anda.");
+        session()->flash('handle_success', "Tiket #{$ticket->id} berhasil diambil untuk penanganan. Anda dapat menulis jawaban atau solusi di bawah.");
+    }
 
-        if ($this->isDetailModalOpen) {
-            $this->isDetailModalOpen = false;
+    /**
+     * Send reply / answer to the ticket.
+     */
+    public function sendTicketReply(int $ticketId): void
+    {
+        $user = Auth::user() ?? (session('active_user_id') ? \App\Models\User::find(session('active_user_id')) : null);
+
+        if (! $user) {
+            session()->flash('unauthorized_error', 'Silakan login terlebih dahulu untuk menjawab tiket.');
+
+            return;
+        }
+
+        $ticket = Ticket::find($ticketId);
+
+        if (! $ticket) {
+            return;
+        }
+
+        if (! $this->isAuthorizedForTicket($user, $ticket) && $ticket->sender_id !== $user->id) {
+            session()->flash('unauthorized_error', 'Akses ditolak untuk menjawab tiket ini.');
+
+            return;
+        }
+
+        $this->validate([
+            'replyMessage' => 'required|string|min:2|max:2000',
+        ], [
+            'replyMessage.required' => 'Pesan jawaban / tanggapan wajib diisi.',
+            'replyMessage.min' => 'Pesan jawaban minimal 2 karakter.',
+        ]);
+
+        // Create message response
+        \App\Models\Message::create([
+            'ticket_id' => $ticket->id,
+            'user_id' => $user->id,
+            'message' => trim($this->replyMessage),
+        ]);
+
+        // Update status if selected
+        if (! empty($this->ticketStatusToUpdate) && in_array($this->ticketStatusToUpdate, ['Pending', 'Open', 'In Progress', 'Resolved'], true)) {
+            $ticket->update(['status' => $this->ticketStatusToUpdate]);
+        }
+
+        $this->replyMessage = '';
+        $this->dispatch('ticketUpdated', ticketId: $ticket->id);
+        session()->flash('reply_success', 'Tanggapan / jawaban berhasil dikirim ke pelapor!');
+    }
+
+    /**
+     * Quick status update for ticket.
+     */
+    public function updateTicketStatus(int $ticketId, string $status): void
+    {
+        $user = Auth::user() ?? (session('active_user_id') ? \App\Models\User::find(session('active_user_id')) : null);
+
+        if (! $user) {
+            return;
+        }
+
+        $ticket = Ticket::find($ticketId);
+
+        if (! $ticket || ! $this->isAuthorizedForTicket($user, $ticket)) {
+            session()->flash('unauthorized_error', 'Akses ditolak.');
+
+            return;
+        }
+
+        if (in_array($status, ['Pending', 'Open', 'In Progress', 'Resolved'], true)) {
+            $ticket->update(['status' => $status]);
+            $this->ticketStatusToUpdate = $status;
+            $this->dispatch('ticketUpdated', ticketId: $ticket->id);
+            session()->flash('reply_success', "Status tiket #{$ticket->id} berhasil diubah menjadi {$status}.");
         }
     }
 
@@ -118,6 +177,9 @@ class GlobalTickets extends Component
     public function viewTicketDetail(int $ticketId): void
     {
         $this->viewingTicketId = $ticketId;
+        $ticket = Ticket::find($ticketId);
+        $this->ticketStatusToUpdate = $ticket?->status ?? 'In Progress';
+        $this->replyMessage = '';
         $this->isDetailModalOpen = true;
     }
 
@@ -128,6 +190,8 @@ class GlobalTickets extends Component
     {
         $this->isDetailModalOpen = false;
         $this->viewingTicketId = null;
+        $this->replyMessage = '';
+        $this->ticketStatusToUpdate = '';
     }
 
     public function render(): View
