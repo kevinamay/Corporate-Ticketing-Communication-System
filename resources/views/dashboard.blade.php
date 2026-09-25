@@ -139,7 +139,7 @@
                     <span>{{ __('Buat Tiket Baru') }}</span>
                 </a>
                 <a href="#queue" class="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition border border-white/20">
-                    {{ __('Tiket Saya') }}
+                    {{ __('Daftar Tiket') }}
                 </a>
             </div>
         </div>
