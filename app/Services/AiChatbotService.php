@@ -180,41 +180,47 @@ class AiChatbotService
                 'Content-Type' => 'application/json',
                 'x-goog-api-key' => $apiKey,
             ];
-            if (str_starts_with($apiKey, 'AQ.')) {
-                $headers['Authorization'] = 'Bearer '.$apiKey;
-            }
 
-            $response = Http::withHeaders($headers)
-                ->timeout(12)
-                ->post($url, [
-                    'system_instruction' => [
-                        'parts' => [['text' => $systemInstruction]],
-                    ],
-                    'contents' => $contents,
-                    'generationConfig' => [
-                        'temperature' => 0.7,
-                        'maxOutputTokens' => 1000,
-                    ],
-                ]);
+            $primaryModel = env('GEMINI_MODEL', 'gemini-3.5-flash-lite');
+            $candidateModels = array_unique([$primaryModel, 'gemini-3.5-flash-lite', 'gemini-3.8-flash', 'gemini-3.5-flash']);
 
-            if ($response->successful()) {
-                $data = $response->json();
-                $reply = $data['candidates'][0]['content']['parts'][0]['text'] ?? null;
-                if (! empty($reply)) {
-                    return trim($reply);
+            foreach ($candidateModels as $model) {
+                $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}";
+
+                $response = Http::withHeaders($headers)
+                    ->timeout(15)
+                    ->post($url, [
+                        'system_instruction' => [
+                            'parts' => [['text' => $systemInstruction]],
+                        ],
+                        'contents' => $contents,
+                        'generationConfig' => [
+                            'temperature' => 0.7,
+                            'maxOutputTokens' => 1000,
+                        ],
+                    ]);
+
+                if ($response->successful()) {
+                    $data = $response->json();
+                    $reply = $data['candidates'][0]['content']['parts'][0]['text'] ?? null;
+                    if (! empty($reply)) {
+                        return trim($reply);
+                    }
                 }
-            } else {
+
                 $status = $response->status();
                 $body = $response->body();
-                Log::warning("Gemini API call returned {$status}: {$body}");
 
                 if ($status === 401 && str_contains($body, 'API_KEY_SERVICE_BLOCKED')) {
                     $localAnswer = $this->generateLocalAiResponse($message);
 
                     return $localAnswer."\n\n---\n"
-                        ."⚠️ *Catatan API:* Kunci Google Gemini Anda (`projects/1047436826775`) belum mengaktifkan izin *Generative Language API* di Google Cloud Console.\n\n"
+                        ."⚠️ *Catatan API:* Kunci Google Gemini Anda belum mengaktifkan izin *Generative Language API* di Google Cloud Console.\n\n"
                         ."Agar terhubung penuh dengan AI Generatif tanpa batasan, buat kunci baru di [Google AI Studio](https://aistudio.google.com/app/apikey) dengan opsi **'Create in new project'**.";
                 }
+
+                // If 404 (model deprecated/not found) or 503 (high demand), continue to next model
+                Log::info("Gemini model {$model} returned {$status}, trying next fallback model...");
             }
         } catch (\Throwable $e) {
             Log::warning('Gemini API call failed: '.$e->getMessage());
@@ -455,7 +461,7 @@ PROMPT;
         }
 
         // 6. IT Department & Technical Support
-        if (str_contains($lower, 'it') || str_contains($lower, 'jaringan') || str_contains($lower, 'wifi') || str_contains($lower, 'komputer') || str_contains($lower, 'internet') || str_contains($lower, 'password') || str_contains($lower, 'login')) {
+        if (preg_match('/\b(it|it support|helpdesk it)\b/i', $query) || str_contains($lower, 'jaringan') || str_contains($lower, 'wifi') || str_contains($lower, 'komputer') || str_contains($lower, 'internet') || str_contains($lower, 'password') || str_contains($lower, 'login')) {
             return "💻 **Bantuan Divisi Information Technology (IT):**\n\n"
                 ."Divisi IT siap melayani kendala:\n"
                 ."• **Jaringan & Internet:** Koneksi LAN terputus, Wi-Fi pabrik lambat, VPN kantor.\n"
@@ -466,7 +472,7 @@ PROMPT;
         }
 
         // 7. HR, GA & K3 (Safety)
-        if (str_contains($lower, 'hr') || str_contains($lower, 'ga') || str_contains($lower, 'k3') || str_contains($lower, 'keselamatan') || str_contains($lower, 'apd') || str_contains($lower, 'shift') || str_contains($lower, 'lembur')) {
+        if (preg_match('/\b(hr|ga|k3)\b/i', $query) || str_contains($lower, 'keselamatan') || str_contains($lower, 'apd') || str_contains($lower, 'shift') || str_contains($lower, 'lembur')) {
             return "🦺 **Informasi HR, GA & K3 (Keselamatan Kerja):**\n\n"
                 ."• **Keselamatan Kerja (K3) adalah Prioritas Utama:** Seluruh staf di area pabrik wajib mengenakan Safety Shoes, Earplug, dan Rompi APD.\n"
                 ."• **Jadwal Shift Pabrik:**\n"
@@ -477,7 +483,7 @@ PROMPT;
         }
 
         // 8. Quality Control (QC)
-        if (str_contains($lower, 'qc') || str_contains($lower, 'quality') || str_contains($lower, 'kualitas') || str_contains($lower, 'cacat') || str_contains($lower, 'defect') || str_contains($lower, 'reject')) {
+        if (preg_match('/\b(qc)\b/i', $query) || str_contains($lower, 'quality') || str_contains($lower, 'kualitas') || str_contains($lower, 'cacat') || str_contains($lower, 'defect') || str_contains($lower, 'reject')) {
             return "🔍 **Bantuan Departemen Quality Control (QC):**\n\n"
                 ."Jika Anda menemukan lot produksi dengan angka reject tinggi:\n"
                 ."1. Segera beri tanda isolasi / label **HOLD** pada pallet produk.\n"
