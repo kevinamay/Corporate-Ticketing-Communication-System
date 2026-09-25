@@ -176,16 +176,26 @@ class AiChatbotService
                 'parts' => [['text' => $message]],
             ];
 
-            $response = Http::timeout(12)->post($url, [
-                'system_instruction' => [
-                    'parts' => [['text' => $systemInstruction]],
-                ],
-                'contents' => $contents,
-                'generationConfig' => [
-                    'temperature' => 0.7,
-                    'maxOutputTokens' => 1000,
-                ],
-            ]);
+            $headers = [
+                'Content-Type' => 'application/json',
+                'x-goog-api-key' => $apiKey,
+            ];
+            if (str_starts_with($apiKey, 'AQ.')) {
+                $headers['Authorization'] = 'Bearer '.$apiKey;
+            }
+
+            $response = Http::withHeaders($headers)
+                ->timeout(12)
+                ->post($url, [
+                    'system_instruction' => [
+                        'parts' => [['text' => $systemInstruction]],
+                    ],
+                    'contents' => $contents,
+                    'generationConfig' => [
+                        'temperature' => 0.7,
+                        'maxOutputTokens' => 1000,
+                    ],
+                ]);
 
             if ($response->successful()) {
                 $data = $response->json();
@@ -194,7 +204,17 @@ class AiChatbotService
                     return trim($reply);
                 }
             } else {
-                Log::warning('Gemini API call returned non-200: '.$response->body());
+                $status = $response->status();
+                $body = $response->body();
+                Log::warning("Gemini API call returned {$status}: {$body}");
+
+                if ($status === 401 && str_contains($body, 'API_KEY_SERVICE_BLOCKED')) {
+                    $localAnswer = $this->generateLocalAiResponse($message);
+
+                    return $localAnswer."\n\n---\n"
+                        ."⚠️ *Catatan API:* Kunci Google Gemini Anda (`projects/1047436826775`) belum mengaktifkan izin *Generative Language API* di Google Cloud Console.\n\n"
+                        ."Agar terhubung penuh dengan AI Generatif tanpa batasan, buat kunci baru di [Google AI Studio](https://aistudio.google.com/app/apikey) dengan opsi **'Create in new project'**.";
+                }
             }
         } catch (\Throwable $e) {
             Log::warning('Gemini API call failed: '.$e->getMessage());
@@ -484,7 +504,26 @@ PROMPT;
                 ."• **Operasional:** 24 Jam Non-Stop (3 Shift) dengan standar manajemen mutu bersertifikasi ISO.";
         }
 
-        // 10. Greetings & Friendly chat
+        // 10. Date, Time & Calendar Inquiries
+        if (str_contains($lower, 'hari ini') || str_contains($lower, 'sekarang hari') || str_contains($lower, 'hari apa') || str_contains($lower, 'tanggal berapa') || str_contains($lower, 'jam berapa')) {
+            $now = now()->locale('id');
+            $hariTanggal = $now->translatedFormat('l, d F Y');
+            $jam = $now->translatedFormat('H:i');
+
+            return "📅 Hari ini adalah hari **{$hariTanggal}**, waktu saat ini menunjukkan pukul **{$jam} WIB**.\n\n"
+                ."Operasional pabrik dan lini produksi PT. Asia Plastik sedang berjalan aktif. Ada informasi tiket atau kendala operasional yang perlu dibantu? 😊";
+        }
+
+        // 11. Bot Identity & Who are you
+        if (str_contains($lower, 'siapa kamu') || str_contains($lower, 'kamu siapa') || str_contains($lower, 'nama kamu') || str_contains($lower, 'tentang kamu')) {
+            return "Saya adalah **AsiaBot** 🤖, asisten kecerdasan buatan resmi dari **PT. Asia Plastik**.\n\n"
+                ."Saya bertugas mendampingi seluruh staf dan karyawan dalam:\n"
+                ."• Pembuatan dan pemantauan tiket dukungan (IT, Maintenance, QC, HR, Produksi)\n"
+                ."• Panduan teknis troubleshooting mesin Injection & Blow Molding\n"
+                ."• Menjawab pertanyaan santai, rekomendasi, hingga konsultasi operasional pabrik 24/7!";
+        }
+
+        // 12. Greetings & Friendly chat
         if (str_contains($lower, 'halo') || str_contains($lower, 'hai') || str_contains($lower, 'hello') || str_contains($lower, 'selamat pagi') || str_contains($lower, 'selamat siang') || str_contains($lower, 'selamat malam')) {
             return "Halo! 👋 Senang bertemu dengan Anda. Saya **AsiaBot**, asisten AI PT. Asia Plastik.\n\n"
                 ."Ada yang bisa saya bantu hari ini? Anda bisa berkonsultasi tentang operasional pabrik, pembuatan tiket, ataupun ngobrol santai!";
