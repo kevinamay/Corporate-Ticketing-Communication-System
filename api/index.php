@@ -52,6 +52,21 @@ if (! file_exists($tmpDb) || filesize($tmpDb) === 0) {
 }
 @chmod($tmpDb, 0666);
 
+// Ensure /tmp/database.sqlite schema is always up to date
+if (file_exists($tmpDb) && filesize($tmpDb) > 0) {
+    try {
+        $sqlitePdo = new PDO("sqlite:{$tmpDb}");
+        $sqlitePdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_SILENT);
+        $cols = $sqlitePdo->query("PRAGMA table_info(messages)")->fetchAll(PDO::FETCH_ASSOC);
+        $colNames = array_column($cols, 'name');
+        if (! empty($cols) && ! in_array('photo_path', $colNames, true)) {
+            $sqlitePdo->exec("ALTER TABLE messages ADD COLUMN photo_path TEXT NULL");
+        }
+    } catch (\Throwable $e) {
+        // Silently continue
+    }
+}
+
 // 4. Ensure essential environment variables have valid non-empty defaults
 $resendSecret = getenv('RESEND_API_KEY') ?: base64_decode('cmVfaGdhWXNGbzVfNXBINEdIQnRBRjVCUnhIcEhRQkJtQTh5');
 

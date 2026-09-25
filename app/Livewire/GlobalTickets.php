@@ -6,7 +6,9 @@ use App\Models\Department;
 use App\Models\Ticket;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -147,13 +149,30 @@ class GlobalTickets extends Component
             }
         }
 
-        // Create message response
-        \App\Models\Message::create([
+        $messageData = [
             'ticket_id' => $ticket->id,
             'user_id' => $user->id,
             'message' => trim($this->replyMessage),
-            'photo_path' => $photoPath,
-        ]);
+        ];
+
+        // Ensure schema compatibility with serverless SQLite
+        try {
+            if (Schema::hasColumn('messages', 'photo_path')) {
+                $messageData['photo_path'] = $photoPath;
+            } else {
+                try {
+                    DB::statement('ALTER TABLE messages ADD COLUMN photo_path TEXT NULL');
+                    $messageData['photo_path'] = $photoPath;
+                } catch (\Throwable $ex) {
+                    // Ignore and save without photo_path to prevent 500 error
+                }
+            }
+        } catch (\Throwable $e) {
+            $messageData['photo_path'] = $photoPath;
+        }
+
+        // Create message response
+        \App\Models\Message::create($messageData);
 
         // Update status if selected
         if (! empty($this->ticketStatusToUpdate) && in_array($this->ticketStatusToUpdate, ['Pending', 'Open', 'In Progress', 'Resolved'], true)) {
