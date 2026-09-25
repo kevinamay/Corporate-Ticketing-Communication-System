@@ -44,17 +44,22 @@ class LoginUser extends Component
 
         $input = trim($this->login_id);
 
-        // Detect whether input is an email or national_id_ktp
-        $fieldType = filter_var($input, FILTER_VALIDATE_EMAIL) ? 'email' : 'national_id_ktp';
+        // Detect whether input is an email or national_id_ktp / ktp_number
+        $isEmail = filter_var($input, FILTER_VALIDATE_EMAIL);
 
-        $credentials = [
-            $fieldType => $input,
-            'password' => $this->password,
-        ];
+        $authenticated = false;
 
-        if (Auth::attempt($credentials, $this->remember)) {
+        if ($isEmail) {
+            $authenticated = Auth::attempt(['email' => $input, 'password' => $this->password], $this->remember);
+        } else {
+            $authenticated = Auth::attempt(['ktp_number' => $input, 'password' => $this->password], $this->remember)
+                || Auth::attempt(['national_id_ktp' => $input, 'password' => $this->password], $this->remember);
+        }
+
+        if ($authenticated) {
             session()->regenerate();
             session(['active_user_id' => Auth::id()]);
+            session(['auth.password_confirmed_at' => time()]);
 
             return redirect()->intended(route('dashboard'));
         }

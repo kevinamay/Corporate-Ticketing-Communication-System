@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Department;
+use App\Models\EmployeeMasterData;
 use App\Models\Message;
 use App\Models\Ticket;
 use App\Models\User;
@@ -153,6 +154,37 @@ class DatabaseSeeder extends Seeder
                 'email_verified_at' => now(),
                 'avatar' => 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
             ]
+        );
+
+        // 4. Buat Master Data Karyawan (HCM Core Master Data)
+        EmployeeMasterData::updateOrCreate(
+            ['ktp_number' => '3578015507940002'],
+            ['name' => 'Siti Rahmawati', 'department_id' => $hrDept->id]
+        );
+
+        EmployeeMasterData::updateOrCreate(
+            ['ktp_number' => '3578011203900001'],
+            ['name' => 'Budi Pratama', 'department_id' => $itDept->id]
+        );
+
+        EmployeeMasterData::updateOrCreate(
+            ['ktp_number' => '3578012408880003'],
+            ['name' => 'Agus Santoso', 'department_id' => $maintDept->id]
+        );
+
+        EmployeeMasterData::updateOrCreate(
+            ['ktp_number' => '3578011805850004'],
+            ['name' => 'Hendra Wijaya', 'department_id' => $prodDept->id]
+        );
+
+        EmployeeMasterData::updateOrCreate(
+            ['ktp_number' => '3578016609950005'],
+            ['name' => 'Dewi Lestari', 'department_id' => $logDept->id]
+        );
+
+        EmployeeMasterData::updateOrCreate(
+            ['ktp_number' => '3578010502930006'],
+            ['name' => 'Rian Hidayat', 'department_id' => $prodDept->id]
         );
 
         // Catatan: Tidak ada tiket dummy atau pesan dummy yang dibuat di sini.

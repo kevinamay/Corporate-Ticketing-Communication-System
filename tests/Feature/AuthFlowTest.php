@@ -25,6 +25,13 @@ class AuthFlowTest extends TestCase
         $testKtp = '3578'.str_pad((string) random_int(100000000000, 999999999999), 12, '0', STR_PAD_LEFT);
         $testEmail = 'test_'.uniqid().'@asiaplastik.com';
 
+        // Seed EmployeeMasterData so Gatekeeper allows registration
+        \App\Models\EmployeeMasterData::create([
+            'ktp_number' => $testKtp,
+            'name' => 'Budi Santoso',
+            'department_id' => $dept->id,
+        ]);
+
         // 1. Submit Registration Form
         $testComponent = Livewire::test(RegisterUser::class)
             ->set('name', 'Budi Santoso')

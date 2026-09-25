@@ -82,3 +82,39 @@ Route::get('/set-locale/{locale}', function (string $locale) {
     return redirect()->route('dashboard')->withCookie($cookie);
 })->name('locale.switch');
 
+// ========================================================
+// PASSWORD CONFIRMATION (Required for password.confirm middleware)
+// ========================================================
+Route::get('/confirm-password', function () {
+    return view('auth.confirm-password');
+})->middleware('auth')->name('password.confirm');
+
+Route::post('/confirm-password', function (\Illuminate\Http\Request $request) {
+    $request->validate([
+        'password' => ['required', 'string'],
+    ]);
+
+    if (! \Illuminate\Support\Facades\Hash::check($request->password, $request->user()->password)) {
+        throw \Illuminate\Validation\ValidationException::withMessages([
+            'password' => ['Password yang Anda masukkan tidak cocok dengan sistem.'],
+        ]);
+    }
+
+    $request->session()->put('auth.password_confirmed_at', time());
+
+    return redirect()->intended(route('hcm.employees.master'));
+})->middleware('auth')->name('password.confirm.store');
+
+// ========================================================
+// MODULE 3: THE VAULT - SECURE HRD MASTER DATA DASHBOARD
+// Route: /hcm-core/employees-master (DO NOT use 'admin')
+// Middleware: ['auth', 'password.confirm', EnsureHrDepartment]
+// ========================================================
+Route::get('/hcm-core/employees-master', function () {
+    return view('hcm.employees');
+})->middleware([
+    'auth',
+    'password.confirm',
+    \App\Http\Middleware\EnsureHrDepartment::class,
+])->name('hcm.employees.master');
+

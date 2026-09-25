@@ -16,6 +16,7 @@ use Illuminate\Notifications\Notifiable;
     'name',
     'email',
     'password',
+    'ktp_number',
     'national_id_ktp',
     'gender',
     'whatsapp_number',
@@ -42,6 +43,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'ktp_number',
         'national_id_ktp',
         'gender',
         'whatsapp_number',
@@ -64,6 +66,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'department_id' => 'integer',
         ];
     }
 

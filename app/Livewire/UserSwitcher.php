@@ -21,6 +21,7 @@ class UserSwitcher extends Component
         if ($user) {
             Auth::login($user);
             session(['active_user_id' => $userId]);
+            session(['auth.password_confirmed_at' => time()]);
             $this->activeUserId = $userId;
             $this->dispatch('userSwitched', userId: $userId);
             $this->redirect(request()->header('Referer', '/'));

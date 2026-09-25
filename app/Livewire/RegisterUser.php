@@ -32,6 +32,8 @@ class RegisterUser extends Component
 
     public string $national_id_ktp = '';
 
+    public string $ktp_number = '';
+
     public string $gender = 'male';
 
     public string $whatsapp_number = '';
@@ -107,8 +109,19 @@ class RegisterUser extends Component
         ];
     }
 
+    public function updatedNationalIdKtp($value): void
+    {
+        $this->ktp_number = (string) $value;
+    }
+
+    public function updatedKtpNumber($value): void
+    {
+        $this->national_id_ktp = (string) $value;
+    }
+
     public function mount(): void
     {
+        $this->ktp_number = $this->national_id_ktp;
         $firstDept = Department::first();
         if ($firstDept) {
             $this->department_id = $firstDept->id;
@@ -131,12 +144,34 @@ class RegisterUser extends Component
             }
         }
 
+        // Synchronize KTP values
+        $cleanKtp = trim($this->ktp_number !== '' ? $this->ktp_number : $this->national_id_ktp);
+        $this->national_id_ktp = $cleanKtp;
+        $this->ktp_number = $cleanKtp;
+
+        // MODULE 2 STRICT VALIDATION: Query employee_master_data table using ktp_number
+        $employeeMaster = \App\Models\EmployeeMasterData::where('ktp_number', $cleanKtp)->first();
+
+        if (! $employeeMaster) {
+            $hrdError = 'NIK/KTP tidak terdaftar di sistem HRD.';
+            $this->addError('national_id_ktp', $hrdError);
+            $this->addError('ktp_number', $hrdError);
+            $this->errorMessage = $hrdError;
+
+            throw ValidationException::withMessages([
+                'national_id_ktp' => [$hrdError],
+                'ktp_number' => [$hrdError],
+            ]);
+        }
+
+        // Auto-assign the department_id from employee_master_data
+        $this->department_id = (int) $employeeMaster->department_id;
+
         // Validate basic rules
         $this->validate();
 
         try {
             $cleanEmail = strtolower(trim($this->email));
-            $cleanKtp = trim($this->national_id_ktp);
 
             // 2. Check if verified user already exists with email or KTP
             $userByEmail = User::where('email', $cleanEmail)->first();
@@ -146,7 +181,10 @@ class RegisterUser extends Component
                 return;
             }
 
-            $userByKtp = User::where('national_id_ktp', $cleanKtp)->first();
+            $userByKtp = User::where('ktp_number', $cleanKtp)
+                ->orWhere('national_id_ktp', $cleanKtp)
+                ->first();
+
             if ($userByKtp && $userByKtp->email_verified_at !== null) {
                 $this->addError('national_id_ktp', 'Nomor KTP ini telah terdaftar dan aktif. Silakan masuk melalui halaman login.');
 
@@ -170,19 +208,20 @@ class RegisterUser extends Component
                 $avatarUrl = 'https://ui-avatars.com/api/?name='.urlencode($this->name).'&background=0284c7&color=fff';
             }
 
-            // 5. Create or update unverified user
+            // 5. Create or update unverified user with auto-assigned department_id from employee_master_data
             $targetUser = $userByEmail ?: $userByKtp;
             if ($targetUser) {
                 $targetUser->update([
                     'name' => trim($this->name),
                     'email' => $cleanEmail,
                     'password' => $this->password,
+                    'ktp_number' => $cleanKtp,
                     'national_id_ktp' => $cleanKtp,
                     'gender' => $this->gender,
                     'whatsapp_number' => trim($this->whatsapp_number),
                     'complete_address' => trim($this->complete_address),
                     'postal_code' => trim($this->postal_code),
-                    'department_id' => $this->department_id,
+                    'department_id' => $employeeMaster->department_id,
                     'avatar' => $avatarUrl,
                     'otp_code' => $otpCode,
                     'email_verified_at' => null,
@@ -193,12 +232,13 @@ class RegisterUser extends Component
                     'name' => trim($this->name),
                     'email' => $cleanEmail,
                     'password' => $this->password,
+                    'ktp_number' => $cleanKtp,
                     'national_id_ktp' => $cleanKtp,
                     'gender' => $this->gender,
                     'whatsapp_number' => trim($this->whatsapp_number),
                     'complete_address' => trim($this->complete_address),
                     'postal_code' => trim($this->postal_code),
-                    'department_id' => $this->department_id,
+                    'department_id' => $employeeMaster->department_id,
                     'avatar' => $avatarUrl,
                     'otp_code' => $otpCode,
                     'email_verified_at' => null,

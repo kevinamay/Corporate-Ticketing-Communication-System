@@ -25,6 +25,18 @@ class Ticket extends Model
     use HasFactory;
 
     /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'target_department_id' => 'integer',
+            'user_id' => 'integer',
+            'sender_id' => 'integer',
+        ];
+    }
+
+    /**
      * Get photo/attachment URL or null.
      */
     public function getPhotoUrlAttribute(): ?string
@@ -63,6 +75,16 @@ class Ticket extends Model
      * @return BelongsTo<Department, $this>
      */
     public function targetDepartment(): BelongsTo
+    {
+        return $this->belongsTo(Department::class, 'target_department_id');
+    }
+
+    /**
+     * Alias relationship to support ticket->department queries.
+     *
+     * @return BelongsTo<Department, $this>
+     */
+    public function department(): BelongsTo
     {
         return $this->belongsTo(Department::class, 'target_department_id');
     }
