@@ -85,9 +85,14 @@ class TicketForm extends Component
     public function mount(): void
     {
         $depts = Department::all();
+        $itDept = Department::where('name', 'like', 'IT%')->first() ?? $depts->first();
+
         if ($depts->isNotEmpty()) {
             $this->sender_department_id = $depts->first()->id;
-            $this->target_department_id = $depts->count() > 1 ? $depts->get(1)->id : $depts->first()->id;
+        }
+
+        if ($itDept) {
+            $this->target_department_id = $itDept->id;
         }
 
         // Align with active user's department if available
@@ -99,9 +104,9 @@ class TicketForm extends Component
             }
         }
 
-        // Initialize category based on current target department
+        // Initialize category strictly to IT categories
         $categories = $this->availableCategories;
-        $this->category = $categories[0] ?? 'Other';
+        $this->category = $categories[0] ?? 'Network';
     }
 
     /**
@@ -114,31 +119,11 @@ class TicketForm extends Component
     }
 
     /**
-     * Get categories list dynamically based on selected target department.
+     * Get categories list dynamically based on IT Support department.
      */
     public function getAvailableCategoriesProperty(): array
     {
-        if (! $this->target_department_id) {
-            return $this->departmentCategories['General'] ?? ['Other'];
-        }
-
-        $dept = Department::find($this->target_department_id);
-        if (! $dept) {
-            return $this->departmentCategories['General'] ?? ['Other'];
-        }
-
-        $deptKey = 'General';
-        if (str_contains($dept->name, 'IT')) {
-            $deptKey = 'IT';
-        } elseif (str_contains($dept->name, 'Human') || str_contains($dept->name, 'HR')) {
-            $deptKey = 'HR';
-        } elseif (str_contains($dept->name, 'Facility') || str_contains($dept->name, 'Maintenance')) {
-            $deptKey = 'Maintenance';
-        } elseif (isset($this->departmentCategories[$dept->name])) {
-            $deptKey = $dept->name;
-        }
-
-        return $this->departmentCategories[$deptKey] ?? ['Other'];
+        return $this->departmentCategories['IT'] ?? ['Network', 'Hardware', 'Software', 'Account', 'Other'];
     }
 
     public function setPriority(string $level): void
@@ -282,31 +267,11 @@ class TicketForm extends Component
     }
 
     /**
-     * Get available categories dynamically for the edit modal.
+     * Get available categories dynamically for the edit modal (IT Support).
      */
     public function getEditAvailableCategoriesProperty(): array
     {
-        if (! $this->editTargetDepartmentId) {
-            return $this->departmentCategories['General'] ?? ['Other'];
-        }
-
-        $dept = Department::find($this->editTargetDepartmentId);
-        if (! $dept) {
-            return $this->departmentCategories['General'] ?? ['Other'];
-        }
-
-        $deptKey = 'General';
-        if (str_contains($dept->name, 'IT')) {
-            $deptKey = 'IT';
-        } elseif (str_contains($dept->name, 'Human') || str_contains($dept->name, 'HR')) {
-            $deptKey = 'HR';
-        } elseif (str_contains($dept->name, 'Facility') || str_contains($dept->name, 'Maintenance')) {
-            $deptKey = 'Maintenance';
-        } elseif (isset($this->departmentCategories[$dept->name])) {
-            $deptKey = $dept->name;
-        }
-
-        return $this->departmentCategories[$deptKey] ?? ['Other'];
+        return $this->departmentCategories['IT'] ?? ['Network', 'Hardware', 'Software', 'Account', 'Other'];
     }
 
     public function setEditPriority(string $level): void
@@ -402,8 +367,14 @@ class TicketForm extends Component
             })->with('targetDepartment')->latest()->get()
             : collect();
 
+        $itDepartments = Department::where('name', 'like', 'IT%')->get();
+        if ($itDepartments->isEmpty()) {
+            $itDepartments = Department::take(1)->get();
+        }
+
         return view('livewire.ticket-form', [
             'departments' => Department::all(),
+            'targetDepartments' => $itDepartments,
             'myTickets' => $myTickets,
         ]);
     }

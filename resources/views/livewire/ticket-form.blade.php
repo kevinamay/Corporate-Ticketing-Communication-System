@@ -79,7 +79,7 @@
                 <label for="target_department_id" class="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">{{ __('Target Department') }}</label>
                 <select id="target_department_id" wire:model.live="target_department_id" 
                     class="w-full px-3 py-2.5 text-xs md:text-sm text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-800/90 rounded-lg border border-gray-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition shadow-xs">
-                    @foreach ($departments as $dept)
+                    @foreach ($targetDepartments as $dept)
                         <option value="{{ $dept->id }}">{{ $dept->name }}</option>
                     @endforeach
                 </select>
@@ -419,7 +419,7 @@
                             </label>
                             <select id="edit_target_dept" wire:model.live="editTargetDepartmentId"
                                     class="w-full px-3 py-2 text-xs md:text-sm text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-800/90 rounded-lg border border-gray-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition shadow-xs">
-                                @foreach($departments as $dept)
+                                @foreach($targetDepartments as $dept)
                                     <option value="{{ $dept->id }}">{{ $dept->name }}</option>
                                 @endforeach
                             </select>
@@ -433,7 +433,7 @@
                             <select id="edit_category" wire:model="editCategory"
                                     class="w-full px-3 py-2 text-xs md:text-sm text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-800/90 rounded-lg border border-gray-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition shadow-xs">
                                 @foreach($this->editAvailableCategories as $cat)
-                                    <option value="{{ $cat }}">{{ $cat }}</option>
+                                    <option value="{{ $cat }}">{{ __($cat) }}</option>
                                 @endforeach
                             </select>
                             @error('editCategory') <span class="text-xs text-rose-600 dark:text-rose-400 mt-1 block font-medium">{{ $message }}</span> @enderror
