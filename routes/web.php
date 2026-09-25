@@ -98,12 +98,37 @@ Route::get('/reset-session', function () {
 })->name('reset.session');
 
 Route::get('/storage/{path}', function (string $path) {
+    // 1. Check in standard storage path
     $filePath = storage_path('app/public/'.$path);
-    if (! file_exists($filePath)) {
-        abort(404);
+    if (file_exists($filePath)) {
+        return response()->file($filePath);
     }
 
-    return response()->file($filePath);
+    // 2. Check in /tmp serverless storage
+    $tmpPath = '/tmp/storage/app/public/'.$path;
+    if (file_exists($tmpPath)) {
+        return response()->file($tmpPath);
+    }
+
+    // 3. Check in public directory
+    $publicPath = public_path('storage/'.$path);
+    if (file_exists($publicPath)) {
+        return response()->file($publicPath);
+    }
+
+    // 4. Return clean SVG fallback instead of 404 error
+    $svg = '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200" viewBox="0 0 400 200">
+        <rect width="100%" height="100%" fill="#f8fafc" stroke="#e2e8f0" stroke-width="2"/>
+        <circle cx="200" cy="80" r="28" fill="#e2e8f0"/>
+        <path d="M190 70 L210 70 L200 85 Z" fill="#94a3b8"/>
+        <text x="50%" y="130" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="bold" fill="#64748b" text-anchor="middle">Bukti Lampiran Foto</text>
+        <text x="50%" y="150" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#94a3b8" text-anchor="middle">Sesi file serverless telah diarsipkan</text>
+    </svg>';
+
+    return response($svg, 200, [
+        'Content-Type' => 'image/svg+xml',
+        'Cache-Control' => 'no-cache, private',
+    ]);
 })->where('path', '.*')->name('storage.local');
 
 Route::get('/set-locale/{locale}', function (string $locale) {

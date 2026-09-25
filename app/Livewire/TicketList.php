@@ -259,8 +259,14 @@ class TicketList extends Component
 
         if ($this->editPhoto) {
             try {
-                $storedPath = $this->editPhoto->store('ticket_attachments', 'public');
-                $photoPath = '/storage/'.$storedPath;
+                $realPath = $this->editPhoto->getRealPath();
+                $mime = $this->editPhoto->getMimeType() ?: 'image/jpeg';
+                if ($realPath && file_exists($realPath)) {
+                    $photoPath = 'data:'.$mime.';base64,'.base64_encode(file_get_contents($realPath));
+                } else {
+                    $storedPath = $this->editPhoto->store('ticket_attachments', 'public');
+                    $photoPath = '/storage/'.$storedPath;
+                }
             } catch (\Throwable $e) {
                 Log::warning('Edit ticket photo fallback: '.$e->getMessage());
                 try {

@@ -342,8 +342,11 @@
                         <div>
                             <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">{{ __('Bukti Lampiran Foto') }}</h4>
                             <div class="p-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40 inline-block">
-                                <a href="{{ $viewingTicket->photo_url }}" target="_blank" rel="noopener noreferrer">
-                                    <img src="{{ $viewingTicket->photo_url }}" alt="Bukti Foto Kendala" class="max-h-56 rounded-lg object-contain border border-gray-300 dark:border-slate-600 hover:opacity-95 transition">
+                                <a href="{{ $viewingTicket->photo_url }}" target="_blank" rel="noopener noreferrer" title="{{ __('Klik untuk melihat foto ukuran penuh') }}">
+                                    <img src="{{ $viewingTicket->photo_url }}" 
+                                         alt="{{ __('Bukti Foto Kendala') }}" 
+                                         class="max-h-56 rounded-lg object-contain border border-gray-300 dark:border-slate-600 hover:opacity-95 transition"
+                                         onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'320\' height=\'160\' viewBox=\'0 0 320 160\'><rect width=\'100%\' height=\'100%\' fill=\'%23f1f5f9\'/><text x=\'50%\' y=\'50%\' font-family=\'system-ui, sans-serif\' font-size=\'12\' fill=\'%2364748b\' text-anchor=\'middle\'>Foto Lampiran Diarsipkan</text></svg>';">
                                 </a>
                             </div>
                         </div>

@@ -128,8 +128,14 @@ class TicketForm extends Component
         $photoPath = null;
         if ($this->photo) {
             try {
-                $storedPath = $this->photo->store('ticket_attachments', 'public');
-                $photoPath = '/storage/'.$storedPath;
+                $realPath = $this->photo->getRealPath();
+                $mime = $this->photo->getMimeType() ?: 'image/jpeg';
+                if ($realPath && file_exists($realPath)) {
+                    $photoPath = 'data:'.$mime.';base64,'.base64_encode(file_get_contents($realPath));
+                } else {
+                    $storedPath = $this->photo->store('ticket_attachments', 'public');
+                    $photoPath = '/storage/'.$storedPath;
+                }
             } catch (\Throwable $e) {
                 Log::warning('Ticket photo store fallback: '.$e->getMessage());
                 try {

@@ -137,8 +137,14 @@ class GlobalTickets extends Component
         $photoPath = null;
         if ($this->replyPhoto) {
             try {
-                $storedPath = $this->replyPhoto->store('reply_attachments', 'public');
-                $photoPath = '/storage/'.$storedPath;
+                $realPath = $this->replyPhoto->getRealPath();
+                $mime = $this->replyPhoto->getMimeType() ?: 'image/jpeg';
+                if ($realPath && file_exists($realPath)) {
+                    $photoPath = 'data:'.$mime.';base64,'.base64_encode(file_get_contents($realPath));
+                } else {
+                    $storedPath = $this->replyPhoto->store('reply_attachments', 'public');
+                    $photoPath = '/storage/'.$storedPath;
+                }
             } catch (\Throwable $e) {
                 Log::warning('Reply photo store fallback: '.$e->getMessage());
                 try {
