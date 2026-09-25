@@ -25,8 +25,8 @@
                 </p>
             </div>
 
-            <!-- Top Action Buttons: Tambah Manual (Blue) & Import CSV (Green/Gray) -->
-            <div class="flex flex-wrap sm:flex-nowrap items-center gap-3 shrink-0">
+            <!-- Top Action Buttons: Tambah Manual (Blue), Import CSV (Emerald), Download Template (Slate) -->
+            <div class="flex flex-wrap sm:flex-nowrap items-center gap-2.5 shrink-0">
                 <!-- 1. Tambah Manual Button (Blue: bg-blue-600) -->
                 <button type="button" 
                         wire:click="openCreateModal"
@@ -34,25 +34,29 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path>
                     </svg>
-                    <span>{{ __('Tambah Manual') }}</span>
+                    <span>{{ __('+ Tambah Karyawan') }}</span>
                 </button>
 
-                <!-- 2. Import CSV Button (Green/Gray: bg-emerald-600) -->
+                <!-- 2. Import CSV Button (Emerald: bg-emerald-600) -->
                 <button type="button" 
                         wire:click="openCsvModal"
                         class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold text-xs uppercase tracking-wider shadow-lg shadow-emerald-950/30 border border-emerald-400/30 transition-all cursor-pointer">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                     </svg>
-                    <span>{{ __('Import CSV') }}</span>
+                    <span>{{ __('Upload CSV') }}</span>
                 </button>
 
-                <!-- Back to Dashboard -->
-                <a href="{{ route('dashboard') }}" 
-                   class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs border border-white/20 transition">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                    <span>{{ __('Dashboard') }}</span>
-                </a>
+                <!-- 3. Download Format Template CSV -->
+                <button type="button" 
+                        wire:click="downloadTemplateCsv"
+                        title="{{ __('Unduh contoh format CSV untuk pengisian data karyawan') }}"
+                        class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-white font-bold text-xs border border-white/20 transition-all cursor-pointer">
+                    <svg class="w-4 h-4 text-blue-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                    </svg>
+                    <span>{{ __('Template CSV') }}</span>
+                </button>
             </div>
         </div>
 
@@ -445,11 +449,17 @@ ktp_number,name,department_id
 3578012408880003,Agus Santoso,3
 3578011805850004,Hendra Wijaya,5
                         </div>
-                        <div class="text-[10px] text-slate-500 dark:text-slate-400">
-                            <span class="font-bold">{{ __('ID Departemen:') }}</span>
-                            @foreach ($departments as $d)
-                                <span class="mr-2">{{ $d->id }} = {{ $d->name }}</span>
-                            @endforeach
+                        <div class="flex items-center justify-between pt-1">
+                            <span class="text-[10px] text-slate-500 dark:text-slate-400">
+                                <span class="font-bold">{{ __('ID Departemen:') }}</span>
+                                @foreach ($departments as $d)
+                                    <span class="mr-2">{{ $d->id }} = {{ $d->name }}</span>
+                                @endforeach
+                            </span>
+                            <button type="button" wire:click="downloadTemplateCsv" class="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 hover:text-blue-700 underline cursor-pointer shrink-0">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                <span>{{ __('Download Template CSV') }}</span>
+                            </button>
                         </div>
                     </div>
 

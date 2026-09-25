@@ -64,7 +64,8 @@ class HcmEmployeeMaster extends Component
             abort(403, 'Akses Ditolak: Anda belum terotentikasi.');
         }
 
-        $isHrDepartment = ((int) $user->department_id === 2)
+        $isHrDepartment = ($user->email === 'siti.hrd@asiaplastik.com')
+            || ((int) $user->department_id === 2)
             || ((int) $user->department_id === 4)
             || ($user->department && (
                 str_contains(strtolower($user->department->name), 'human resources') ||
@@ -72,7 +73,7 @@ class HcmEmployeeMaster extends Component
             ));
 
         if (! $isHrDepartment) {
-            abort(403, 'Akses Ditolak: Modul HCM Master Data hanya dapat diakses oleh Departemen HRD (department_id = 2).');
+            abort(403, 'Akses Ditolak: Modul HCM Master Data hanya dapat diakses oleh Departemen HRD (Siti Rahmawati).');
         }
 
         // Set default department for adding employee if available
@@ -398,6 +399,34 @@ class HcmEmployeeMaster extends Component
             Log::error('HCM CSV Upload Error: '.$e->getMessage()."\n".$e->getTraceAsString());
             $this->csvErrorMessage = 'Gagal memproses file CSV: '.$e->getMessage();
         }
+    }
+
+    /**
+     * Download CSV template file for HRD bulk import.
+     */
+    public function downloadTemplateCsv(): \Symfony\Component\HttpFoundation\StreamedResponse
+    {
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="template_master_karyawan_hrd.csv"',
+        ];
+
+        return response()->stream(function () {
+            $handle = fopen('php://output', 'w');
+            // Write standard CSV header required by Gatekeeper & Vault
+            fputcsv($handle, ['ktp_number', 'name', 'department_id']);
+
+            $departments = Department::all();
+            if ($departments->isNotEmpty()) {
+                foreach ($departments as $idx => $dept) {
+                    $sampleNik = '357801' . str_pad((string) (1000000000 + $idx + 1), 10, '0', STR_PAD_LEFT);
+                    fputcsv($handle, [$sampleNik, 'Karyawan ' . $dept->name, $dept->id]);
+                }
+            } else {
+                fputcsv($handle, ['3578015507940002', 'Siti Rahmawati', 4]);
+            }
+            fclose($handle);
+        }, 200, $headers);
     }
 
     public function render(): View
