@@ -26,6 +26,12 @@
     @livewireStyles
 </head>
 @php
+    if (!Auth::check() && session('active_user_id')) {
+        $recoveredUser = \App\Models\User::find(session('active_user_id'));
+        if ($recoveredUser) {
+            Auth::login($recoveredUser);
+        }
+    }
     $currentLocale = app()->getLocale();
     $languages = [
         'id' => ['name' => 'Bahasa Indonesia', 'short' => 'ID', 'flag' => '🇮🇩'],

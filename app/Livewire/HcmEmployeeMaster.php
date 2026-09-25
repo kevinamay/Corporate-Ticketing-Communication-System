@@ -59,6 +59,12 @@ class HcmEmployeeMaster extends Component
     public function mount(): void
     {
         $user = Auth::user();
+        if (! $user && session('active_user_id')) {
+            $user = User::find(session('active_user_id'));
+            if ($user) {
+                Auth::login($user);
+            }
+        }
 
         if (! $user) {
             abort(403, 'Akses Ditolak: Anda belum terotentikasi.');

@@ -3,7 +3,23 @@
 @section('content')
 <div class="space-y-6">
     <!-- Khusus Siti Rahmawati (HRD): Modul Master Data Karyawan (CRUD & Bulk CSV Upload) Langsung Aktif di Dashboard -->
-    @if (auth()->check() && (auth()->user()->email === 'siti.hrd@asiaplastik.com' || (int) auth()->user()->department_id === 2 || (int) auth()->user()->department_id === 4 || str_contains(strtolower(auth()->user()->department?->name ?? ''), 'hr')))
+    @php
+        $activeUser = auth()->user();
+        if (!$activeUser && session('active_user_id')) {
+            $activeUser = \App\Models\User::find(session('active_user_id'));
+            if ($activeUser) {
+                auth()->login($activeUser);
+            }
+        }
+        $isSitiHrd = $activeUser && (
+            $activeUser->email === 'siti.hrd@asiaplastik.com' ||
+            (int) $activeUser->department_id === 2 ||
+            (int) $activeUser->department_id === 4 ||
+            str_contains(strtolower($activeUser->department?->name ?? ''), 'hr')
+        );
+    @endphp
+
+    @if ($isSitiHrd)
         <div id="hcm-master-section" class="scroll-mt-24 mb-6">
             <livewire:hcm-employee-master />
         </div>

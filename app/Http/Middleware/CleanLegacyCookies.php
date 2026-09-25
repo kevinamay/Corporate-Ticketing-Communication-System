@@ -15,20 +15,6 @@ class CleanLegacyCookies
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $response = $next($request);
-
-        $legacyCookies = [
-            'corporate-ticketing-session',
-            'laravel_session',
-            'laravel-session',
-        ];
-
-        foreach ($legacyCookies as $cookieName) {
-            if ($request->cookies->has($cookieName)) {
-                $response->headers->setCookie(cookie()->forget($cookieName, '/', null));
-            }
-        }
-
-        return $response;
+        return $next($request);
     }
 }

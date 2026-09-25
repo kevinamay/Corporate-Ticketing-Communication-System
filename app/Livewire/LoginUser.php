@@ -61,7 +61,8 @@ class LoginUser extends Component
             session(['active_user_id' => Auth::id()]);
             session(['auth.password_confirmed_at' => time()]);
 
-            return redirect()->intended(route('dashboard'));
+            $this->redirect('/', navigate: false);
+            return;
         }
 
         $this->errorMessage = 'Kredensial tidak cocok dengan data kami. Silakan periksa kembali Nomor KTP / Email dan Password Anda.';
