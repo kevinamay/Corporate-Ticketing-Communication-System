@@ -6,13 +6,16 @@ use App\Models\Department;
 use App\Models\Ticket;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\On;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 
 class GlobalTickets extends Component
 {
     use WithPagination;
+    use WithFileUploads;
 
     public string $search = '';
 
@@ -27,6 +30,8 @@ class GlobalTickets extends Component
     public bool $isDetailModalOpen = false;
 
     public string $replyMessage = '';
+
+    public $replyPhoto = null;
 
     public string $ticketStatusToUpdate = '';
 
@@ -119,16 +124,35 @@ class GlobalTickets extends Component
 
         $this->validate([
             'replyMessage' => 'required|string|min:2|max:2000',
+            'replyPhoto' => 'nullable|image|max:10240',
         ], [
             'replyMessage.required' => 'Pesan jawaban / tanggapan wajib diisi.',
             'replyMessage.min' => 'Pesan jawaban minimal 2 karakter.',
+            'replyPhoto.image' => 'File bukti harus berupa gambar (JPG, PNG, WebP).',
+            'replyPhoto.max' => 'Ukuran file gambar maksimal 10MB.',
         ]);
+
+        $photoPath = null;
+        if ($this->replyPhoto) {
+            try {
+                $storedPath = $this->replyPhoto->store('reply_attachments', 'public');
+                $photoPath = '/storage/'.$storedPath;
+            } catch (\Throwable $e) {
+                Log::warning('Reply photo store fallback: '.$e->getMessage());
+                try {
+                    $photoPath = 'data:'.$this->replyPhoto->getMimeType().';base64,'.base64_encode(file_get_contents($this->replyPhoto->getRealPath()));
+                } catch (\Throwable $ex) {
+                    $photoPath = null;
+                }
+            }
+        }
 
         // Create message response
         \App\Models\Message::create([
             'ticket_id' => $ticket->id,
             'user_id' => $user->id,
             'message' => trim($this->replyMessage),
+            'photo_path' => $photoPath,
         ]);
 
         // Update status if selected
@@ -137,8 +161,14 @@ class GlobalTickets extends Component
         }
 
         $this->replyMessage = '';
+        $this->replyPhoto = null;
         $this->dispatch('ticketUpdated', ticketId: $ticket->id);
         session()->flash('reply_success', 'Tanggapan / jawaban berhasil dikirim ke pelapor!');
+    }
+
+    public function removeReplyPhoto(): void
+    {
+        $this->replyPhoto = null;
     }
 
     /**
@@ -181,6 +211,7 @@ class GlobalTickets extends Component
         $ticket = Ticket::find($ticketId);
         $this->ticketStatusToUpdate = $ticket?->status ?? 'In Progress';
         $this->replyMessage = '';
+        $this->replyPhoto = null;
         $this->isDetailModalOpen = true;
     }
 
@@ -192,6 +223,7 @@ class GlobalTickets extends Component
         $this->isDetailModalOpen = false;
         $this->viewingTicketId = null;
         $this->replyMessage = '';
+        $this->replyPhoto = null;
         $this->ticketStatusToUpdate = '';
     }
 

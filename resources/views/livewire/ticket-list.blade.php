@@ -332,6 +332,13 @@
                                         <p class="text-xs text-slate-700 dark:text-slate-200 whitespace-pre-line leading-relaxed">
                                             {{ $msg->message }}
                                         </p>
+                                        @if ($msg->photo_url)
+                                            <div class="mt-2.5">
+                                                <a href="{{ $msg->photo_url }}" target="_blank" rel="noopener noreferrer" class="inline-block group" title="{{ __('Klik untuk melihat bukti foto ukuran penuh') }}">
+                                                    <img src="{{ $msg->photo_url }}" alt="Bukti Foto Petugas" class="max-h-48 rounded-lg border border-blue-200 dark:border-blue-800 shadow-xs object-cover hover:opacity-95 transition">
+                                                </a>
+                                            </div>
+                                        @endif
                                     </div>
                                 @endforeach
                             </div>
