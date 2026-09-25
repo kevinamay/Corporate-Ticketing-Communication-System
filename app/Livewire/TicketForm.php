@@ -76,7 +76,6 @@ class TicketForm extends Component
             'target_department_id' => 'required|exists:departments,id',
             'category' => 'required|string|max:50',
             'priority' => 'required|in:Low,Medium,High,Critical',
-            'status' => 'required|in:Pending,Open,In Progress,Resolved',
             'description' => 'required|min:10',
             'photo' => 'nullable|image|max:10240',
         ];
@@ -174,7 +173,7 @@ class TicketForm extends Component
             'photo_path' => $photoPath,
             'attachment_path' => $photoPath,
             'priority' => $this->priority,
-            'status' => $this->status,
+            'status' => 'Pending',
         ]);
 
         $this->reset(['title', 'description', 'photo']);
@@ -300,7 +299,6 @@ class TicketForm extends Component
             'editTargetDepartmentId' => 'required|exists:departments,id',
             'editCategory' => 'required|string|max:50',
             'editPriority' => 'required|in:Low,Medium,High,Critical',
-            'editStatus' => 'required|in:Pending,Open,In Progress,Resolved',
             'editDescription' => 'required|min:10',
             'editPhoto' => 'nullable|image|max:10240',
         ]);
@@ -340,7 +338,6 @@ class TicketForm extends Component
             'target_department_id' => $this->editTargetDepartmentId,
             'category' => $this->editCategory,
             'priority' => $this->editPriority,
-            'status' => $this->editStatus,
             'description' => $this->editDescription,
             'photo_path' => $photoPath,
             'attachment_path' => $photoPath,

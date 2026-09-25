@@ -176,24 +176,39 @@
                             </span>
                         </td>
 
+                        @php
+                            $canHandle = $this->isAuthorizedForTicket($currentUser, $ticket);
+                        @endphp
+
                         <!-- Status -->
                         <td class="py-3 px-3.5">
-                            <span class="px-2 py-0.5 rounded border font-semibold text-[10px] {{ $statusStyle }}">
-                                {{ __($ticket->status) }}
-                            </span>
+                            @if ($canHandle)
+                                <div class="relative inline-flex items-center">
+                                    <select wire:change="updateTicketStatus({{ $ticket->id }}, $event.target.value)" 
+                                            title="{{ __('Perbarui status laporan (Khusus Admin/Petugas)') }}"
+                                            class="px-2 py-1 rounded-lg border font-bold text-[10px] cursor-pointer outline-none transition focus:ring-2 focus:ring-blue-500 shadow-2xs {{ $statusStyle }}">
+                                        <option value="Pending" {{ $ticket->status === 'Pending' ? 'selected' : '' }}>Pending</option>
+                                        <option value="Open" {{ $ticket->status === 'Open' ? 'selected' : '' }}>Open</option>
+                                        <option value="In Progress" {{ $ticket->status === 'In Progress' ? 'selected' : '' }}>In Progress</option>
+                                        <option value="Resolved" {{ $ticket->status === 'Resolved' ? 'selected' : '' }}>Resolved</option>
+                                    </select>
+                                </div>
+                            @else
+                                <span class="px-2 py-0.5 rounded border font-semibold text-[10px] {{ $statusStyle }}">
+                                    {{ __($ticket->status) }}
+                                </span>
+                            @endif
                         </td>
 
                         <!-- ======================================================== -->
                         <!-- CONDITIONAL ACTION / AUTHORIZATION LOGIC -->
                         <!-- ======================================================== -->
                         <td class="py-3 px-3.5 text-right whitespace-nowrap">
-                            @php
-                                $canHandle = $this->isAuthorizedForTicket(auth()->user(), $ticket);
-                            @endphp
-
                             @if ($canHandle)
                                 <button type="button" 
                                         wire:click="handleTicket({{ $ticket->id }})" 
+                                        title="Handle Ticket"
+                                        aria-label="Handle Ticket"
                                         class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-sm transition-all duration-150 cursor-pointer active:scale-95">
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
@@ -201,7 +216,7 @@
                                     <span>{{ __('Jawab & Proses Tiket') }}</span>
                                 </button>
                             @else
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-gray-200 text-gray-600 dark:bg-slate-700 dark:text-slate-300">
+                                <span title="View Only - Not Your Dept" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-gray-200 text-gray-600 dark:bg-slate-700 dark:text-slate-300">
                                     <svg class="w-3 h-3 text-gray-400 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
                                     </svg>

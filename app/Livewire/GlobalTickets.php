@@ -41,18 +41,15 @@ class GlobalTickets extends Component
             return false;
         }
 
-        // Global admin & HR authority
+        // Global admin & HR management authority
         if (
             $user->role === 'admin' ||
-            $user->email === 'siti.hrd@asiaplastik.com' ||
-            (int) $user->department_id === 2 ||
-            (int) $user->department_id === 4 ||
-            str_contains(strtolower($user->department?->name ?? ''), 'hr')
+            $user->email === 'siti.hrd@asiaplastik.com'
         ) {
             return true;
         }
 
-        // Target department staff/agent
+        // Target department staff/agent authority
         return (int) $user->department_id === (int) $ticket->target_department_id;
     }
 
@@ -152,22 +149,26 @@ class GlobalTickets extends Component
         $user = Auth::user() ?? (session('active_user_id') ? \App\Models\User::find(session('active_user_id')) : null);
 
         if (! $user) {
+            session()->flash('unauthorized_error', 'Silakan login terlebih dahulu untuk mengubah status tiket.');
+
             return;
         }
 
         $ticket = Ticket::find($ticketId);
 
         if (! $ticket || ! $this->isAuthorizedForTicket($user, $ticket)) {
-            session()->flash('unauthorized_error', 'Akses ditolak.');
+            session()->flash('unauthorized_error', 'Akses ditolak: Anda tidak memiliki wewenang untuk memperbarui status tiket ini.');
 
             return;
         }
 
         if (in_array($status, ['Pending', 'Open', 'In Progress', 'Resolved'], true)) {
+            $oldStatus = $ticket->status;
             $ticket->update(['status' => $status]);
             $this->ticketStatusToUpdate = $status;
             $this->dispatch('ticketUpdated', ticketId: $ticket->id);
-            session()->flash('reply_success', "Status tiket #{$ticket->id} berhasil diubah menjadi {$status}.");
+            session()->flash('handle_success', "Status tiket #{$ticket->id} berhasil diperbarui dari {$oldStatus} menjadi {$status}.");
+            session()->flash('reply_success', "Status tiket #{$ticket->id} berhasil diperbarui dari {$oldStatus} menjadi {$status}.");
         }
     }
 
@@ -240,7 +241,7 @@ class GlobalTickets extends Component
             'tickets' => $tickets,
             'departments' => Department::all(),
             'viewingTicket' => $viewingTicket,
-            'currentUser' => Auth::user(),
+            'currentUser' => Auth::user() ?? (session('active_user_id') ? \App\Models\User::find(session('active_user_id')) : null),
         ]);
     }
 }
