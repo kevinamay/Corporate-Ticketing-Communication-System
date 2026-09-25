@@ -9,42 +9,24 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Livewire\Component;
-use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
-use Livewire\WithFileUploads;
 
 class RegisterUser extends Component
 {
-    use WithFileUploads;
-
     // Step state: 1 = Form, 2 = OTP Verification
     public int $step = 1;
 
     public ?int $userId = null;
 
-    // Registration Form Inputs
+    // Registration Form Inputs (Only 5 inputs requested)
     public string $name = '';
+
+    public string $whatsapp_number = '';
 
     public string $email = '';
 
     public string $password = '';
 
     public string $password_confirmation = '';
-
-    public string $national_id_ktp = '';
-
-    public string $ktp_number = '';
-
-    public string $gender = 'male';
-
-    public string $whatsapp_number = '';
-
-    public string $complete_address = '';
-
-    public string $postal_code = '';
-
-    public ?int $department_id = null;
-
-    public $avatar = null;
 
     // 6 OTP Input Digits
     public string $otp1 = '';
@@ -67,22 +49,13 @@ class RegisterUser extends Component
     /**
      * @return array<string, string>
      */
-    /**
-     * @return array<string, string>
-     */
     protected function rules(): array
     {
         return [
             'name' => 'required|string|min:3|max:100',
+            'whatsapp_number' => 'required|string|min:10|max:20|regex:/^[0-9+ ]+$/',
             'email' => 'required|email|max:150',
             'password' => 'required|string|min:8|confirmed',
-            'national_id_ktp' => 'required|string|min:16|max:16|regex:/^[0-9]+$/',
-            'gender' => 'required|in:male,female',
-            'whatsapp_number' => 'required|string|min:10|max:20|regex:/^[0-9+ ]+$/',
-            'complete_address' => 'required|string|min:10|max:500',
-            'postal_code' => 'required|string|min:5|max:10|regex:/^[0-9]+$/',
-            'department_id' => 'required|exists:departments,id',
-            'avatar' => 'nullable|image|max:10240',
         ];
     }
 
@@ -93,152 +66,62 @@ class RegisterUser extends Component
     {
         return [
             'name.required' => 'Nama lengkap wajib diisi.',
-            'national_id_ktp.required' => 'Nomor KTP wajib diisi.',
-            'national_id_ktp.min' => 'Nomor KTP harus terdiri dari 16 digit.',
-            'national_id_ktp.max' => 'Nomor KTP harus terdiri dari 16 digit.',
-            'national_id_ktp.regex' => 'Nomor KTP harus berupa 16 angka.',
-            'department_id.required' => 'Silakan pilih departemen yang sesuai.',
-            'whatsapp_number.required' => 'Nomor WhatsApp aktif wajib diisi.',
+            'name.min' => 'Nama lengkap minimal 3 karakter.',
+            'whatsapp_number.required' => 'Nomor WhatsApp atau Telfon aktif wajib diisi.',
+            'whatsapp_number.min' => 'Nomor WhatsApp atau Telfon minimal 10 digit.',
+            'whatsapp_number.regex' => 'Format nomor WhatsApp atau Telfon tidak valid.',
+            'email.required' => 'Alamat email wajib diisi.',
+            'email.email' => 'Format alamat email tidak valid.',
             'password.required' => 'Password wajib diisi.',
             'password.min' => 'Password minimal 8 karakter.',
             'password.confirmed' => 'Konfirmasi password tidak cocok.',
-            'email.required' => 'Alamat email wajib diisi.',
-            'email.email' => 'Format alamat email tidak valid.',
-            'avatar.max' => 'Ukuran foto profil tidak boleh lebih dari 10MB.',
-            'avatar.image' => 'File harus berupa foto/gambar (JPG, JPEG, PNG, WEBP).',
         ];
-    }
-
-    public function updatedNationalIdKtp($value): void
-    {
-        $this->ktp_number = (string) $value;
-    }
-
-    public function updatedKtpNumber($value): void
-    {
-        $this->national_id_ktp = (string) $value;
-    }
-
-    public function mount(): void
-    {
-        $this->ktp_number = $this->national_id_ktp;
-        $firstDept = Department::first();
-        if ($firstDept) {
-            $this->department_id = $firstDept->id;
-        }
     }
 
     public function register(): void
     {
         $this->errorMessage = null;
-
-        // 1. Sanitize avatar on serverless if temporary file was purged or on another worker
-        if ($this->avatar) {
-            try {
-                if (! ($this->avatar instanceof TemporaryUploadedFile) || ! $this->avatar->exists()) {
-                    $this->avatar = null;
-                }
-            } catch (\Throwable $e) {
-                Log::warning('Temporary avatar check fallback: '.$e->getMessage());
-                $this->avatar = null;
-            }
-        }
-
-        // Synchronize KTP values
-        $cleanKtp = trim($this->ktp_number !== '' ? $this->ktp_number : $this->national_id_ktp);
-        $this->national_id_ktp = $cleanKtp;
-        $this->ktp_number = $cleanKtp;
-
-        // MODULE 2 STRICT VALIDATION: Query employee_master_data table using ktp_number
-        $employeeMaster = \App\Models\EmployeeMasterData::where('ktp_number', $cleanKtp)->first();
-
-        if (! $employeeMaster) {
-            $hrdError = 'NIK/KTP tidak terdaftar di sistem HRD.';
-            $this->addError('national_id_ktp', $hrdError);
-            $this->addError('ktp_number', $hrdError);
-            $this->errorMessage = $hrdError;
-
-            throw ValidationException::withMessages([
-                'national_id_ktp' => [$hrdError],
-                'ktp_number' => [$hrdError],
-            ]);
-        }
-
-        // Auto-assign the department_id from employee_master_data
-        $this->department_id = (int) $employeeMaster->department_id;
-
-        // Validate basic rules
         $this->validate();
 
         try {
             $cleanEmail = strtolower(trim($this->email));
 
-            // 2. Check if verified user already exists with email or KTP
-            $userByEmail = User::where('email', $cleanEmail)->first();
-            if ($userByEmail && $userByEmail->email_verified_at !== null) {
+            // Check if verified user already exists with this email
+            $existingUser = User::where('email', $cleanEmail)->first();
+            if ($existingUser && $existingUser->email_verified_at !== null) {
                 $this->addError('email', 'Email ini telah terdaftar dan aktif. Silakan masuk melalui halaman login.');
 
                 return;
             }
 
-            $userByKtp = User::where('ktp_number', $cleanKtp)
-                ->orWhere('national_id_ktp', $cleanKtp)
-                ->first();
-
-            if ($userByKtp && $userByKtp->email_verified_at !== null) {
-                $this->addError('national_id_ktp', 'Nomor KTP ini telah terdaftar dan aktif. Silakan masuk melalui halaman login.');
-
-                return;
-            }
-
-            // 3. Generate genuinely random 6-digit secure OTP code
+            // Generate genuinely random 6-digit secure OTP code
             $otpCode = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 
-            // 4. Handle optional avatar upload or generate UI avatar
-            $avatarUrl = null;
-            if ($this->avatar) {
-                try {
-                    $path = $this->avatar->store('avatars', 'public');
-                    $avatarUrl = '/storage/'.$path;
-                } catch (\Throwable $e) {
-                    Log::warning('Avatar store fallback: '.$e->getMessage());
-                    $avatarUrl = 'https://ui-avatars.com/api/?name='.urlencode($this->name).'&background=0284c7&color=fff';
-                }
-            } else {
-                $avatarUrl = 'https://ui-avatars.com/api/?name='.urlencode($this->name).'&background=0284c7&color=fff';
-            }
+            // Generate UI Avatar based on name
+            $avatarUrl = 'https://ui-avatars.com/api/?name='.urlencode($this->name).'&background=0284c7&color=fff';
 
-            // 5. Create or update unverified user with auto-assigned department_id from employee_master_data
-            $targetUser = $userByEmail ?: $userByKtp;
-            if ($targetUser) {
-                $targetUser->update([
+            // Assign default department
+            $defaultDeptId = Department::first()?->id;
+
+            if ($existingUser) {
+                $existingUser->update([
                     'name' => trim($this->name),
                     'email' => $cleanEmail,
                     'password' => $this->password,
-                    'ktp_number' => $cleanKtp,
-                    'national_id_ktp' => $cleanKtp,
-                    'gender' => $this->gender,
                     'whatsapp_number' => trim($this->whatsapp_number),
-                    'complete_address' => trim($this->complete_address),
-                    'postal_code' => trim($this->postal_code),
-                    'department_id' => $employeeMaster->department_id,
+                    'department_id' => $existingUser->department_id ?: $defaultDeptId,
                     'avatar' => $avatarUrl,
                     'otp_code' => $otpCode,
                     'email_verified_at' => null,
                 ]);
-                $user = $targetUser;
+                $user = $existingUser;
             } else {
                 $user = User::create([
                     'name' => trim($this->name),
                     'email' => $cleanEmail,
                     'password' => $this->password,
-                    'ktp_number' => $cleanKtp,
-                    'national_id_ktp' => $cleanKtp,
-                    'gender' => $this->gender,
                     'whatsapp_number' => trim($this->whatsapp_number),
-                    'complete_address' => trim($this->complete_address),
-                    'postal_code' => trim($this->postal_code),
-                    'department_id' => $employeeMaster->department_id,
+                    'department_id' => $defaultDeptId,
                     'avatar' => $avatarUrl,
                     'otp_code' => $otpCode,
                     'email_verified_at' => null,
@@ -250,18 +133,18 @@ class RegisterUser extends Component
             $this->step = 2; // Transition to OTP Verification UI
             $this->errorMessage = null;
 
-            // 6. Kirim email OTP ke alamat email pendaftar
+            // Send OTP email to applicant's email address
             try {
                 $dispatch = SendOtpMail::sendTo($user->email, $user->name, $otpCode);
                 $this->successMessage = $dispatch['message'];
             } catch (\Throwable $e) {
                 Log::error('Gagal mengirim email OTP: '.$e->getMessage());
-                $this->errorMessage = 'Pendaftaran tersimpan, namun pengiriman email ke '.$user->email.' mengalami kendala: '.$e->getMessage().'. Silakan klik "Kirim Ulang OTP".';
+                $this->errorMessage = 'Pendaftaran tersimpan, namun pengiriman email ke '.$user->email.' mengalami kendala: '.$e->getMessage().'. Silakan klik "Kirim Ulang Kode OTP".';
             }
         } catch (ValidationException $ve) {
             throw $ve;
         } catch (\Throwable $e) {
-            Log::error('Registrasi gagal: '.$e->getMessage()."\n".$e->getTraceAsString());
+            Log::error('Registrasi gagal: '.$e->getMessage());
             $this->errorMessage = 'Terjadi kesalahan sistem saat mendaftar: '.$e->getMessage();
         }
     }
@@ -300,11 +183,11 @@ class RegisterUser extends Component
                 'otp_code' => null,
             ]);
 
-            // Sesuai alur pengguna: setelah verifikasi OTP selesai, arahkan kembali ke halaman login
+            // Sesuai alur: setelah verifikasi OTP selesai, arahkan kembali ke halaman login
             Auth::logout();
             session()->forget('active_user_id');
 
-            session()->flash('status', 'Pendaftaran & verifikasi OTP berhasil! Silakan masuk menggunakan Nomor KTP atau Alamat Email Anda.');
+            session()->flash('status', 'Pendaftaran & verifikasi OTP berhasil! Silakan masuk menggunakan Email dan Password Anda.');
             $this->redirect(route('login'), navigate: false);
         } catch (\Throwable $e) {
             Log::error('Verifikasi OTP gagal: '.$e->getMessage());
@@ -321,35 +204,29 @@ class RegisterUser extends Component
             return;
         }
 
-        try {
-            $user = User::find($this->userId);
-            if ($user) {
-                $newOtp = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-                $user->update(['otp_code' => $newOtp]);
-                $this->reset(['otp1', 'otp2', 'otp3', 'otp4', 'otp5', 'otp6']);
-                $this->errorMessage = null;
+        $user = User::find($this->userId);
+        if (! $user) {
+            $this->errorMessage = 'Pengguna tidak ditemukan. Silakan isi form kembali.';
+            $this->step = 1;
 
-                try {
-                    $dispatch = SendOtpMail::sendTo($user->email, $user->name, $newOtp);
-                    $this->successMessage = $dispatch['message'];
-                } catch (\Throwable $e) {
-                    Log::error('Gagal mengirim ulang email OTP: '.$e->getMessage());
-                    $this->errorMessage = 'Pengiriman ulang email ke '.$user->email.' mengalami kendala: '.$e->getMessage().'.';
-                }
-            } else {
-                $this->errorMessage = 'Data pengguna tidak ditemukan. Silakan registrasi ulang.';
-                $this->step = 1;
-            }
+            return;
+        }
+
+        $newOtp = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        $user->update(['otp_code' => $newOtp]);
+
+        try {
+            $dispatch = SendOtpMail::sendTo($user->email, $user->name, $newOtp);
+            $this->successMessage = 'Kode OTP baru berhasil dikirimkan ke: '.$user->email.' ('.$dispatch['message'].')';
+            $this->errorMessage = null;
         } catch (\Throwable $e) {
-            Log::error('Resend OTP error: '.$e->getMessage());
-            $this->errorMessage = 'Terjadi kesalahan saat membuat kode OTP baru: '.$e->getMessage();
+            Log::error('Resend OTP gagal: '.$e->getMessage());
+            $this->errorMessage = 'Gagal mengirim email OTP: '.$e->getMessage();
         }
     }
 
     public function render()
     {
-        return view('livewire.register-user', [
-            'departments' => Department::orderBy('name')->get(),
-        ]);
+        return view('livewire.register-user');
     }
 }

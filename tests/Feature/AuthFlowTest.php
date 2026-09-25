@@ -22,40 +22,23 @@ class AuthFlowTest extends TestCase
             ['icon' => 'laptop', 'description' => 'IT Support Dept']
         );
 
-        $testKtp = '3578'.str_pad((string) random_int(100000000000, 999999999999), 12, '0', STR_PAD_LEFT);
         $testEmail = 'test_'.uniqid().'@asiaplastik.com';
 
-        // Seed EmployeeMasterData so Gatekeeper allows registration
-        \App\Models\EmployeeMasterData::create([
-            'ktp_number' => $testKtp,
-            'name' => 'Budi Santoso',
-            'department_id' => $dept->id,
-        ]);
-
-        // 1. Submit Registration Form
+        // 1. Submit Registration Form with 5 required fields
         $testComponent = Livewire::test(RegisterUser::class)
             ->set('name', 'Budi Santoso')
+            ->set('whatsapp_number', '081234567890')
             ->set('email', $testEmail)
             ->set('password', 'secret12345')
             ->set('password_confirmation', 'secret12345')
-            ->set('national_id_ktp', $testKtp)
-            ->set('gender', 'male')
-            ->set('whatsapp_number', '081234567890')
-            ->set('complete_address', 'Jl. Rungkut Industri No. 12, Surabaya')
-            ->set('postal_code', '60293')
-            ->set('department_id', $dept->id)
             ->call('register');
 
-        // Check user created in database with ALL specified fields
-        $user = User::where('national_id_ktp', $testKtp)->first();
+        // Check user created in database with the specified fields
+        $user = User::where('email', $testEmail)->first();
         $this->assertNotNull($user);
         $this->assertEquals('Budi Santoso', $user->name);
         $this->assertEquals($testEmail, $user->email);
-        $this->assertEquals('male', $user->gender);
         $this->assertEquals('081234567890', $user->whatsapp_number);
-        $this->assertEquals('Jl. Rungkut Industri No. 12, Surabaya', $user->complete_address);
-        $this->assertEquals('60293', $user->postal_code);
-        $this->assertEquals($dept->id, $user->department_id);
         $this->assertNotNull($user->avatar);
         $this->assertNotNull($user->otp_code);
         $this->assertEquals(6, strlen($user->otp_code));
