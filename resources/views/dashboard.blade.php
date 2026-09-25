@@ -221,11 +221,6 @@
         <div id="queue" class="scroll-mt-24 mt-8">
             <livewire:ticket-list />
         </div>
-
-        <!-- 3. Global Tickets (Transparansi Antar-Departemen) -->
-        <div id="global-tickets" class="scroll-mt-24 mt-8">
-            <livewire:global-tickets />
-        </div>
     @endif
 
 </div>
