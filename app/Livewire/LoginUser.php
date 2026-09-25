@@ -43,17 +43,23 @@ class LoginUser extends Component
         $this->validate();
 
         $input = trim($this->login_id);
-
-        // Detect whether input is an email or national_id_ktp / ktp_number
-        $isEmail = filter_var($input, FILTER_VALIDATE_EMAIL);
+        $cleanEmail = strtolower($input);
 
         $authenticated = false;
 
-        if ($isEmail) {
-            $authenticated = Auth::attempt(['email' => $input, 'password' => $this->password], $this->remember);
-        } else {
-            $authenticated = Auth::attempt(['ktp_number' => $input, 'password' => $this->password], $this->remember)
-                || Auth::attempt(['national_id_ktp' => $input, 'password' => $this->password], $this->remember);
+        // 1. Try Email (case-insensitive & raw)
+        if (Auth::attempt(['email' => $cleanEmail, 'password' => $this->password], $this->remember)
+            || Auth::attempt(['email' => $input, 'password' => $this->password], $this->remember)) {
+            $authenticated = true;
+        }
+        // 2. Try WhatsApp / Phone Number
+        elseif (Auth::attempt(['whatsapp_number' => $input, 'password' => $this->password], $this->remember)) {
+            $authenticated = true;
+        }
+        // 3. Try KTP Number
+        elseif (Auth::attempt(['ktp_number' => $input, 'password' => $this->password], $this->remember)
+            || Auth::attempt(['national_id_ktp' => $input, 'password' => $this->password], $this->remember)) {
+            $authenticated = true;
         }
 
         if ($authenticated) {
@@ -62,10 +68,24 @@ class LoginUser extends Component
             session(['auth.password_confirmed_at' => time()]);
 
             $this->redirect(route('dashboard'), navigate: false);
+
             return;
         }
 
-        $this->errorMessage = 'Kredensial tidak cocok dengan data kami. Silakan periksa kembali Nomor KTP / Email dan Password Anda.';
+        // Provide specific diagnostic feedback
+        $existing = \App\Models\User::where('email', $cleanEmail)
+            ->orWhere('email', $input)
+            ->orWhere('whatsapp_number', $input)
+            ->orWhere('ktp_number', $input)
+            ->first();
+
+        if (! $existing) {
+            $this->errorMessage = 'Akun dengan Email / No. WhatsApp tersebut belum terdaftar. Silakan lakukan registrasi terlebih dahulu.';
+        } elseif (! \Illuminate\Support\Facades\Hash::check($this->password, $existing->password)) {
+            $this->errorMessage = 'Password yang Anda masukkan salah. Silakan periksa kembali.';
+        } else {
+            $this->errorMessage = 'Kredensial tidak cocok dengan data kami. Silakan periksa kembali Email/No. WhatsApp dan Password Anda.';
+        }
     }
 
     public function render()

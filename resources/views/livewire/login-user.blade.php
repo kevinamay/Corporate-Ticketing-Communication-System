@@ -23,7 +23,7 @@
         <div class="p-6 sm:p-8">
             <div class="mb-6 text-center">
                 <h1 class="text-2xl font-black text-slate-900 dark:text-white tracking-tight">{{ __('Selamat Datang') }}</h1>
-                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">{{ __('Masuk dengan Nomor KTP atau Alamat Email Perusahaan Anda.') }}</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">{{ __('Masuk dengan Alamat Email, No. WhatsApp, atau No. KTP Anda.') }}</p>
             </div>
 
             @if (session('status'))
@@ -42,16 +42,16 @@
 
             <form wire:submit.prevent="login" class="space-y-4">
                 
-                <!-- Input: KTP or Email -->
+                <!-- Input: Email, WA, or KTP -->
                 <div>
                     <label for="login_id" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                        {{ __('Nomor KTP atau Alamat Email') }} <span class="text-rose-500">*</span>
+                        {{ __('Email / No. WhatsApp / No. KTP') }} <span class="text-rose-500">*</span>
                     </label>
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                         </div>
-                        <input type="text" id="login_id" wire:model="login_id" placeholder="{{ __('16 digit KTP atau email@perusahaan.com') }}"
+                        <input type="text" id="login_id" wire:model="login_id" placeholder="{{ __('email@perusahaan.com atau No. WhatsApp / KTP') }}"
                                class="w-full text-xs pl-9 pr-3.5 py-2.5 rounded-lg border @error('login_id') border-rose-400 bg-rose-50 dark:bg-rose-950/30 @else border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 @enderror focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition">
                     </div>
                     @error('login_id') <p class="text-[11px] text-rose-600 dark:text-rose-400 mt-1">{{ $message }}</p> @enderror
