@@ -28,11 +28,32 @@ class ResetPassword extends Component
         $this->token = $token ?: (string) request()->route('token', '');
         $this->email = (string) request()->query('email', '');
 
-        // Verify initial token validity if email is provided
-        if (! empty($this->email) && ! empty($this->token)) {
-            $record = DB::table('password_reset_tokens')
-                ->where('email', strtolower(trim($this->email)))
+        // If email was not passed in query string, resolve from token record
+        if (empty($this->email) && ! empty($this->token)) {
+            $tokenRecord = DB::table('password_reset_tokens')
+                ->where('token', $this->token)
                 ->first();
+            if ($tokenRecord) {
+                $this->email = $tokenRecord->email;
+            }
+        }
+
+        // Verify initial token validity
+        if (! empty($this->token)) {
+            $record = null;
+            if (! empty($this->email)) {
+                $record = DB::table('password_reset_tokens')
+                    ->where('email', strtolower(trim($this->email)))
+                    ->first();
+            }
+            if (! $record) {
+                $record = DB::table('password_reset_tokens')
+                    ->where('token', $this->token)
+                    ->first();
+                if ($record) {
+                    $this->email = $record->email;
+                }
+            }
 
             if (! $record) {
                 $this->isTokenValid = false;

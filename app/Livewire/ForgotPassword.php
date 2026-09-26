@@ -86,6 +86,10 @@ class ForgotPassword extends Component
         } catch (\Throwable $e) {
             Log::info('Pengiriman email reset password dilewati: '.$e->getMessage());
         }
+
+        session()->flash('status', 'Tautan reset password berhasil dibuat untuk email '.$cleanEmail.'. Silakan masukkan password baru Anda di bawah ini.');
+
+        $this->redirect($resetUrl, navigate: false);
     }
 
     public function resend(): void

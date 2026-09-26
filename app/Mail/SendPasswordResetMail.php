@@ -44,7 +44,7 @@ class SendPasswordResetMail extends Mailable
             // Case 1: Recipient is verified owner email in Resend
             if (strtolower(trim($toEmail)) === strtolower(trim($ownerEmail))) {
                 try {
-                    $response = Http::withoutVerifying()->timeout(3)->withToken($resendKey)->post('https://api.resend.com/emails', [
+                    $response = Http::withoutVerifying()->connectTimeout(1.0)->timeout(1.5)->withToken($resendKey)->post('https://api.resend.com/emails', [
                         'from' => "{$fromName} <{$fromAddress}>",
                         'to' => [$toEmail],
                         'subject' => 'Tautan Atur Ulang Password Akun - PT. Asia Plastik',
@@ -77,7 +77,7 @@ class SendPasswordResetMail extends Mailable
                         ."<p style='color: #64748b; font-size: 12px;'><em>Notifikasi sistem otomatis PT Asia Plastik.</em></p>"
                         .'</div>';
 
-                    Http::withoutVerifying()->timeout(3)->withToken($resendKey)->post('https://api.resend.com/emails', [
+                    Http::withoutVerifying()->connectTimeout(1.0)->timeout(1.5)->withToken($resendKey)->post('https://api.resend.com/emails', [
                         'from' => "{$fromName} <{$fromAddress}>",
                         'to' => [$ownerEmail],
                         'subject' => "Tautan Reset Password Pengguna [{$toEmail}] - PT. Asia Plastik",
