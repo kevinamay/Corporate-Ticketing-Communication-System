@@ -63,7 +63,9 @@ if (! isset($GLOBALS['__db_ready'])) {
                 $hashed = password_hash('password123', PASSWORD_BCRYPT, ['cost' => 12]);
                 $checkPdo->exec("INSERT INTO users (name, email, password, whatsapp_number, role, email_verified_at, created_at, updated_at) VALUES ('Admin IT', 'user123@gmail.com', '{$hashed}', '081234567899', 'admin', datetime('now'), datetime('now'), datetime('now'))");
             }
+            $checkPdo = null;
         } catch (Throwable $e) {
+            $checkPdo = null;
             // Silently continue
         }
     }
