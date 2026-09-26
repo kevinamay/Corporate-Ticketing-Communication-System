@@ -1,12 +1,18 @@
 <?php
 
+use App\Http\Middleware\EnsureHrDepartment;
+use App\Http\Middleware\SetLocale;
+use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Validation\ValidationException;
 
 Route::get('/', function () {
     $activeUser = Auth::user();
     if (! $activeUser && session('active_user_id')) {
-        $activeUser = \App\Models\User::find(session('active_user_id'));
+        $activeUser = User::find(session('active_user_id'));
         if ($activeUser) {
             Auth::login($activeUser);
         }
@@ -22,7 +28,7 @@ Route::get('/', function () {
 Route::get('/login', function () {
     $activeUser = Auth::user();
     if (! $activeUser && session('active_user_id')) {
-        $activeUser = \App\Models\User::find(session('active_user_id'));
+        $activeUser = User::find(session('active_user_id'));
         if ($activeUser) {
             Auth::login($activeUser);
         }
@@ -38,7 +44,7 @@ Route::get('/login', function () {
 Route::get('/register', function () {
     $activeUser = Auth::user();
     if (! $activeUser && session('active_user_id')) {
-        $activeUser = \App\Models\User::find(session('active_user_id'));
+        $activeUser = User::find(session('active_user_id'));
         if ($activeUser) {
             Auth::login($activeUser);
         }
@@ -54,7 +60,7 @@ Route::get('/register', function () {
 Route::get('/dashboard', function () {
     $activeUser = Auth::user();
     if (! $activeUser && session('active_user_id')) {
-        $activeUser = \App\Models\User::find(session('active_user_id'));
+        $activeUser = User::find(session('active_user_id'));
         if ($activeUser) {
             Auth::login($activeUser);
         }
@@ -132,7 +138,7 @@ Route::get('/storage/{path}', function (string $path) {
 })->where('path', '.*')->name('storage.local');
 
 Route::get('/set-locale/{locale}', function (string $locale) {
-    $allowed = \App\Http\Middleware\SetLocale::SUPPORTED_LOCALES;
+    $allowed = SetLocale::SUPPORTED_LOCALES;
     if (! in_array($locale, $allowed, true)) {
         $locale = 'id';
     }
@@ -158,13 +164,13 @@ Route::get('/confirm-password', function () {
     return view('auth.confirm-password');
 })->middleware('auth')->name('password.confirm');
 
-Route::post('/confirm-password', function (\Illuminate\Http\Request $request) {
+Route::post('/confirm-password', function (Request $request) {
     $request->validate([
         'password' => ['required', 'string'],
     ]);
 
-    if (! \Illuminate\Support\Facades\Hash::check($request->password, $request->user()->password)) {
-        throw \Illuminate\Validation\ValidationException::withMessages([
+    if (! Hash::check($request->password, $request->user()->password)) {
+        throw ValidationException::withMessages([
             'password' => ['Password yang Anda masukkan tidak cocok dengan sistem.'],
         ]);
     }
@@ -184,6 +190,5 @@ Route::get('/hcm-core/employees-master', function () {
 })->middleware([
     'auth',
     'password.confirm',
-    \App\Http\Middleware\EnsureHrDepartment::class,
+    EnsureHrDepartment::class,
 ])->name('hcm.employees.master');
-

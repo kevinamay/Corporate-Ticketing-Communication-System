@@ -7,13 +7,12 @@ use App\Models\EmployeeMasterData;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
-use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class HcmEmployeeMaster extends Component
 {
@@ -54,7 +53,7 @@ class HcmEmployeeMaster extends Component
     public array $csvImportStats = [];
 
     /**
-     * Strict Authorization: Ensure user is from HR Department (department_id === 2 or HRD).
+     * Strict Authorization: Ensure user is strictly user123@gmail.com.
      */
     public function mount(): void
     {
@@ -70,16 +69,8 @@ class HcmEmployeeMaster extends Component
             abort(403, 'Akses Ditolak: Anda belum terotentikasi.');
         }
 
-        $isHrDepartment = ($user->email === 'siti.hrd@asiaplastik.com')
-            || ((int) $user->department_id === 2)
-            || ((int) $user->department_id === 4)
-            || ($user->department && (
-                str_contains(strtolower($user->department->name), 'human resources') ||
-                str_contains(strtolower($user->department->name), 'hr')
-            ));
-
-        if (! $isHrDepartment) {
-            abort(403, 'Akses Ditolak: Modul HCM Master Data hanya dapat diakses oleh Departemen HRD (Siti Rahmawati).');
+        if ($user->email !== 'user123@gmail.com') {
+            abort(403, 'Akses Ditolak: Modul HCM Master Data khusus dan hanya dapat diakses oleh Admin IT (user123@gmail.com).');
         }
 
         // Set default department for adding employee if available
@@ -184,7 +175,7 @@ class HcmEmployeeMaster extends Component
                 'department_id' => (int) $this->department_id,
             ]);
 
-            session()->flash('success_message', 'Karyawan baru berhasil ditambahkan ke Master Data HRD.');
+            session()->flash('success_message', 'Karyawan baru berhasil ditambahkan ke Master Data Admin IT.');
         }
 
         $this->closeFormModal();
@@ -361,6 +352,7 @@ class HcmEmployeeMaster extends Component
 
                 if (empty($cleanKtp) || empty($rawName)) {
                     $skippedCount++;
+
                     continue;
                 }
 
@@ -410,11 +402,11 @@ class HcmEmployeeMaster extends Component
     /**
      * Download CSV template file for HRD bulk import.
      */
-    public function downloadTemplateCsv(): \Symfony\Component\HttpFoundation\StreamedResponse
+    public function downloadTemplateCsv(): StreamedResponse
     {
         $headers = [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="template_master_karyawan_hrd.csv"',
+            'Content-Disposition' => 'attachment; filename="template_master_karyawan_admin_it.csv"',
         ];
 
         return response()->stream(function () {
@@ -425,8 +417,8 @@ class HcmEmployeeMaster extends Component
             $departments = Department::all();
             if ($departments->isNotEmpty()) {
                 foreach ($departments as $idx => $dept) {
-                    $sampleNik = '357801' . str_pad((string) (1000000000 + $idx + 1), 10, '0', STR_PAD_LEFT);
-                    fputcsv($handle, [$sampleNik, 'Karyawan ' . $dept->name, $dept->id]);
+                    $sampleNik = '357801'.str_pad((string) (1000000000 + $idx + 1), 10, '0', STR_PAD_LEFT);
+                    fputcsv($handle, [$sampleNik, 'Karyawan '.$dept->name, $dept->id]);
                 }
             } else {
                 fputcsv($handle, ['3578015507940002', 'Siti Rahmawati', 4]);

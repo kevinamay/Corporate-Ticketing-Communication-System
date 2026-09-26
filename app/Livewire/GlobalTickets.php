@@ -3,21 +3,22 @@
 namespace App\Livewire;
 
 use App\Models\Department;
+use App\Models\Message;
 use App\Models\Ticket;
+use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
-use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 
 class GlobalTickets extends Component
 {
-    use WithPagination;
     use WithFileUploads;
+    use WithPagination;
 
     public string $search = '';
 
@@ -42,16 +43,16 @@ class GlobalTickets extends Component
      * Admin and Siti (HRD) have global authority across all departments.
      * Department agents have authority for tickets directed to their department.
      */
-    public function isAuthorizedForTicket(?\App\Models\User $user, ?Ticket $ticket): bool
+    public function isAuthorizedForTicket(?User $user, ?Ticket $ticket): bool
     {
         if (! $user || ! $ticket) {
             return false;
         }
 
-        // Global admin & HR management authority
+        // Global admin IT authority
         if (
             $user->role === 'admin' ||
-            $user->email === 'siti.hrd@asiaplastik.com'
+            $user->email === 'user123@gmail.com'
         ) {
             return true;
         }
@@ -65,7 +66,7 @@ class GlobalTickets extends Component
      */
     public function handleTicket(int $ticketId): void
     {
-        $user = Auth::user() ?? (session('active_user_id') ? \App\Models\User::find(session('active_user_id')) : null);
+        $user = Auth::user() ?? (session('active_user_id') ? User::find(session('active_user_id')) : null);
 
         if (! $user) {
             session()->flash('unauthorized_error', 'Silakan login terlebih dahulu untuk memproses tiket.');
@@ -104,7 +105,7 @@ class GlobalTickets extends Component
      */
     public function sendTicketReply(int $ticketId): void
     {
-        $user = Auth::user() ?? (session('active_user_id') ? \App\Models\User::find(session('active_user_id')) : null);
+        $user = Auth::user() ?? (session('active_user_id') ? User::find(session('active_user_id')) : null);
 
         if (! $user) {
             session()->flash('unauthorized_error', 'Silakan login terlebih dahulu untuk menjawab tiket.');
@@ -178,7 +179,7 @@ class GlobalTickets extends Component
         }
 
         // Create message response
-        \App\Models\Message::create($messageData);
+        Message::create($messageData);
 
         // Update status if selected
         if (! empty($this->ticketStatusToUpdate) && in_array($this->ticketStatusToUpdate, ['Pending', 'Open', 'In Progress', 'Resolved'], true)) {
@@ -201,7 +202,7 @@ class GlobalTickets extends Component
      */
     public function updateTicketStatus(int $ticketId, string $status): void
     {
-        $user = Auth::user() ?? (session('active_user_id') ? \App\Models\User::find(session('active_user_id')) : null);
+        $user = Auth::user() ?? (session('active_user_id') ? User::find(session('active_user_id')) : null);
 
         if (! $user) {
             session()->flash('unauthorized_error', 'Silakan login terlebih dahulu untuk mengubah status tiket.');
@@ -298,7 +299,7 @@ class GlobalTickets extends Component
             'tickets' => $tickets,
             'departments' => Department::all(),
             'viewingTicket' => $viewingTicket,
-            'currentUser' => Auth::user() ?? (session('active_user_id') ? \App\Models\User::find(session('active_user_id')) : null),
+            'currentUser' => Auth::user() ?? (session('active_user_id') ? User::find(session('active_user_id')) : null),
         ]);
     }
 }

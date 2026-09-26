@@ -175,7 +175,7 @@ class AiAssistant extends Component
             [
                 'id' => uniqid('msg_', true),
                 'sender' => 'bot',
-                'text' => "Percakapan telah direset. Halo! 👋 Ada yang bisa saya bantu kembali terkait sistem tiket atau kendala operasional di PT. Asia Plastik?",
+                'text' => 'Percakapan telah direset. Halo! 👋 Ada yang bisa saya bantu kembali terkait sistem tiket atau kendala operasional di PT. Asia Plastik?',
                 'time' => now()->format('H:i'),
             ],
         ];

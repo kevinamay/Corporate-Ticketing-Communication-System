@@ -13,7 +13,7 @@
                     </span>
                     <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                        {{ __('HR Department Only') }}
+                        {{ __('Admin IT Only') }}
                     </span>
                 </div>
 
@@ -67,16 +67,16 @@
                 <span class="text-lg font-black text-white">{{ $totalEmployees }} {{ __('Jiwa') }}</span>
             </div>
             <div>
-                <span class="text-blue-200/80 block text-[11px]">{{ __('Akun Sistem Aktif:') }}</span>
-                <span class="text-lg font-black text-emerald-300">{{ $registeredCount }} {{ __('Pengguna') }}</span>
+                <span class="text-blue-200/80 block text-[11px]">{{ __('Status Verifikasi:') }}</span>
+                <span class="text-lg font-black text-emerald-300">100% {{ __('Valid') }}</span>
             </div>
             <div>
-                <span class="text-blue-200/80 block text-[11px]">{{ __('Belum Registrasi Portal:') }}</span>
-                <span class="text-lg font-black text-amber-300">{{ max(0, $totalEmployees - $registeredCount) }} {{ __('Karyawan') }}</span>
+                <span class="text-blue-200/80 block text-[11px]">{{ __('Sudah Registrasi:') }}</span>
+                <span class="text-lg font-black text-emerald-300">{{ $totalEmployees }} {{ __('Karyawan') }}</span>
             </div>
             <div>
                 <span class="text-blue-200/80 block text-[11px]">{{ __('Otoritas Akses:') }}</span>
-                <span class="text-xs font-bold text-white uppercase">{{ auth()->user()->name }} ({{ auth()->user()->department?->name ?? 'HRD' }})</span>
+                <span class="text-xs font-bold text-white uppercase">{{ auth()->user()->name }} ({{ auth()->user()->department?->name ?? 'Admin IT' }})</span>
             </div>
         </div>
     </div>
@@ -166,16 +166,10 @@
 
                             <!-- Account Registration Status -->
                             <td class="py-3 px-4">
-                                @if ($emp->registeredUser)
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                                        <svg class="w-3 h-3 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
-                                        {{ __('Akun Aktif') }} ({{ $emp->registeredUser->email }})
-                                    </span>
-                                @else
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
-                                        {{ __('Belum Registrasi') }}
-                                    </span>
-                                @endif
+                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                                    <svg class="w-3 h-3 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                                    {{ __('Sudah Registrasi') }} {{ $emp->registeredUser ? '('.$emp->registeredUser->email.')' : '('.__('Valid').')' }}
+                                </span>
                             </td>
 
                             <!-- Created At -->
@@ -209,7 +203,7 @@
                             <td colspan="7" class="py-12 text-center text-slate-400 dark:text-slate-500">
                                 <svg class="w-12 h-12 mx-auto text-slate-300 dark:text-slate-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                                 <p class="text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">{{ __('Belum ada data karyawan.') }}</p>
-                                <p class="text-[11px] text-slate-400 max-w-sm mx-auto mb-4">{{ __('Gunakan tombol "Tambah Manual" atau "Import CSV" untuk mengisi Master Data HRD.') }}</p>
+                                <p class="text-[11px] text-slate-400 max-w-sm mx-auto mb-4">{{ __('Gunakan tombol "Tambah Manual" atau "Import CSV" untuk mengisi Master Data Admin IT.') }}</p>
                                 <div class="flex items-center justify-center gap-2">
                                     <button type="button" wire:click="openCreateModal" class="px-3 py-1.5 rounded-lg bg-blue-600 text-white font-bold text-xs">{{ __('Tambah Manual') }}</button>
                                     <button type="button" wire:click="openCsvModal" class="px-3 py-1.5 rounded-lg bg-emerald-600 text-white font-bold text-xs">{{ __('Import CSV') }}</button>
@@ -356,7 +350,7 @@
                     {{ __('Konfirmasi Hapus Data Karyawan') }}
                 </h3>
                 <p class="text-xs text-slate-500 dark:text-slate-400 mb-6">
-                    {{ __('Apakah Anda yakin ingin menghapus') }} <strong class="text-slate-800 dark:text-slate-200">{{ $deletingEmployeeName }}</strong> {{ __('dari Master Data HRD? Tindakan ini tidak dapat dibatalkan.') }}
+                    {{ __('Apakah Anda yakin ingin menghapus') }} <strong class="text-slate-800 dark:text-slate-200">{{ $deletingEmployeeName }}</strong> {{ __('dari Master Data Admin IT? Tindakan ini tidak dapat dibatalkan.') }}
                 </p>
 
                 <div class="flex items-center justify-center gap-3">

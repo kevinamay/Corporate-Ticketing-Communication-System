@@ -2,7 +2,9 @@
 
 namespace App\Livewire;
 
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Livewire\Component;
 
 class LoginUser extends Component
@@ -73,7 +75,7 @@ class LoginUser extends Component
         }
 
         // Provide specific diagnostic feedback
-        $existing = \App\Models\User::where('email', $cleanEmail)
+        $existing = User::where('email', $cleanEmail)
             ->orWhere('email', $input)
             ->orWhere('whatsapp_number', $input)
             ->orWhere('ktp_number', $input)
@@ -81,7 +83,7 @@ class LoginUser extends Component
 
         if (! $existing) {
             $this->errorMessage = 'Akun dengan Email / No. WhatsApp tersebut belum terdaftar. Silakan lakukan registrasi terlebih dahulu.';
-        } elseif (! \Illuminate\Support\Facades\Hash::check($this->password, $existing->password)) {
+        } elseif (! Hash::check($this->password, $existing->password)) {
             $this->errorMessage = 'Password yang Anda masukkan salah. Silakan periksa kembali.';
         } else {
             $this->errorMessage = 'Kredensial tidak cocok dengan data kami. Silakan periksa kembali Email/No. WhatsApp dan Password Anda.';

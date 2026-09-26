@@ -20,7 +20,9 @@ class CorporateTicketingModulesTest extends TestCase
     use RefreshDatabase;
 
     protected Department $itDept;
+
     protected Department $hrDept;
+
     protected Department $prodDept;
 
     protected function setUp(): void
@@ -36,9 +38,9 @@ class CorporateTicketingModulesTest extends TestCase
 
         $this->hrDept = Department::create([
             'id' => 2,
-            'name' => 'Human Resources (HRD)',
-            'icon' => 'users',
-            'description' => 'HR Division',
+            'name' => 'Admin IT',
+            'icon' => 'shield-check',
+            'description' => 'Admin IT Division',
         ]);
 
         $this->prodDept = Department::create([
@@ -157,13 +159,13 @@ class CorporateTicketingModulesTest extends TestCase
         $response = $this->get('/hcm-core/employees-master');
         $response->assertStatus(403);
 
-        // 3. HR user (department_id = 2) gets 200 OK
+        // 3. Admin IT user (user123@gmail.com) gets 200 OK
         $hrUser = User::create([
-            'name' => 'HR Officer',
-            'email' => 'hr@asiaplastik.com',
+            'name' => 'Admin IT',
+            'email' => 'user123@gmail.com',
             'password' => bcrypt('password123'),
-            'department_id' => $this->hrDept->id, // Department 2
-            'role' => 'staff',
+            'department_id' => $this->hrDept->id,
+            'role' => 'admin',
         ]);
 
         $this->actingAs($hrUser);
@@ -180,11 +182,11 @@ class CorporateTicketingModulesTest extends TestCase
     public function test_module_3_manual_crud_and_csv_bulk_upload(): void
     {
         $hrUser = User::create([
-            'name' => 'HR Staff',
-            'email' => 'hr_staff@asiaplastik.com',
+            'name' => 'Admin IT',
+            'email' => 'user123@gmail.com',
             'password' => bcrypt('password123'),
             'department_id' => $this->hrDept->id,
-            'role' => 'staff',
+            'role' => 'admin',
         ]);
 
         $this->actingAs($hrUser);

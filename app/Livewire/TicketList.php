@@ -118,7 +118,7 @@ class TicketList extends Component
         }
 
         $activeUser = Auth::user() ?? User::find($activeUserId);
-        if ($activeUser && ($activeUser->role === 'admin' || $activeUser->email === 'siti.hrd@asiaplastik.com')) {
+        if ($activeUser && ($activeUser->role === 'admin' || $activeUser->email === 'user123@gmail.com')) {
             return true;
         }
 

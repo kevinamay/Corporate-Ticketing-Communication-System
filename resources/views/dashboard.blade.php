@@ -11,11 +11,9 @@
     }
     $isAdmin = $activeUser && (
         $activeUser->role === 'admin' ||
-        $activeUser->email === 'siti.hrd@asiaplastik.com' ||
-        (int) $activeUser->department_id === 2 ||
-        (int) $activeUser->department_id === 4 ||
-        str_contains(strtolower($activeUser->department?->name ?? ''), 'hr')
+        $activeUser->email === 'user123@gmail.com'
     );
+    $canAccessMasterData = $activeUser && ($activeUser->email === 'user123@gmail.com');
 @endphp
 
 <div class="space-y-6">
@@ -34,7 +32,7 @@
                 <div>
                     <div class="flex items-center gap-2">
                         <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-500/30 text-blue-200 border border-blue-400/30">
-                            {{ __('Portal Administrator & HRD') }}
+                            {{ __('Portal Admin IT') }}
                         </span>
                         <span class="text-xs text-blue-300">&bull; {{ $activeUser->name }}</span>
                     </div>
@@ -44,9 +42,11 @@
             </div>
 
             <div class="flex items-center gap-2 shrink-0">
-                <a href="#hcm-master-section" class="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition shadow-sm">
-                    {{ __('+ Input Karyawan') }}
-                </a>
+                @if ($canAccessMasterData)
+                    <a href="#hcm-master-section" class="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition shadow-sm">
+                        {{ __('+ Input Karyawan') }}
+                    </a>
+                @endif
                 <a href="#global-tickets" class="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition border border-white/20">
                     {{ __('Jawab Tiket Masuk') }}
                 </a>
@@ -100,10 +100,12 @@
             </div>
         </div>
 
-        <!-- 1. MODUL INPUT DATA KARYAWAN (HCM Master Data CRUD & Bulk CSV) -->
-        <div id="hcm-master-section" class="scroll-mt-24">
-            <livewire:hcm-employee-master />
-        </div>
+        @if ($canAccessMasterData)
+            <!-- 1. MODUL INPUT DATA KARYAWAN (Khusus Admin IT: user123@gmail.com) -->
+            <div id="hcm-master-section" class="scroll-mt-24">
+                <livewire:hcm-employee-master />
+            </div>
+        @endif
 
         <!-- 2. MODUL MENJAWAB TIKET MASUK (Global Tickets Answering & Processing) -->
         <div id="global-tickets" class="scroll-mt-24 mt-8">

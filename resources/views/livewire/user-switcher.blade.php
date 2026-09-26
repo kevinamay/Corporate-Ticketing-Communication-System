@@ -97,13 +97,13 @@
                 @endif
             </div>
 
-            @if ($currentUser && ((int) $currentUser->department_id === 2 || (int) $currentUser->department_id === 4 || str_contains(strtolower($currentUser->department?->name ?? ''), 'hr')))
+            @if ($currentUser && $currentUser->email === 'user123@gmail.com')
                 <div class="p-2.5 bg-blue-50/60 dark:bg-blue-950/40 border-b border-gray-100 dark:border-slate-800">
                     <a href="{{ url('/hcm-core/employees-master') }}" 
                        class="w-full py-2 px-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-between shadow-sm transition">
                         <span class="flex items-center gap-2">
                             <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                            <span>{{ __('Akses Vault HRD (Upload CSV)') }}</span>
+                            <span>{{ __('Akses Master Data Admin IT (Upload CSV)') }}</span>
                         </span>
                         <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
                     </a>
@@ -228,8 +228,8 @@
                                 <div class="truncate">
                                     <div class="flex items-center gap-1.5">
                                         <p class="font-bold text-slate-800 dark:text-slate-100 truncate">{{ $u->name }}</p>
-                                        @if ((int) $u->department_id === 2 || (int) $u->department_id === 4 || str_contains(strtolower($u->department?->name ?? ''), 'hr'))
-                                            <span class="text-[9px] font-black uppercase px-1 py-0.2 rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">HRD</span>
+                                        @if ($u->email === 'user123@gmail.com' || (int) $u->department_id === 2)
+                                            <span class="text-[9px] font-black uppercase px-1 py-0.2 rounded bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">ADMIN IT</span>
                                         @endif
                                     </div>
                                     <p class="text-[10px] text-blue-600 dark:text-blue-400 truncate">{{ $u->department?->name ?? 'Corporate' }}</p>

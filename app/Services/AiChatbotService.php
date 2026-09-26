@@ -378,7 +378,7 @@ PROMPT;
                     ."• **Departemen Tujuan:** {$deptName}\n"
                     ."• **Pelapor:** {$userName}\n"
                     ."• **Waktu Dibuat:** {$dateFormatted}\n\n"
-                    ."💡 *Anda dapat memantau percakapan langsung atau menambahkan catatan melalui panel Live Chat Desk.*";
+                    .'💡 *Anda dapat memantau percakapan langsung atau menambahkan catatan melalui panel Live Chat Desk.*';
             } else {
                 return "Maaf, tiket dengan **ID #{$ticketId}** tidak ditemukan dalam database sistem. Pastikan nomor tiket yang Anda masukkan sudah benar, atau Anda dapat melihat daftar semua tiket di tabel antrean.";
             }
@@ -426,7 +426,7 @@ PROMPT;
                     ."• **Langkah Rekomendasi:**\n"
                     ."  - Turunkan holding pressure secara bertahap (5-10 bar).\n"
                     ."  - Periksa kebersihan parting line cetakan dari sisa resin.\n"
-                    ."  - Buat tiket darurat ke departemen **Maintenance / Mekanik** bila mould mengalami keausan mekanis.";
+                    .'  - Buat tiket darurat ke departemen **Maintenance / Mekanik** bila mould mengalami keausan mekanis.';
             }
 
             if (str_contains($lower, 'short shot') || str_contains($lower, 'tidak penuh') || str_contains($lower, 'kurang isi')) {
@@ -438,7 +438,7 @@ PROMPT;
                     ."• **Langkah Rekomendasi:**\n"
                     ."  - Naikkan suhu barrel zona depan dan nozzle sebesar 5°C.\n"
                     ."  - Tingkatkan shot size atau switch-over position (V/P transfer point).\n"
-                    ."  - Bersihkan venting groove cetakan.";
+                    .'  - Bersihkan venting groove cetakan.';
             }
 
             return "⚙️ **Panduan Teknis Injection Molding PT. Asia Plastik:**\n\n"
@@ -448,7 +448,7 @@ PROMPT;
                 ."• **Short Shot:** Cek shot size, temperatur lelehan resin, dan venting mould.\n"
                 ."• **Sink Marks (Cekung):** Tambah holding time dan maksimalkan cooling time.\n"
                 ."• **Warpage (Melengkung):** Samakan temperatur core vs cavity mould chiller.\n\n"
-                ."Silakan ajukan tiket ke **Maintenance / Mekanik** bila memerlukan pergantian sparepart atau kalibrasi servo.";
+                .'Silakan ajukan tiket ke **Maintenance / Mekanik** bila memerlukan pergantian sparepart atau kalibrasi servo.';
         }
 
         // 5. Blow Molding Troubleshooting
@@ -457,7 +457,7 @@ PROMPT;
                 ."Mesin blow moulding kami digunakan untuk produksi jerigen HDPE, botol kosmetik, dan botol farmasi.\n\n"
                 ."• **Ketebalan Botol Tidak Rata:** Periksa die gap centering head extruder dan suhu parison.\n"
                 ."• **Bocor / Pinhole pada Pinch-off:** Periksa ketajaman pinch-off blade dan pastikan pendinginan pisau optimal.\n"
-                ."• **Bentuk Botol Kempot / Deformasi:** Periksa tekanan udara tiup (Blowing Air Pressure minimal 6-8 bar) dan durasi exhaust venting.";
+                .'• **Bentuk Botol Kempot / Deformasi:** Periksa tekanan udara tiup (Blowing Air Pressure minimal 6-8 bar) dan durasi exhaust venting.';
         }
 
         // 6. IT Department & Technical Support
@@ -479,7 +479,7 @@ PROMPT;
                 ."  - Shift 1: 07.00 - 15.00 WIB\n"
                 ."  - Shift 2: 15.00 - 23.00 WIB\n"
                 ."  - Shift 3: 23.00 - 07.00 WIB\n"
-                ."• **Insiden / Kecelakaan Kerja:** Wajib laporkan dengan **Prioritas EMERGENCY** agar Tim K3 & Medis langsung menuju lokasi dalam < 5 menit.";
+                .'• **Insiden / Kecelakaan Kerja:** Wajib laporkan dengan **Prioritas EMERGENCY** agar Tim K3 & Medis langsung menuju lokasi dalam < 5 menit.';
         }
 
         // 8. Quality Control (QC)
@@ -488,7 +488,7 @@ PROMPT;
                 ."Jika Anda menemukan lot produksi dengan angka reject tinggi:\n"
                 ."1. Segera beri tanda isolasi / label **HOLD** pada pallet produk.\n"
                 ."2. Buat tiket ke departemen **Quality Control** dengan melampirkan foto cacat fisik produk.\n"
-                ."3. Tim QC akan segera datang ke lini untuk uji dimensi, ketebalan ultrasonik, dan tes kebocoran (leak test).";
+                .'3. Tim QC akan segera datang ke lini untuk uji dimensi, ketebalan ultrasonik, dan tes kebocoran (leak test).';
         }
 
         // 9. About PT. Asia Plastik & Contact
@@ -497,7 +497,7 @@ PROMPT;
                 ."• **Phone / WhatsApp:** +6231 8433078 / 8439998\n"
                 ."• **Kantor & Pabrik:** Kawasan Industri Rungkut, Surabaya, Jawa Timur\n"
                 ."• **Jam Layanan:** 24 Jam Operasional Pabrik\n\n"
-                ."💡 *Anda juga dapat langsung mengklik tombol hijau **WhatsApp** di sudut kanan bawah untuk terhubung langsung ke Customer Service kami.*";
+                .'💡 *Anda juga dapat langsung mengklik tombol hijau **WhatsApp** di sudut kanan bawah untuk terhubung langsung ke Customer Service kami.*';
         }
 
         if (str_contains($lower, 'asia plastik') || str_contains($lower, 'profil') || str_contains($lower, 'perusahaan') || str_contains($lower, 'pabrik') || str_contains($lower, 'alamat')) {
@@ -507,7 +507,7 @@ PROMPT;
                 ."• **Blow Molding:** Botol HDPE, PET, botol agrokimia, dan jerigen industri.\n"
                 ."• **Alamat Pabrik & Kantor:** Kawasan Industri Rungkut, Surabaya, Jawa Timur, Indonesia.\n"
                 ."• **Phone / WhatsApp:** +6231 8433078 / 8439998\n"
-                ."• **Operasional:** 24 Jam Non-Stop (3 Shift) dengan standar manajemen mutu bersertifikasi ISO.";
+                .'• **Operasional:** 24 Jam Non-Stop (3 Shift) dengan standar manajemen mutu bersertifikasi ISO.';
         }
 
         // 10. Date, Time & Calendar Inquiries
@@ -517,7 +517,7 @@ PROMPT;
             $jam = $now->translatedFormat('H:i');
 
             return "📅 Hari ini adalah hari **{$hariTanggal}**, waktu saat ini menunjukkan pukul **{$jam} WIB**.\n\n"
-                ."Operasional pabrik dan lini produksi PT. Asia Plastik sedang berjalan aktif. Ada informasi tiket atau kendala operasional yang perlu dibantu? 😊";
+                .'Operasional pabrik dan lini produksi PT. Asia Plastik sedang berjalan aktif. Ada informasi tiket atau kendala operasional yang perlu dibantu? 😊';
         }
 
         // 11. Bot Identity & Who are you
@@ -526,13 +526,13 @@ PROMPT;
                 ."Saya bertugas mendampingi seluruh staf dan karyawan dalam:\n"
                 ."• Pembuatan dan pemantauan tiket dukungan (IT, Maintenance, QC, HR, Produksi)\n"
                 ."• Panduan teknis troubleshooting mesin Injection & Blow Molding\n"
-                ."• Menjawab pertanyaan santai, rekomendasi, hingga konsultasi operasional pabrik 24/7!";
+                .'• Menjawab pertanyaan santai, rekomendasi, hingga konsultasi operasional pabrik 24/7!';
         }
 
         // 12. Greetings & Friendly chat
         if (str_contains($lower, 'halo') || str_contains($lower, 'hai') || str_contains($lower, 'hello') || str_contains($lower, 'selamat pagi') || str_contains($lower, 'selamat siang') || str_contains($lower, 'selamat malam')) {
             return "Halo! 👋 Senang bertemu dengan Anda. Saya **AsiaBot**, asisten AI PT. Asia Plastik.\n\n"
-                ."Ada yang bisa saya bantu hari ini? Anda bisa berkonsultasi tentang operasional pabrik, pembuatan tiket, ataupun ngobrol santai!";
+                .'Ada yang bisa saya bantu hari ini? Anda bisa berkonsultasi tentang operasional pabrik, pembuatan tiket, ataupun ngobrol santai!';
         }
 
         if (str_contains($lower, 'terima kasih') || str_contains($lower, 'makasih') || str_contains($lower, 'thanks') || str_contains($lower, 'ok') || str_contains($lower, 'siap')) {
@@ -549,7 +549,7 @@ PROMPT;
                 ."4. 🍜 **Mie Ayam Jamur / Bakso Urat:** Pilihan hangat dan segar untuk istirahat shift kerja.\n"
                 ."5. 🥗 **Gado-Gado / Tahu Tek Surabaya:** Opsi lezat dan segar dengan siraman saus kacang petis khas.\n\n"
                 ."Lagi pengen yang berkuah hangat atau yang pedas gurih nih? 😊\n\n"
-                ."*💡 Tips: Hubungkan API Key Gemini/OpenAI di tombol ⚙️ Pengaturan di pojok kanan atas agar AsiaBot bisa memberikan resep masakan lengkap dan rekomendasi kuliner spesifik di sekitarmu!*";
+                .'*💡 Tips: Hubungkan API Key Gemini/OpenAI di tombol ⚙️ Pengaturan di pojok kanan atas agar AsiaBot bisa memberikan resep masakan lengkap dan rekomendasi kuliner spesifik di sekitarmu!*';
         }
 
         // 12. Jokes, Riddles & Humor
@@ -559,14 +559,14 @@ PROMPT;
                 ."*Singgah sebentar membeli roti,*\n"
                 ."*Tetap semangat bekerja selalu,*\n"
                 ."*Tiket beres hati pun senang sekali!* 🎉\n\n"
-                ."Ada kendala mesin atau sistem yang perlu dibantu hari ini?";
+                .'Ada kendala mesin atau sistem yang perlu dibantu hari ini?';
         }
 
         // 13. Motivation & Work Morale
         if (str_contains($lower, 'semangat') || str_contains($lower, 'capek') || str_contains($lower, 'lelah') || str_contains($lower, 'bosan') || str_contains($lower, 'pusing')) {
             return "Tarik napas dalam-dalam sejenak kawan! ☕💪\n\n"
                 ."Kerja kerasmu di PT. Asia Plastik sangat berarti untuk menjaga kelancaran produksi dan kualitas produk kemasan terbaik. Jangan lupa minum air putih, istirahat sejenak bila lelah, dan utamakan keselamatan kerja (K3).\n\n"
-                ."Kalau ada kendala di mesin atau sistem kantor yang bikin pusing, langsung buat tiket saja biar segera dibereskan oleh tim terkait!";
+                .'Kalau ada kendala di mesin atau sistem kantor yang bikin pusing, langsung buat tiket saja biar segera dibereskan oleh tim terkait!';
         }
 
         // 14. Multi-language quick responses
@@ -576,7 +576,7 @@ PROMPT;
                 ."• **Ticket Creation:** Guide you through submitting maintenance or IT requests.\n"
                 ."• **Ticket Status:** Track your ticket by typing *'Check ticket #ID'* (e.g. *Check ticket #1*).\n"
                 ."• **Factory Operations:** Technical help for Injection & Blow Molding machines.\n\n"
-                ."How may I assist you today?";
+                .'How may I assist you today?';
         }
 
         // Default intelligent fallback

@@ -74,7 +74,7 @@ class SendOtpMail extends Mailable
                         ."<p style='color: #475569;'>Kode Keamanan OTP untuk pendaftar tersebut adalah:</p>"
                         ."<div style='background: #eff6ff; padding: 18px; font-size: 32px; font-weight: 800; letter-spacing: 6px; color: #1d4ed8; text-align: center; border-radius: 8px; border: 1px solid #bfdbfe; margin: 20px 0;'>{$otpCode}</div>"
                         ."<p style='color: #64748b; font-size: 12px; line-height: 1.5;'><em>Catatan: Email ini dikirimkan ke {$ownerEmail} karena akun Resend Anda masih menggunakan domain testing onboarding@resend.dev. Untuk dapat mengirim langsung ke semua email pendaftar, silakan tambahkan domain kustom di resend.com/domains.</em></p>"
-                        ."</div>";
+                        .'</div>';
 
                     Http::timeout(10)->withToken($resendKey)->post('https://api.resend.com/emails', [
                         'from' => "{$fromName} <{$fromAddress}>",

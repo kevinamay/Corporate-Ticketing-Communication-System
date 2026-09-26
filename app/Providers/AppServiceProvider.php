@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,13 +20,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        \Illuminate\Support\Facades\Gate::define('access-hcm-master', function ($user) {
-            return ((int) $user->department_id === 2)
-                || ((int) $user->department_id === 4)
-                || ($user->department && (
-                    str_contains(strtolower($user->department->name), 'human resources') ||
-                    str_contains(strtolower($user->department->name), 'hr')
-                ));
+        Gate::define('access-hcm-master', function ($user) {
+            return $user->email === 'user123@gmail.com';
         });
     }
 }

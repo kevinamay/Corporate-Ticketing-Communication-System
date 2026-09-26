@@ -57,12 +57,12 @@ if (file_exists($tmpDb) && filesize($tmpDb) > 0) {
     try {
         $sqlitePdo = new PDO("sqlite:{$tmpDb}");
         $sqlitePdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_SILENT);
-        $cols = $sqlitePdo->query("PRAGMA table_info(messages)")->fetchAll(PDO::FETCH_ASSOC);
+        $cols = $sqlitePdo->query('PRAGMA table_info(messages)')->fetchAll(PDO::FETCH_ASSOC);
         $colNames = array_column($cols, 'name');
         if (! empty($cols) && ! in_array('photo_path', $colNames, true)) {
-            $sqlitePdo->exec("ALTER TABLE messages ADD COLUMN photo_path TEXT NULL");
+            $sqlitePdo->exec('ALTER TABLE messages ADD COLUMN photo_path TEXT NULL');
         }
-    } catch (\Throwable $e) {
+    } catch (Throwable $e) {
         // Silently continue
     }
 }
