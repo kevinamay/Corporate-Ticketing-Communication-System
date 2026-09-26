@@ -71,10 +71,21 @@ class ForgotPassword extends Component
             ]
         );
 
-        $resetUrl = route('password.reset', [
-            'token' => $token,
-            'email' => $cleanEmail,
-        ]);
+        $currentHost = request()->getHost();
+        $isLocal = in_array($currentHost, ['127.0.0.1', 'localhost'], true) && ! env('VERCEL') && ! app()->environment('production');
+
+        if ($isLocal) {
+            $scheme = request()->isSecure() ? 'https' : 'http';
+            $port = request()->getPort() ? ':'.request()->getPort() : '';
+            $baseUrl = "{$scheme}://{$currentHost}{$port}";
+        } else {
+            $cloudHost = ! empty($currentHost) && ! in_array($currentHost, ['127.0.0.1', 'localhost'], true)
+                ? $currentHost
+                : 'ticketing-kappa-jet.vercel.app';
+            $baseUrl = "https://{$cloudHost}";
+        }
+
+        $resetUrl = rtrim($baseUrl, '/').'/reset-password/'.$token.'?email='.urlencode($cleanEmail);
 
         $this->resetUrl = $resetUrl;
         $this->isSent = true;

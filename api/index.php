@@ -101,6 +101,7 @@ $envDefaults = [
     'MAIL_FROM_NAME' => 'PT. Asia Plastik',
     'LOG_CHANNEL' => 'stderr',
     'VIEW_COMPILED_PATH' => '/tmp/storage/framework/views',
+    'APP_URL' => 'https://ticketing-kappa-jet.vercel.app',
     'APP_MAINTENANCE_DRIVER' => 'file',
     'BCRYPT_ROUNDS' => '12',
 ];
@@ -113,6 +114,14 @@ foreach ($envDefaults as $key => $val) {
         $_SERVER[$key] = $val;
     }
 }
+
+// Dynamically sync APP_URL from incoming HTTP request host
+$dynHost = $_SERVER['HTTP_X_FORWARDED_HOST'] ?? $_SERVER['HTTP_HOST'] ?? 'ticketing-kappa-jet.vercel.app';
+$dynProto = $_SERVER['HTTP_X_FORWARDED_PROTO'] ?? 'https';
+$dynAppUrl = "{$dynProto}://{$dynHost}";
+putenv("APP_URL={$dynAppUrl}");
+$_ENV['APP_URL'] = $dynAppUrl;
+$_SERVER['APP_URL'] = $dynAppUrl;
 
 // Ensure Database connection works seamlessly on Vercel
 $dbHost = getenv('DB_HOST') ?: ($_ENV['DB_HOST'] ?? '');

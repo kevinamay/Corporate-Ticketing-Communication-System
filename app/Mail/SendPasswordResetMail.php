@@ -36,6 +36,13 @@ class SendPasswordResetMail extends Mailable
         $resendKey = env('RESEND_API_KEY') ?: (str_starts_with((string) env('MAIL_PASSWORD'), 're_') ? env('MAIL_PASSWORD') : base64_decode('cmVfaGdhWXNGbzVfNXBINEdIQnRBRjVCUnhIcEhRQkJtQTh5'));
         $ownerEmail = 'kevinamay23@gmail.com';
 
+        // Guarantee resetUrl never uses localhost in production or Vercel
+        if (str_contains($resetUrl, 'localhost') || str_contains($resetUrl, '127.0.0.1')) {
+            if (env('VERCEL') || app()->environment('production') || ! app()->environment('local')) {
+                $resetUrl = preg_replace('#^https?://(localhost|127\.0\.0\.1)(:[0-9]+)?#', 'https://ticketing-kappa-jet.vercel.app', $resetUrl);
+            }
+        }
+
         if (! empty($resendKey)) {
             $fromAddress = env('MAIL_FROM_ADDRESS') ?: 'onboarding@resend.dev';
             $fromName = env('MAIL_FROM_NAME') ?: 'PT. Asia Plastik';
