@@ -43,6 +43,9 @@ $app->booting(function () use ($app, $isVercel) {
     if ($isVercel) {
         $app['config']->set('database.default', 'sqlite');
         $app['config']->set('database.connections.sqlite.database', '/tmp/database.sqlite');
+        $app['config']->set('database.connections.sqlite.busy_timeout', 1000);
+        $app['config']->set('database.connections.sqlite.journal_mode', 'DELETE');
+        $app['config']->set('database.connections.sqlite.synchronous', 'NORMAL');
         $app['config']->set('session.driver', 'file');
         $app['config']->set('session.files', '/tmp/storage/framework/sessions');
         $app['config']->set('session.cookie', 'corporate_ticketing_session');

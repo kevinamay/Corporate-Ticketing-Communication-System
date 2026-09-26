@@ -47,35 +47,22 @@ $seededDb = __DIR__.'/../database/database.sqlite';
 if (! isset($GLOBALS['__db_ready'])) {
     $GLOBALS['__db_ready'] = true;
 
-    // Clean up any stale wal or shm lock files on serverless container
-    @unlink('/tmp/database.sqlite-wal');
-    @unlink('/tmp/database.sqlite-shm');
+    $needCopy = ! file_exists($tmpDb) || filesize($tmpDb) === 0;
+    if (! $needCopy && file_exists($seededDb) && filemtime($seededDb) > filemtime($tmpDb)) {
+        $needCopy = true;
+    }
 
-    if (! file_exists($tmpDb) || filesize($tmpDb) === 0) {
+    if ($needCopy) {
+        @unlink($tmpDb);
+        @unlink('/tmp/database.sqlite-wal');
+        @unlink('/tmp/database.sqlite-shm');
         if (file_exists($seededDb) && filesize($seededDb) > 0) {
             @copy($seededDb, $tmpDb);
         } else {
             @touch($tmpDb);
         }
+        @chmod($tmpDb, 0666);
     }
-
-    if (file_exists($tmpDb) && filesize($tmpDb) > 0) {
-        try {
-            $checkPdo = new PDO("sqlite:{$tmpDb}");
-            $checkPdo->exec('PRAGMA journal_mode = DELETE;');
-            $checkPdo->exec('PRAGMA busy_timeout = 1000;');
-            $stmt = $checkPdo->query("SELECT COUNT(*) FROM users WHERE email = 'user123@gmail.com'");
-            if (! $stmt || (int) $stmt->fetchColumn() === 0) {
-                $hashed = password_hash('password123', PASSWORD_BCRYPT, ['cost' => 12]);
-                $checkPdo->exec("INSERT INTO users (name, email, password, whatsapp_number, role, email_verified_at, created_at, updated_at) VALUES ('Admin IT', 'user123@gmail.com', '{$hashed}', '081234567899', 'admin', datetime('now'), datetime('now'), datetime('now'))");
-            }
-            $checkPdo = null;
-        } catch (Throwable $e) {
-            $checkPdo = null;
-            // Silently continue
-        }
-    }
-    @chmod($tmpDb, 0666);
 }
 
 // 4. Ensure essential environment variables have valid non-empty defaults
