@@ -160,15 +160,7 @@
 
                             <!-- Nama Lengkap -->
                             <td class="py-3 px-4">
-                                <div class="flex items-center gap-2.5">
-                                    <img src="{{ $emp->avatar ?: 'https://ui-avatars.com/api/?name='.urlencode($emp->name).'&background=0284c7&color=fff' }}" 
-                                         alt="{{ $emp->name }}" 
-                                         class="w-7 h-7 rounded-full object-cover shrink-0 border border-gray-200 dark:border-slate-700">
-                                    <div>
-                                        <p class="font-bold text-slate-900 dark:text-white">{{ $emp->name }}</p>
-                                        <span class="text-[10px] uppercase font-semibold text-slate-400">{{ $emp->role ?? 'staff' }}</span>
-                                    </div>
-                                </div>
+                                <span class="font-bold text-slate-900 dark:text-white">{{ $emp->name }}</span>
                             </td>
 
                             <!-- No HP -->
