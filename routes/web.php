@@ -2,11 +2,9 @@
 
 use App\Http\Middleware\EnsureHrDepartment;
 use App\Http\Middleware\SetLocale;
-use App\Mail\SendPasswordResetMail;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Validation\ValidationException;
@@ -25,57 +23,6 @@ Route::get('/', function () {
     }
 
     return redirect()->route('dashboard');
-});
-
-Route::get('/debug-reset', function () {
-    $report = [];
-    $t0 = microtime(true);
-
-    // 1. Database read
-    try {
-        $user = User::where('email', 'kevinamay23@gmail.com')->first();
-        $report['db_read'] = [
-            'time' => round((microtime(true) - $t0) * 1000, 2).'ms',
-            'found' => (bool) $user,
-            'name' => $user?->name,
-        ];
-    } catch (Throwable $e) {
-        $report['db_read_error'] = $e->getMessage();
-    }
-
-    // 2. Database write
-    $t1 = microtime(true);
-    try {
-        DB::table('password_reset_tokens')->updateOrInsert(
-            ['email' => 'kevinamay23@gmail.com'],
-            ['token' => 'debug-test-token-123', 'created_at' => now()]
-        );
-        $report['db_write'] = [
-            'time' => round((microtime(true) - $t1) * 1000, 2).'ms',
-        ];
-    } catch (Throwable $e) {
-        $report['db_write_error'] = $e->getMessage();
-    }
-
-    // 3. Email dispatch
-    $t2 = microtime(true);
-    try {
-        $mailResult = SendPasswordResetMail::sendTo(
-            'kevinamay23@gmail.com',
-            $user?->name ?? 'User',
-            'https://ticketing-kappa-jet.vercel.app/reset-password/debug-test-token-123'
-        );
-        $report['mail_dispatch'] = [
-            'time' => round((microtime(true) - $t2) * 1000, 2).'ms',
-            'result' => $mailResult,
-        ];
-    } catch (Throwable $e) {
-        $report['mail_error'] = $e->getMessage();
-    }
-
-    $report['total_time'] = round((microtime(true) - $t0) * 1000, 2).'ms';
-
-    return response()->json($report);
 });
 
 Route::get('/login', function () {
