@@ -21,7 +21,7 @@
                     {{ __('Daftar Akun Karyawan Terdaftar') }}
                 </h1>
                 <p class="text-xs sm:text-sm text-blue-100/90 max-w-2xl leading-relaxed">
-                    {{ __('Memuat seluruh data akun karyawan yang terdaftar di sistem. Terdiri dari Nama Lengkap, Nomor HP/WhatsApp, Email Aktif, Divisi, dan Waktu Registrasi.') }}
+                    {{ __('Memuat seluruh data akun karyawan yang terdaftar di sistem. Terdiri dari Nama Lengkap, Nomor HP/WhatsApp, Email Aktif, dan Waktu Registrasi.') }}
                 </p>
             </div>
 
@@ -76,7 +76,7 @@
             </div>
             <div>
                 <span class="text-blue-200/80 block text-[11px]">{{ __('Otoritas Akses:') }}</span>
-                <span class="text-xs font-bold text-white uppercase">{{ auth()->user()->name }} ({{ auth()->user()->department?->name ?? 'Admin IT' }})</span>
+                <span class="text-xs font-bold text-white uppercase">{{ auth()->user()->name }} (Admin IT)</span>
             </div>
         </div>
     </div>
@@ -109,10 +109,10 @@
     <!-- Main Table Container -->
     <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-md border border-gray-200 dark:border-slate-800 p-5 sm:p-6 transition-colors">
         
-        <!-- Search and Filter Bar -->
-        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 mb-6">
+        <!-- Search Bar -->
+        <div class="mb-6">
             <!-- Search Input -->
-            <div class="relative flex-1">
+            <div class="relative w-full">
                 <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
                     <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
@@ -120,19 +120,8 @@
                 </div>
                 <input type="text" 
                        wire:model.live.debounce.300ms="search"
-                       placeholder="{{ __('Cari nama, no hp, email, atau divisi...') }}"
-                       class="w-full pl-10 pr-4 py-2 text-xs rounded-xl border border-gray-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition">
-            </div>
-
-            <!-- Department Filter Dropdown -->
-            <div class="w-full sm:w-64">
-                <select wire:model.live="departmentFilter"
-                        class="w-full px-3.5 py-2 text-xs rounded-xl border border-gray-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition">
-                    <option value="all">{{ __('Semua Divisi') }}</option>
-                    @foreach ($departments as $dept)
-                        <option value="{{ $dept->id }}">{{ $dept->name }}</option>
-                    @endforeach
-                </select>
+                       placeholder="{{ __('Cari nama lengkap, no hp, atau email...') }}"
+                       class="w-full pl-10 pr-4 py-2.5 text-xs rounded-xl border border-gray-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition">
             </div>
         </div>
 
@@ -145,7 +134,6 @@
                         <th scope="col" class="py-3.5 px-4">{{ __('Nama Lengkap') }}</th>
                         <th scope="col" class="py-3.5 px-4">{{ __('No. HP / WhatsApp') }}</th>
                         <th scope="col" class="py-3.5 px-4">{{ __('Email Aktif') }}</th>
-                        <th scope="col" class="py-3.5 px-4">{{ __('Divisi') }}</th>
                         <th scope="col" class="py-3.5 px-4">{{ __('Waktu Mendaftar') }}</th>
                         <th scope="col" class="py-3.5 px-4 text-right">{{ __('Aksi') }}</th>
                     </tr>
@@ -182,14 +170,6 @@
                                 </div>
                             </td>
 
-                            <!-- Divisi -->
-                            <td class="py-3 px-4">
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-gray-200 dark:border-slate-700">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
-                                    {{ $emp->department->name ?? 'Belum Ditentukan' }}
-                                </span>
-                            </td>
-
                             <!-- Timestamp Mendaftar -->
                             <td class="py-3 px-4 text-slate-500 dark:text-slate-400 text-[11px] font-mono whitespace-nowrap">
                                 {{ $emp->created_at ? $emp->created_at->format('d M Y, H:i') : '-' }}
@@ -218,7 +198,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="py-12 text-center text-slate-400 dark:text-slate-500">
+                            <td colspan="6" class="py-12 text-center text-slate-400 dark:text-slate-500">
                                 <svg class="w-12 h-12 mx-auto text-slate-300 dark:text-slate-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                                 <p class="text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">{{ __('Belum ada data karyawan.') }}</p>
                                 <p class="text-[11px] text-slate-400 max-w-sm mx-auto mb-4">{{ __('Gunakan tombol "Tambah Manual" atau "Import CSV" untuk mengisi data karyawan.') }}</p>
@@ -266,7 +246,7 @@
                                 {{ $editingEmployeeId ? __('Edit Data Akun Karyawan') : __('Tambah Akun Karyawan Baru') }}
                             </h3>
                             <p class="text-[11px] text-slate-400">
-                                {{ __('Input Nama, No HP, Email aktif, dan Divisi karyawan.') }}
+                                {{ __('Input Nama Lengkap, No HP, dan Email aktif karyawan.') }}
                             </p>
                         </div>
                     </div>
@@ -317,22 +297,6 @@
                                 placeholder="{{ __('Contoh: budi.santoso@asiaplastik.com') }}"
                                 class="w-full text-xs px-3.5 py-2.5 rounded-lg border @error('email') border-rose-400 bg-rose-50 dark:bg-rose-950/30 @else border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 @enderror focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition">
                         @error('email') <p class="text-[11px] text-rose-600 dark:text-rose-400 mt-1">{{ $message }}</p> @enderror
-                    </div>
-
-                    <!-- Departemen / Divisi -->
-                    <div>
-                        <label for="form_dept" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                            {{ __('Divisi / Departemen') }} <span class="text-rose-500">*</span>
-                        </label>
-                        <select id="form_dept" 
-                                wire:model="department_id"
-                                class="w-full text-xs px-3.5 py-2.5 rounded-lg border @error('department_id') border-rose-400 bg-rose-50 dark:bg-rose-950/30 @else border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 @enderror focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition">
-                            <option value="">{{ __('-- Pilih Divisi --') }}</option>
-                            @foreach ($departments as $dept)
-                                <option value="{{ $dept->id }}">{{ $dept->name }}</option>
-                            @endforeach
-                        </select>
-                        @error('department_id') <p class="text-[11px] text-rose-600 dark:text-rose-400 mt-1">{{ $message }}</p> @enderror
                     </div>
 
                     <!-- Footer Buttons -->
@@ -430,7 +394,7 @@
                                 {{ __('Import Massal Data Karyawan (CSV)') }}
                             </h3>
                             <p class="text-[11px] text-slate-400">
-                                {{ __('Unggah file CSV dengan kolom: name, whatsapp_number, email, department_id.') }}
+                                {{ __('Unggah file CSV dengan kolom: name, whatsapp_number, email.') }}
                             </p>
                         </div>
                     </div>
@@ -474,7 +438,7 @@
                     <!-- Guide Info -->
                     <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-gray-100 dark:border-slate-800 text-[11px] space-y-1">
                         <p class="font-bold text-slate-700 dark:text-slate-200">{{ __('Panduan Format CSV:') }}</p>
-                        <p class="text-slate-500 dark:text-slate-400">{{ __('1. Header wajib: name, whatsapp_number, email, department_id.') }}</p>
+                        <p class="text-slate-500 dark:text-slate-400">{{ __('1. Header wajib: name, whatsapp_number, email.') }}</p>
                         <p class="text-slate-500 dark:text-slate-400">{{ __('2. Password awal otomatis diset ke "password123".') }}</p>
                     </div>
 
@@ -508,3 +472,4 @@
         </div>
     @endif
 </div>
+

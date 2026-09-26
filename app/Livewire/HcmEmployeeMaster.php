@@ -17,10 +17,8 @@ class HcmEmployeeMaster extends Component
 {
     use WithFileUploads, WithPagination;
 
-    // Search & Filter
+    // Search
     public string $search = '';
-
-    public string $departmentFilter = 'all';
 
     // Form Modal (Add / Edit)
     public bool $isFormModalOpen = false;
@@ -32,8 +30,6 @@ class HcmEmployeeMaster extends Component
     public string $whatsapp_number = '';
 
     public string $email = '';
-
-    public ?int $department_id = null;
 
     // Delete Confirmation Modal
     public bool $isDeleteModalOpen = false;
@@ -59,11 +55,6 @@ class HcmEmployeeMaster extends Component
     public function mount(): void
     {
         $this->ensureAuthorized();
-
-        $defaultDept = Department::first();
-        if ($defaultDept) {
-            $this->department_id = $defaultDept->id;
-        }
     }
 
     protected function ensureAuthorized(): void
@@ -90,11 +81,6 @@ class HcmEmployeeMaster extends Component
         $this->resetPage();
     }
 
-    public function updatingDepartmentFilter(): void
-    {
-        $this->resetPage();
-    }
-
     /**
      * Open Modal to Add a new employee manually.
      */
@@ -106,9 +92,6 @@ class HcmEmployeeMaster extends Component
         $this->name = '';
         $this->whatsapp_number = '';
         $this->email = '';
-
-        $firstDept = Department::first();
-        $this->department_id = $firstDept ? $firstDept->id : null;
 
         $this->isFormModalOpen = true;
     }
@@ -126,7 +109,6 @@ class HcmEmployeeMaster extends Component
         $this->name = $user->name;
         $this->whatsapp_number = $user->whatsapp_number ?? '';
         $this->email = $user->email;
-        $this->department_id = $user->department_id;
 
         $this->isFormModalOpen = true;
     }
@@ -158,7 +140,6 @@ class HcmEmployeeMaster extends Component
                 'max:150',
                 Rule::unique('users', 'email')->ignore($this->editingEmployeeId),
             ],
-            'department_id' => 'required|exists:departments,id',
         ], [
             'name.required' => 'Nama lengkap wajib diisi.',
             'name.min' => 'Nama lengkap minimal 3 karakter.',
@@ -168,11 +149,10 @@ class HcmEmployeeMaster extends Component
             'email.required' => 'Alamat email aktif wajib diisi.',
             'email.email' => 'Format alamat email tidak valid.',
             'email.unique' => 'Email ini sudah terdaftar dalam sistem.',
-            'department_id.required' => 'Silakan pilih divisi penugasan.',
-            'department_id.exists' => 'Divisi yang dipilih tidak valid.',
         ]);
 
         $avatarUrl = 'https://ui-avatars.com/api/?name='.urlencode(trim($this->name)).'&background=0284c7&color=fff';
+        $defaultDeptId = Department::first()?->id ?? 1;
 
         if ($this->editingEmployeeId) {
             $user = User::findOrFail($this->editingEmployeeId);
@@ -180,7 +160,6 @@ class HcmEmployeeMaster extends Component
                 'name' => trim($this->name),
                 'whatsapp_number' => trim($this->whatsapp_number),
                 'email' => strtolower(trim($this->email)),
-                'department_id' => (int) $this->department_id,
                 'avatar' => $avatarUrl,
             ]);
 
@@ -191,7 +170,7 @@ class HcmEmployeeMaster extends Component
                 'whatsapp_number' => trim($this->whatsapp_number),
                 'email' => strtolower(trim($this->email)),
                 'password' => 'password123',
-                'department_id' => (int) $this->department_id,
+                'department_id' => $defaultDeptId,
                 'role' => 'staff',
                 'avatar' => $avatarUrl,
                 'email_verified_at' => now(),
@@ -336,22 +315,13 @@ class HcmEmployeeMaster extends Component
 
             $emailIdx = array_search('email', $normalizedHeaders, true);
 
-            $deptIdx = array_search('department_id', $normalizedHeaders, true);
-            if ($deptIdx === false) {
-                $deptIdx = array_search('divisi', $normalizedHeaders, true) ?: array_search('department', $normalizedHeaders, true);
-            }
-
             if ($nameIdx === false || $emailIdx === false) {
                 $this->csvErrorMessage = 'Format CSV tidak valid. Kolom "name" dan "email" wajib ada di header CSV.';
 
                 return;
             }
 
-            $departments = Department::all()->keyBy('id');
-            $deptNames = Department::all()->mapWithKeys(function ($d) {
-                return [strtolower(trim($d->name)) => $d->id];
-            });
-
+            $defaultDeptId = Department::first()?->id ?? 1;
             $insertedCount = 0;
             $updatedCount = 0;
             $skippedCount = 0;
@@ -369,22 +339,12 @@ class HcmEmployeeMaster extends Component
                 $name = isset($row[$nameIdx]) ? trim($row[$nameIdx]) : '';
                 $email = isset($row[$emailIdx]) ? strtolower(trim($row[$emailIdx])) : '';
                 $wa = ($waIdx !== false && isset($row[$waIdx])) ? trim($row[$waIdx]) : '081234567890';
-                $deptRaw = ($deptIdx !== false && isset($row[$deptIdx])) ? trim($row[$deptIdx]) : '';
 
                 if (empty($name) || empty($email) || ! filter_var($email, FILTER_VALIDATE_EMAIL)) {
                     $skippedCount++;
                     $errors[] = "Baris {$rowNumber}: Nama atau Email tidak valid.";
 
                     continue;
-                }
-
-                $resolvedDeptId = null;
-                if (is_numeric($deptRaw) && isset($departments[(int) $deptRaw])) {
-                    $resolvedDeptId = (int) $deptRaw;
-                } elseif (isset($deptNames[strtolower($deptRaw)])) {
-                    $resolvedDeptId = $deptNames[strtolower($deptRaw)];
-                } else {
-                    $resolvedDeptId = Department::first()?->id ?? 1;
                 }
 
                 $existing = User::where('email', $email)->first();
@@ -394,7 +354,6 @@ class HcmEmployeeMaster extends Component
                     $existing->update([
                         'name' => $name,
                         'whatsapp_number' => $wa,
-                        'department_id' => $resolvedDeptId,
                     ]);
                     $updatedCount++;
                 } else {
@@ -402,7 +361,7 @@ class HcmEmployeeMaster extends Component
                         'name' => $name,
                         'email' => $email,
                         'whatsapp_number' => $wa,
-                        'department_id' => $resolvedDeptId,
+                        'department_id' => $defaultDeptId,
                         'password' => 'password123',
                         'role' => 'staff',
                         'avatar' => $avatarUrl,
@@ -442,21 +401,11 @@ class HcmEmployeeMaster extends Component
 
         return response()->stream(function () {
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['name', 'whatsapp_number', 'email', 'department_id']);
+            fputcsv($handle, ['name', 'whatsapp_number', 'email']);
 
-            $departments = Department::all();
-            if ($departments->isNotEmpty()) {
-                foreach ($departments as $idx => $dept) {
-                    fputcsv($handle, [
-                        'Karyawan '.$dept->name,
-                        '0812'.str_pad((string) (10000000 + $idx + 1), 8, '0', STR_PAD_LEFT),
-                        'staff.'.strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $dept->name)).'@asiaplastik.com',
-                        $dept->id,
-                    ]);
-                }
-            } else {
-                fputcsv($handle, ['Contoh Karyawan', '081234567890', 'karyawan@asiaplastik.com', 1]);
-            }
+            fputcsv($handle, ['Budi Pratama', '081234567891', 'budi.it@asiaplastik.com']);
+            fputcsv($handle, ['Siti Rahmawati', '081234567892', 'siti.admin@asiaplastik.com']);
+            fputcsv($handle, ['Hendra Wijaya', '081234567894', 'hendra.produksi@asiaplastik.com']);
 
             fclose($handle);
         }, 200, $headers);
@@ -464,29 +413,21 @@ class HcmEmployeeMaster extends Component
 
     public function render(): View
     {
-        $query = User::query()->with('department');
+        $query = User::query();
 
         if (trim($this->search) !== '') {
             $searchTerm = '%'.trim($this->search).'%';
             $query->where(function ($q) use ($searchTerm) {
                 $q->where('name', 'like', $searchTerm)
                     ->orWhere('email', 'like', $searchTerm)
-                    ->orWhere('whatsapp_number', 'like', $searchTerm)
-                    ->orWhereHas('department', function ($dq) use ($searchTerm) {
-                        $dq->where('name', 'like', $searchTerm);
-                    });
+                    ->orWhere('whatsapp_number', 'like', $searchTerm);
             });
         }
 
-        if ($this->departmentFilter !== 'all') {
-            $query->where('department_id', (int) $this->departmentFilter);
-        }
-
-        $users = $query->orderBy('name')->paginate(10);
+        $users = $query->latest()->paginate(10);
 
         return view('livewire.hcm-employee-master', [
             'employees' => $users,
-            'departments' => Department::orderBy('name')->get(),
             'totalEmployees' => User::count(),
             'registeredCount' => User::whereNotNull('email_verified_at')->count(),
         ]);

@@ -6,7 +6,6 @@ use App\Livewire\GlobalTickets;
 use App\Livewire\HcmEmployeeMaster;
 use App\Livewire\RegisterUser;
 use App\Models\Department;
-use App\Models\EmployeeMasterData;
 use App\Models\Ticket;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -72,71 +71,28 @@ class CorporateTicketingModulesTest extends TestCase
     }
 
     /**
-     * MODULE 2: Gatekeeper Aborts if KTP does NOT exist in employee_master_data.
+     * MODULE 2: User registration with 4 fields (Name, WA, Email, Password).
      */
-    public function test_module_2_registration_aborts_when_ktp_not_in_employee_master(): void
+    public function test_module_2_registration_succeeds(): void
     {
-        $unregisteredKtp = '3578999988887777';
-
         Livewire::test(RegisterUser::class)
-            ->set('name', 'Calon Karyawan Liar')
-            ->set('email', 'unregistered@example.com')
+            ->set('name', 'Karyawan Baru Terdaftar')
+            ->set('email', 'baru@asiaplastik.com')
+            ->set('whatsapp_number', '081234567890')
             ->set('password', 'password123')
             ->set('password_confirmation', 'password123')
-            ->set('national_id_ktp', $unregisteredKtp)
-            ->set('gender', 'male')
-            ->set('whatsapp_number', '081234567890')
-            ->set('complete_address', 'Jl. Tanpa Arah No. 1')
-            ->set('postal_code', '60293')
-            ->call('register')
-            ->assertHasErrors(['national_id_ktp'])
-            ->assertSee('NIK/KTP tidak terdaftar di sistem HRD.');
-
-        $this->assertDatabaseMissing('users', [
-            'email' => 'unregistered@example.com',
-        ]);
-    }
-
-    /**
-     * MODULE 2: Gatekeeper succeeds and auto-assigns department_id from employee_master_data.
-     */
-    public function test_module_2_registration_succeeds_and_auto_assigns_department(): void
-    {
-        $validKtp = '3578015507940002';
-
-        // Pre-register in HRD Master Data with Production Department (dept_id = 3)
-        EmployeeMasterData::create([
-            'ktp_number' => $validKtp,
-            'name' => 'Karyawan Resmi Pabrik',
-            'department_id' => $this->prodDept->id,
-        ]);
-
-        // Even if user selected IT Support (dept_id = 1), HRD Gatekeeper must auto-assign to Production (dept_id = 3)
-        Livewire::test(RegisterUser::class)
-            ->set('name', 'Karyawan Resmi Pabrik')
-            ->set('email', 'resmi@asiaplastik.com')
-            ->set('password', 'password123')
-            ->set('password_confirmation', 'password123')
-            ->set('national_id_ktp', $validKtp)
-            ->set('gender', 'male')
-            ->set('whatsapp_number', '081234567890')
-            ->set('complete_address', 'Jl. Industri Rungkut No. 55')
-            ->set('postal_code', '60293')
-            ->set('department_id', $this->itDept->id) // Will be overridden by HRD Gatekeeper
             ->call('register')
             ->assertHasNoErrors()
             ->assertSet('step', 2);
 
-        $createdUser = User::where('national_id_ktp', $validKtp)->first();
+        $createdUser = User::where('email', 'baru@asiaplastik.com')->first();
         $this->assertNotNull($createdUser);
-        $this->assertEquals($validKtp, $createdUser->ktp_number);
-        // Department MUST match employee_master_data (Production dept id = 3)
-        $this->assertEquals($this->prodDept->id, $createdUser->department_id);
+        $this->assertEquals('Karyawan Baru Terdaftar', $createdUser->name);
+        $this->assertEquals('081234567890', $createdUser->whatsapp_number);
     }
 
     /**
-     * MODULE 3: Security & Routing for /hcm-core/employees-master
-     * Only users with department_id === 2 (HR) can access it.
+     * MODULE 3: Guarded Access for HCM Master Data (user123@gmail.com only).
      */
     public function test_module_3_hcm_vault_route_authorization(): void
     {
@@ -144,7 +100,7 @@ class CorporateTicketingModulesTest extends TestCase
         $response = $this->get('/hcm-core/employees-master');
         $response->assertRedirect('/login');
 
-        // 2. Non-HR user (IT department_id = 1) is aborted with 403 Forbidden
+        // 2. Non-Admin user is aborted with 403 Forbidden
         $itUser = User::create([
             'name' => 'Staff IT',
             'email' => 'it@asiaplastik.com',
@@ -173,7 +129,7 @@ class CorporateTicketingModulesTest extends TestCase
 
         $response = $this->get('/hcm-core/employees-master');
         $response->assertStatus(200);
-        $response->assertSee('HCM Employee Master Data');
+        $response->assertSee('Manajemen Data Karyawan');
     }
 
     /**
@@ -197,7 +153,6 @@ class CorporateTicketingModulesTest extends TestCase
             ->set('name', 'Ahmad Dani')
             ->set('whatsapp_number', '081234567801')
             ->set('email', 'ahmad.dani@asiaplastik.com')
-            ->set('department_id', $this->itDept->id)
             ->call('saveEmployee')
             ->assertHasNoErrors();
 
@@ -205,7 +160,6 @@ class CorporateTicketingModulesTest extends TestCase
             'name' => 'Ahmad Dani',
             'email' => 'ahmad.dani@asiaplastik.com',
             'whatsapp_number' => '081234567801',
-            'department_id' => $this->itDept->id,
         ]);
 
         $emp = User::where('email', 'ahmad.dani@asiaplastik.com')->first();
@@ -216,7 +170,6 @@ class CorporateTicketingModulesTest extends TestCase
             ->set('name', 'Ahmad Dani Updated')
             ->set('whatsapp_number', '081234567802')
             ->set('email', 'ahmad.dani@asiaplastik.com')
-            ->set('department_id', $this->prodDept->id)
             ->call('saveEmployee')
             ->assertHasNoErrors();
 
@@ -224,13 +177,12 @@ class CorporateTicketingModulesTest extends TestCase
             'id' => $emp->id,
             'name' => 'Ahmad Dani Updated',
             'whatsapp_number' => '081234567802',
-            'department_id' => $this->prodDept->id,
         ]);
 
         // 3. CSV Bulk Upload
-        $csvContent = "name,whatsapp_number,email,department_id\n"
-            ."Siti CSV,081234567803,siti.csv@asiaplastik.com,2\n"
-            ."Budi CSV,081234567804,budi.csv@asiaplastik.com,1\n";
+        $csvContent = "name,whatsapp_number,email\n"
+            ."Siti CSV,081234567803,siti.csv@asiaplastik.com\n"
+            ."Budi CSV,081234567804,budi.csv@asiaplastik.com\n";
 
         $file = UploadedFile::fake()->createWithContent('employees.csv', $csvContent);
 
@@ -242,13 +194,11 @@ class CorporateTicketingModulesTest extends TestCase
         $this->assertDatabaseHas('users', [
             'name' => 'Siti CSV',
             'email' => 'siti.csv@asiaplastik.com',
-            'department_id' => 2,
         ]);
 
         $this->assertDatabaseHas('users', [
             'name' => 'Budi CSV',
             'email' => 'budi.csv@asiaplastik.com',
-            'department_id' => 1,
         ]);
 
         // 4. Delete Employee
