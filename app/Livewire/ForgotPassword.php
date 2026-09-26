@@ -89,7 +89,7 @@ class ForgotPassword extends Component
 
         $this->resetUrl = $resetUrl;
         $this->isSent = true;
-        $this->statusMessage = 'Tautan reset password telah berhasil dibuat dan dikirimkan.';
+        $this->statusMessage = 'Tautan reset password telah berhasil dibuat dan dikirimkan ke email Anda.';
 
         // Safe non-blocking email dispatch attempt
         try {
@@ -98,9 +98,7 @@ class ForgotPassword extends Component
             Log::info('Pengiriman email reset password dilewati: '.$e->getMessage());
         }
 
-        session()->flash('status', 'Tautan reset password berhasil dibuat untuk email '.$cleanEmail.'. Silakan masukkan password baru Anda di bawah ini.');
-
-        $this->redirect($resetUrl, navigate: false);
+        // Keep user on the confirmation view so they can check their email
     }
 
     public function resend(): void

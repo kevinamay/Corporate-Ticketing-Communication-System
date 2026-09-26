@@ -46,59 +46,63 @@ class SendPasswordResetMail extends Mailable
         if (! empty($resendKey)) {
             $fromAddress = env('MAIL_FROM_ADDRESS') ?: 'onboarding@resend.dev';
             $fromName = env('MAIL_FROM_NAME') ?: 'PT. Asia Plastik';
+            $cleanTo = strtolower(trim($toEmail));
+            $isOwner = $cleanTo === strtolower(trim($ownerEmail));
+
+            // Standard corporate template
             $html = view('emails.password-reset', ['userName' => $userName, 'resetUrl' => $resetUrl])->render();
 
-            // Case 1: Recipient is verified owner email in Resend
-            if (strtolower(trim($toEmail)) === strtolower(trim($ownerEmail))) {
-                try {
-                    $response = Http::withoutVerifying()->connectTimeout(1.0)->timeout(1.5)->withToken($resendKey)->post('https://api.resend.com/emails', [
+            try {
+                // First attempt: Send directly to the requested email
+                $response = Http::withoutVerifying()
+                    ->withOptions([
+                        'connect_timeout' => 2,
+                        'timeout' => 3,
+                        'force_ip_resolve' => 'v4',
+                    ])
+                    ->withToken($resendKey)
+                    ->post('https://api.resend.com/emails', [
                         'from' => "{$fromName} <{$fromAddress}>",
                         'to' => [$toEmail],
                         'subject' => 'Tautan Atur Ulang Password Akun - PT. Asia Plastik',
                         'html' => $html,
                     ]);
 
-                    if ($response->successful()) {
-                        Log::info("Password reset email successfully dispatched to {$toEmail} via Resend API");
+                if ($response->successful()) {
+                    Log::info("Password reset email successfully dispatched to {$toEmail} via Resend API");
 
-                        return [
-                            'success' => true,
-                            'sandboxed' => false,
-                            'message' => 'Tautan reset password telah dikirim ke '.$toEmail.'. Silakan periksa inbox atau folder spam email Anda.',
-                        ];
-                    }
-                } catch (\Throwable $e) {
-                    Log::warning("Resend password reset dispatch to owner failed: {$e->getMessage()}");
-                }
-            } else {
-                // Case 2: Regular employee email in Resend Sandbox mode
-                try {
-                    $ownerHtml = "<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px; background: #ffffff;'>"
-                        ."<h2 style='color: #1e3a8a; margin-top: 0;'>Permohonan Reset Password - PT. Asia Plastik</h2>"
-                        ."<p style='color: #475569;'>Pengguna <strong>{$userName}</strong> mengajukan reset password untuk email: <strong>{$toEmail}</strong>.</p>"
-                        ."<p style='color: #475569;'>Tautan reset password yang dihasilkan adalah:</p>"
-                        ."<div style='background: #eff6ff; padding: 14px; text-align: center; border-radius: 8px; border: 1px solid #bfdbfe; margin: 20px 0;'>"
-                        ."<a href='{$resetUrl}' style='display: inline-block; background: #2563eb; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;'>Buka Halaman Reset Password</a>"
-                        ."<p style='font-size: 11px; color: #64748b; margin-top: 10px; word-break: break-all;'>{$resetUrl}</p>"
-                        .'</div>'
-                        ."<p style='color: #64748b; font-size: 12px;'><em>Notifikasi sistem otomatis PT Asia Plastik.</em></p>"
-                        .'</div>';
-
-                    Http::withoutVerifying()->connectTimeout(1.0)->timeout(1.5)->withToken($resendKey)->post('https://api.resend.com/emails', [
-                        'from' => "{$fromName} <{$fromAddress}>",
-                        'to' => [$ownerEmail],
-                        'subject' => "Tautan Reset Password Pengguna [{$toEmail}] - PT. Asia Plastik",
-                        'html' => $ownerHtml,
-                    ]);
-                } catch (\Throwable $forwardError) {
-                    Log::warning("Failed to forward sandbox password reset to owner: {$forwardError->getMessage()}");
+                    return [
+                        'success' => true,
+                        'sandboxed' => false,
+                        'message' => 'Tautan reset password telah dikirim ke '.$toEmail.'. Silakan periksa inbox atau folder spam email Anda.',
+                    ];
                 }
 
-                return [
-                    'success' => true,
-                    'sandboxed' => true,
-                    'message' => 'Tautan reset password berhasil dibuat untuk email '.$toEmail.'.',
-                ];
+                // If sending directly failed because of Resend Sandbox restriction (free tier only delivers to owner)
+                if (! $isOwner) {
+                    $sandboxHtml = view('emails.password-reset', [
+                        'userName' => "{$userName} ({$toEmail})",
+                        'resetUrl' => $resetUrl,
+                    ])->render();
+
+                    Http::withoutVerifying()
+                        ->withOptions([
+                            'connect_timeout' => 2,
+                            'timeout' => 3,
+                            'force_ip_resolve' => 'v4',
+                        ])
+                        ->withToken($resendKey)
+                        ->post('https://api.resend.com/emails', [
+                            'from' => "{$fromName} <{$fromAddress}>",
+                            'to' => [$ownerEmail],
+                            'subject' => "Tautan Atur Ulang Password Akun [{$toEmail}] - PT. Asia Plastik",
+                            'html' => $sandboxHtml,
+                        ]);
+
+                    Log::info("Password reset for {$toEmail} delivered via sandbox owner {$ownerEmail}");
+                }
+            } catch (\Throwable $e) {
+                Log::warning("Resend password reset dispatch failed: {$e->getMessage()}");
             }
         }
 

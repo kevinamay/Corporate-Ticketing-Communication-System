@@ -41,63 +41,39 @@
             @endif
 
             @if ($isSent)
-                <div class="mb-6 space-y-4">
-                    <div class="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-xs">
-                        <div class="flex items-center gap-2 font-bold mb-1 text-emerald-700 dark:text-emerald-300">
-                            <svg class="w-4 h-4 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                            <span>{{ __('Tautan Berhasil Dikirim!') }}</span>
-                        </div>
-                        <p class="mt-1">
-                            {{ __('Tautan reset password telah dikirim ke alamat email:') }} <strong class="font-bold underline">{{ $email }}</strong>.
-                        </p>
-                        <p class="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1">
-                            {{ __('Silakan periksa kotak masuk (Inbox) atau folder Spam email Anda.') }}
-                        </p>
+                <div class="mb-5 p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-100 text-xs">
+                    <div class="flex items-center gap-2 font-bold mb-1.5 text-emerald-800 dark:text-emerald-300">
+                        <svg class="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <span class="text-sm font-black">{{ __('Tautan Berhasil Dikirim ke Email!') }}</span>
                     </div>
-
-                    @if ($resetUrl)
-                        <div class="p-4 rounded-xl bg-blue-50/90 dark:bg-blue-950/50 border-2 border-blue-200 dark:border-blue-800 text-center shadow-xs">
-                            <span class="block text-xs font-bold text-blue-700 dark:text-blue-300 uppercase tracking-wider mb-2">
-                                {{ __('Akses Tautan Reset Password:') }}
-                            </span>
-                            <a href="{{ $resetUrl }}" class="inline-flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs uppercase tracking-wider rounded-lg shadow-md transition cursor-pointer">
-                                <span>{{ __('Buka Halaman Reset Password') }}</span>
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-                            </a>
-                            <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-2">
-                                {{ __('Anda dapat langsung mengklik tombol di atas untuk membuat password baru.') }}
-                            </p>
-                        </div>
-                    @endif
-
-                    <div class="flex items-center justify-between pt-2">
-                        <button type="button" wire:click="resend" wire:loading.attr="disabled" class="text-xs text-blue-600 dark:text-blue-400 hover:underline font-semibold cursor-pointer">
-                            <span wire:loading.remove wire:target="resend">{{ __('Kirim Ulang Tautan') }}</span>
-                            <span wire:loading wire:target="resend">{{ __('Mengirim Ulang...') }}</span>
-                        </button>
-                        <a href="{{ route('login') }}" class="text-xs text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition font-medium">
-                            &larr; {{ __('Kembali ke Login') }}
-                        </a>
-                    </div>
+                    <p class="leading-relaxed">
+                        {{ __('Tautan reset password telah dikirim ke alamat email:') }} <strong class="font-bold underline text-emerald-700 dark:text-emerald-300">{{ $email }}</strong>.
+                    </p>
+                    <p class="mt-2 text-[11px] text-emerald-700 dark:text-emerald-400 font-medium">
+                        {{ __('Silakan buka kotak masuk (Inbox) atau folder Spam email Anda, lalu klik tautan di dalam email tersebut untuk masuk ke halaman pembuatan password baru.') }}
+                    </p>
                 </div>
-            @else
-                <form wire:submit.prevent="sendResetLink" class="space-y-4">
-                    
-                    <!-- Input: Email -->
-                    <div>
-                        <label for="email" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                            {{ __('Alamat Email Terdaftar') }} <span class="text-rose-500">*</span>
-                        </label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-                            </div>
-                            <input type="email" id="email" wire:model="email" placeholder="{{ __('nama@perusahaan.com') }}" autofocus
-                                   class="w-full text-xs pl-9 pr-3.5 py-2.5 rounded-lg border @error('email') border-rose-400 bg-rose-50 dark:bg-rose-950/30 @else border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 @enderror focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition">
-                        </div>
-                        @error('email') <p class="text-[11px] text-rose-600 dark:text-rose-400 mt-1">{{ $message }}</p> @enderror
-                    </div>
+            @endif
 
+            <form wire:submit.prevent="sendResetLink" class="space-y-4">
+                
+                <!-- Input: Email -->
+                <div>
+                    <label for="email" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                        {{ __('Alamat Email Terdaftar') }} <span class="text-rose-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                        </div>
+                        <input type="email" id="email" wire:model="email" placeholder="{{ __('nama@perusahaan.com') }}" autofocus
+                               @if($isSent) readonly @endif
+                               class="w-full text-xs pl-9 pr-3.5 py-2.5 rounded-lg border @error('email') border-rose-400 bg-rose-50 dark:bg-rose-950/30 @else border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 @enderror @if($isSent) bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 cursor-not-allowed @endif focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition">
+                    </div>
+                    @error('email') <p class="text-[11px] text-rose-600 dark:text-rose-400 mt-1">{{ $message }}</p> @enderror
+                </div>
+
+                @if (! $isSent)
                     <!-- Submit Button -->
                     <button type="submit" 
                             wire:loading.attr="disabled"
@@ -108,19 +84,44 @@
                             {{ __('Mengirim Tautan...') }}
                         </span>
                     </button>
+                @else
+                    <!-- Sent Actions -->
+                    <div class="space-y-3">
+                        @if ($resetUrl)
+                            <div class="p-3.5 rounded-xl bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 text-center">
+                                <span class="block text-[11px] font-bold text-blue-700 dark:text-blue-300 uppercase tracking-wider mb-2">
+                                    {{ __('Atau Buka Langsung Halaman Reset:') }}
+                                </span>
+                                <a href="{{ $resetUrl }}" class="inline-flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs uppercase tracking-wider rounded-lg shadow-md transition cursor-pointer">
+                                    <span>{{ __('Buka Halaman Reset Password') }}</span>
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                                </a>
+                            </div>
+                        @endif
 
-                </form>
+                        <div class="flex items-center justify-between pt-1">
+                            <button type="button" wire:click="resend" wire:loading.attr="disabled" class="text-xs text-blue-600 dark:text-blue-400 hover:underline font-semibold cursor-pointer">
+                                <span wire:loading.remove wire:target="resend">{{ __('Kirim Ulang Tautan') }}</span>
+                                <span wire:loading wire:target="resend">{{ __('Mengirim Ulang...') }}</span>
+                            </button>
+                            <button type="button" wire:click="$set('isSent', false)" class="text-xs text-slate-500 dark:text-slate-400 hover:underline">
+                                {{ __('Ganti Alamat Email') }}
+                            </button>
+                        </div>
+                    </div>
+                @endif
 
-                <!-- Navigation link -->
-                <div class="mt-6 pt-5 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs text-slate-600 dark:text-slate-400">
-                    <a href="{{ route('login') }}" class="font-medium text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition">
-                        &larr; {{ __('Kembali ke Login') }}
-                    </a>
-                    <a href="{{ route('register') }}" class="font-bold text-blue-600 dark:text-blue-400 hover:text-blue-800 transition underline">
-                        {{ __('Daftar Akun Baru') }}
-                    </a>
-                </div>
-            @endif
+            </form>
+
+            <!-- Navigation link -->
+            <div class="mt-6 pt-5 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs text-slate-600 dark:text-slate-400">
+                <a href="{{ route('login') }}" class="font-medium text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition">
+                    &larr; {{ __('Kembali ke Login') }}
+                </a>
+                <a href="{{ route('register') }}" class="font-bold text-blue-600 dark:text-blue-400 hover:text-blue-800 transition underline">
+                    {{ __('Daftar Akun Baru') }}
+                </a>
+            </div>
 
         </div>
 

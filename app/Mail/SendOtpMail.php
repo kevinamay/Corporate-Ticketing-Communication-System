@@ -44,12 +44,19 @@ class SendOtpMail extends Mailable
             // Case 1: Recipient is verified owner email in Resend
             if (strtolower(trim($toEmail)) === strtolower(trim($ownerEmail))) {
                 try {
-                    $response = Http::withoutVerifying()->timeout(3)->withToken($resendKey)->post('https://api.resend.com/emails', [
-                        'from' => "{$fromName} <{$fromAddress}>",
-                        'to' => [$toEmail],
-                        'subject' => "Kode OTP Verifikasi Akun ({$otpCode}) - PT. Asia Plastik",
-                        'html' => $html,
-                    ]);
+                    $response = Http::withoutVerifying()
+                        ->withOptions([
+                            'connect_timeout' => 2,
+                            'timeout' => 3,
+                            'force_ip_resolve' => 'v4',
+                        ])
+                        ->withToken($resendKey)
+                        ->post('https://api.resend.com/emails', [
+                            'from' => "{$fromName} <{$fromAddress}>",
+                            'to' => [$toEmail],
+                            'subject' => "Kode OTP Verifikasi Akun ({$otpCode}) - PT. Asia Plastik",
+                            'html' => $html,
+                        ]);
 
                     if ($response->successful()) {
                         Log::info("OTP email successfully dispatched to {$toEmail} via Resend API");
@@ -75,12 +82,19 @@ class SendOtpMail extends Mailable
                         ."<p style='color: #64748b; font-size: 12px;'><em>Notifikasi sistem otomatis PT Asia Plastik.</em></p>"
                         .'</div>';
 
-                    Http::withoutVerifying()->timeout(3)->withToken($resendKey)->post('https://api.resend.com/emails', [
-                        'from' => "{$fromName} <{$fromAddress}>",
-                        'to' => [$ownerEmail],
-                        'subject' => "Kode OTP ({$otpCode}) Pendaftar [{$toEmail}] - PT. Asia Plastik",
-                        'html' => $ownerHtml,
-                    ]);
+                    Http::withoutVerifying()
+                        ->withOptions([
+                            'connect_timeout' => 2,
+                            'timeout' => 3,
+                            'force_ip_resolve' => 'v4',
+                        ])
+                        ->withToken($resendKey)
+                        ->post('https://api.resend.com/emails', [
+                            'from' => "{$fromName} <{$fromAddress}>",
+                            'to' => [$ownerEmail],
+                            'subject' => "Kode OTP ({$otpCode}) Pendaftar [{$toEmail}] - PT. Asia Plastik",
+                            'html' => $ownerHtml,
+                        ]);
                 } catch (\Throwable $forwardError) {
                     Log::warning("Failed to forward sandbox OTP to owner: {$forwardError->getMessage()}");
                 }
