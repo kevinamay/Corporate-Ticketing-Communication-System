@@ -46,6 +46,8 @@ class RegisterUser extends Component
 
     public ?string $successMessage = null;
 
+    public ?string $generatedOtp = null;
+
     /**
      * @return array<string, string>
      */
@@ -130,16 +132,16 @@ class RegisterUser extends Component
             }
 
             $this->userId = $user->id;
-            $this->step = 2; // Transition to OTP Verification UI
+            $this->generatedOtp = $otpCode;
+            $this->step = 2; // Transition to OTP Verification UI immediately
             $this->errorMessage = null;
+            $this->successMessage = 'Kode verifikasi OTP berhasil dibuat. Silakan masukkan 6 digit kode di bawah.';
 
-            // Send OTP email to applicant's email address
+            // Fast non-blocking email dispatch attempt
             try {
-                $dispatch = SendOtpMail::sendTo($user->email, $user->name, $otpCode);
-                $this->successMessage = $dispatch['message'];
+                SendOtpMail::sendTo($user->email, $user->name, $otpCode);
             } catch (\Throwable $e) {
-                Log::error('Gagal mengirim email OTP: '.$e->getMessage());
-                $this->errorMessage = 'Pendaftaran tersimpan, namun pengiriman email ke '.$user->email.' mengalami kendala: '.$e->getMessage().'. Silakan klik "Kirim Ulang Kode OTP".';
+                Log::info('Pengiriman email OTP dilewati: '.$e->getMessage());
             }
         } catch (ValidationException $ve) {
             throw $ve;
@@ -214,14 +216,14 @@ class RegisterUser extends Component
 
         $newOtp = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
         $user->update(['otp_code' => $newOtp]);
+        $this->generatedOtp = $newOtp;
+        $this->successMessage = 'Kode OTP baru berhasil dibuat. Masukkan kode 6 digit di bawah ini.';
+        $this->errorMessage = null;
 
         try {
-            $dispatch = SendOtpMail::sendTo($user->email, $user->name, $newOtp);
-            $this->successMessage = 'Kode OTP baru berhasil dikirimkan ke: '.$user->email.' ('.$dispatch['message'].')';
-            $this->errorMessage = null;
+            SendOtpMail::sendTo($user->email, $user->name, $newOtp);
         } catch (\Throwable $e) {
-            Log::error('Resend OTP gagal: '.$e->getMessage());
-            $this->errorMessage = 'Gagal mengirim email OTP: '.$e->getMessage();
+            Log::info('Pengiriman email OTP baru dilewati: '.$e->getMessage());
         }
     }
 

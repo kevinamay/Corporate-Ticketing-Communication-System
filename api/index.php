@@ -44,54 +44,29 @@ $_SERVER['APP_SERVICES_CACHE'] = '/tmp/services.php';
 $tmpDb = '/tmp/database.sqlite';
 $seededDb = __DIR__.'/../database/database.sqlite';
 
-if (file_exists($seededDb) && filesize($seededDb) > 0) {
-    $shouldCopy = (! file_exists($tmpDb) || filesize($tmpDb) === 0);
-    if (! $shouldCopy) {
-        try {
-            $checkPdo = new PDO("sqlite:{$tmpDb}");
-            $stmt = $checkPdo->query("SELECT COUNT(*) FROM users WHERE email = 'user123@gmail.com'");
-            if (! $stmt || (int) $stmt->fetchColumn() === 0) {
+if (! isset($GLOBALS['__db_ready'])) {
+    $GLOBALS['__db_ready'] = true;
+
+    if (file_exists($seededDb) && filesize($seededDb) > 0) {
+        $shouldCopy = (! file_exists($tmpDb) || filesize($tmpDb) === 0);
+        if (! $shouldCopy) {
+            try {
+                $checkPdo = new PDO("sqlite:{$tmpDb}");
+                $stmt = $checkPdo->query("SELECT COUNT(*) FROM users WHERE email = 'user123@gmail.com'");
+                if (! $stmt || (int) $stmt->fetchColumn() === 0) {
+                    $shouldCopy = true;
+                }
+            } catch (Throwable $e) {
                 $shouldCopy = true;
             }
-        } catch (Throwable $e) {
-            $shouldCopy = true;
         }
-    }
-    if ($shouldCopy) {
-        @copy($seededDb, $tmpDb);
-    }
-} elseif (! file_exists($tmpDb)) {
-    touch($tmpDb);
-}
-@chmod($tmpDb, 0666);
-
-// Ensure /tmp/database.sqlite schema and Admin IT user are always up to date
-if (file_exists($tmpDb) && filesize($tmpDb) > 0) {
-    try {
-        $sqlitePdo = new PDO("sqlite:{$tmpDb}");
-        $sqlitePdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_SILENT);
-
-        $cols = $sqlitePdo->query('PRAGMA table_info(messages)')->fetchAll(PDO::FETCH_ASSOC);
-        $colNames = array_column($cols, 'name');
-        if (! empty($cols) && ! in_array('photo_path', $colNames, true)) {
-            $sqlitePdo->exec('ALTER TABLE messages ADD COLUMN photo_path TEXT NULL');
+        if ($shouldCopy) {
+            @copy($seededDb, $tmpDb);
         }
-
-        // Guarantee user123@gmail.com exists with password123
-        $stmt = $sqlitePdo->query("SELECT id, password FROM users WHERE email = 'user123@gmail.com'");
-        $admin = $stmt ? $stmt->fetch(PDO::FETCH_ASSOC) : null;
-        $hashed = password_hash('password123', PASSWORD_BCRYPT, ['cost' => 12]);
-        if (! $admin) {
-            $sqlitePdo->exec("INSERT INTO users (name, email, password, whatsapp_number, role, email_verified_at, created_at, updated_at) VALUES ('Admin IT', 'user123@gmail.com', '{$hashed}', '081234567899', 'admin', datetime('now'), datetime('now'), datetime('now'))");
-        } else {
-            if (! password_verify('password123', $admin['password'])) {
-                $updateStmt = $sqlitePdo->prepare("UPDATE users SET password = :pwd, role = 'admin' WHERE email = 'user123@gmail.com'");
-                $updateStmt->execute([':pwd' => $hashed]);
-            }
-        }
-    } catch (Throwable $e) {
-        // Silently continue
+    } elseif (! file_exists($tmpDb)) {
+        touch($tmpDb);
     }
+    @chmod($tmpDb, 0666);
 }
 
 // 4. Ensure essential environment variables have valid non-empty defaults

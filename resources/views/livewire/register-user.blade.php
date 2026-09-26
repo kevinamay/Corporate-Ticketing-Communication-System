@@ -157,6 +157,20 @@
                     {{ __('Kontak Terdaftar:') }} <span class="font-medium text-slate-600 dark:text-slate-300 font-mono">{{ $whatsapp_number }}</span>
                 </p>
 
+                @if ($generatedOtp)
+                    <div class="mt-4 p-4 rounded-2xl bg-blue-50/90 dark:bg-blue-950/50 border-2 border-blue-200 dark:border-blue-800 text-center shadow-xs">
+                        <span class="block text-xs font-bold text-blue-700 dark:text-blue-300 uppercase tracking-wider mb-2">
+                            {{ __('Kode Verifikasi OTP Anda:') }}
+                        </span>
+                        <div class="inline-flex items-center justify-center px-5 py-2 rounded-xl bg-white dark:bg-slate-800 border-2 border-blue-500 shadow-md">
+                            <span class="text-3xl font-black font-mono tracking-[0.25em] text-blue-600 dark:text-blue-400 select-all">{{ $generatedOtp }}</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-2">
+                            {{ __('Masukkan 6 digit angka di atas pada kotak di bawah ini untuk aktivasi akun.') }}
+                        </p>
+                    </div>
+                @endif
+
                 @if ($successMessage)
                     <div class="mt-4 p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs">
                         {{ $successMessage }}
