@@ -57,6 +57,38 @@ Route::get('/register', function () {
     return view('auth.register');
 })->name('register');
 
+Route::get('/forgot-password', function () {
+    $activeUser = Auth::user();
+    if (! $activeUser && session('active_user_id')) {
+        $activeUser = User::find(session('active_user_id'));
+        if ($activeUser) {
+            Auth::login($activeUser);
+        }
+    }
+
+    if (Auth::check()) {
+        return redirect()->route('dashboard');
+    }
+
+    return view('auth.forgot-password');
+})->name('password.request');
+
+Route::get('/reset-password/{token}', function (string $token) {
+    $activeUser = Auth::user();
+    if (! $activeUser && session('active_user_id')) {
+        $activeUser = User::find(session('active_user_id'));
+        if ($activeUser) {
+            Auth::login($activeUser);
+        }
+    }
+
+    if (Auth::check()) {
+        return redirect()->route('dashboard');
+    }
+
+    return view('auth.reset-password', ['token' => $token]);
+})->name('password.reset');
+
 Route::get('/dashboard', function () {
     $activeUser = Auth::user();
     if (! $activeUser && session('active_user_id')) {

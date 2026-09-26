@@ -63,7 +63,7 @@
                         <label for="password" class="block text-xs font-bold text-slate-700 dark:text-slate-300">
                             {{ __('Password') }} <span class="text-rose-500">*</span>
                         </label>
-                        <a href="#" class="text-[11px] text-blue-600 dark:text-blue-400 hover:text-blue-800 transition">{{ __('Lupa password?') }}</a>
+                        <a href="{{ route('password.request') }}" class="text-[11px] text-blue-600 dark:text-blue-400 hover:text-blue-800 transition font-medium">{{ __('Lupa password?') }}</a>
                     </div>
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">

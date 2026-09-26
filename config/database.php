@@ -35,7 +35,7 @@ return [
         'sqlite' => [
             'driver' => 'sqlite',
             'url' => env('DB_URL'),
-            'database' => (str_ends_with(env('DB_DATABASE', ''), '.sqlite') || str_starts_with(env('DB_DATABASE', ''), '/tmp')) ? env('DB_DATABASE') : database_path('database.sqlite'),
+            'database' => (env('DB_DATABASE') === ':memory:' || str_ends_with(env('DB_DATABASE', ''), '.sqlite') || str_starts_with(env('DB_DATABASE', ''), '/tmp')) ? env('DB_DATABASE') : database_path('database.sqlite'),
             'prefix' => '',
             'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
             'busy_timeout' => null,
