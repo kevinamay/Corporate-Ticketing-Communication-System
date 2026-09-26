@@ -38,10 +38,10 @@ return [
             'database' => (env('DB_DATABASE') === ':memory:' || str_ends_with(env('DB_DATABASE', ''), '.sqlite') || str_starts_with(env('DB_DATABASE', ''), '/tmp')) ? env('DB_DATABASE') : database_path('database.sqlite'),
             'prefix' => '',
             'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
-            'busy_timeout' => 1000,
-            'journal_mode' => 'DELETE',
-            'synchronous' => 'NORMAL',
-            'transaction_mode' => 'DEFERRED',
+            'busy_timeout' => 5000,
+            'journal_mode' => 'MEMORY',
+            'synchronous' => 'OFF',
+            'transaction_mode' => 'IMMEDIATE',
         ],
 
         'mysql' => [
