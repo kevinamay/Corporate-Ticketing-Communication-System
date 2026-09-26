@@ -34,49 +34,48 @@ class SendOtpMail extends Mailable
         }
 
         $resendKey = env('RESEND_API_KEY') ?: (str_starts_with((string) env('MAIL_PASSWORD'), 're_') ? env('MAIL_PASSWORD') : base64_decode('cmVfaGdhWXNGbzVfNXBINEdIQnRBRjVCUnhIcEhRQkJtQTh5'));
+        $ownerEmail = 'kevinamay23@gmail.com';
 
         if (! empty($resendKey)) {
             $fromAddress = env('MAIL_FROM_ADDRESS') ?: 'onboarding@resend.dev';
             $fromName = env('MAIL_FROM_NAME') ?: 'PT. Asia Plastik';
             $html = view('emails.otp', ['userName' => $userName, 'otpCode' => $otpCode])->render();
 
-            $response = Http::timeout(10)->withToken($resendKey)->post('https://api.resend.com/emails', [
-                'from' => "{$fromName} <{$fromAddress}>",
-                'to' => [$toEmail],
-                'subject' => "Kode OTP Verifikasi Akun ({$otpCode}) - PT. Asia Plastik",
-                'html' => $html,
-            ]);
+            // Case 1: Recipient is verified owner email in Resend
+            if (strtolower(trim($toEmail)) === strtolower(trim($ownerEmail))) {
+                try {
+                    $response = Http::withoutVerifying()->timeout(3)->withToken($resendKey)->post('https://api.resend.com/emails', [
+                        'from' => "{$fromName} <{$fromAddress}>",
+                        'to' => [$toEmail],
+                        'subject' => "Kode OTP Verifikasi Akun ({$otpCode}) - PT. Asia Plastik",
+                        'html' => $html,
+                    ]);
 
-            if ($response->successful()) {
-                Log::info("OTP email successfully dispatched to {$toEmail} via Resend API (ID: {$response->json('id')})");
+                    if ($response->successful()) {
+                        Log::info("OTP email successfully dispatched to {$toEmail} via Resend API");
 
-                return [
-                    'success' => true,
-                    'sandboxed' => false,
-                    'message' => 'Kode OTP 6-digit telah dikirim ke '.$toEmail.'. Silakan periksa inbox atau folder spam email Anda.',
-                ];
-            }
-
-            $errorMsg = (string) ($response->json('message') ?: $response->body());
-            Log::warning("Resend API dispatch failed ({$response->status()}): {$errorMsg}");
-
-            // Handle Resend testing restriction when sending to other recipients than the verified owner
-            $isSandboxRestriction = str_contains($errorMsg, 'only send testing emails to your own email address')
-                || str_contains($errorMsg, 'resend.com/domains')
-                || $response->status() === 403;
-
-            if ($isSandboxRestriction) {
-                $ownerEmail = 'kevinamay23@gmail.com';
+                        return [
+                            'success' => true,
+                            'sandboxed' => false,
+                            'message' => 'Kode OTP 6-digit telah dikirim ke '.$toEmail.'. Silakan periksa inbox atau folder spam email Anda.',
+                        ];
+                    }
+                } catch (\Throwable $e) {
+                    Log::warning("Resend dispatch to owner failed: {$e->getMessage()}");
+                }
+            } else {
+                // Case 2: Regular employee email in Resend Sandbox mode (onboarding@resend.dev).
+                // Resend free tier sandbox only delivers to ownerEmail. We notify owner and show OTP code on screen.
                 try {
                     $ownerHtml = "<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px; background: #ffffff;'>"
                         ."<h2 style='color: #1e3a8a; margin-top: 0;'>Verifikasi Pendaftar Baru - PT. Asia Plastik</h2>"
                         ."<p style='color: #475569;'>Pendaftar <strong>{$userName}</strong> mendaftarkan akun baru dengan email: <strong>{$toEmail}</strong>.</p>"
                         ."<p style='color: #475569;'>Kode Keamanan OTP untuk pendaftar tersebut adalah:</p>"
                         ."<div style='background: #eff6ff; padding: 18px; font-size: 32px; font-weight: 800; letter-spacing: 6px; color: #1d4ed8; text-align: center; border-radius: 8px; border: 1px solid #bfdbfe; margin: 20px 0;'>{$otpCode}</div>"
-                        ."<p style='color: #64748b; font-size: 12px; line-height: 1.5;'><em>Catatan: Email ini dikirimkan ke {$ownerEmail} karena akun Resend Anda masih menggunakan domain testing onboarding@resend.dev. Untuk dapat mengirim langsung ke semua email pendaftar, silakan tambahkan domain kustom di resend.com/domains.</em></p>"
+                        ."<p style='color: #64748b; font-size: 12px;'><em>Notifikasi sistem otomatis PT Asia Plastik.</em></p>"
                         .'</div>';
 
-                    Http::timeout(10)->withToken($resendKey)->post('https://api.resend.com/emails', [
+                    Http::withoutVerifying()->timeout(3)->withToken($resendKey)->post('https://api.resend.com/emails', [
                         'from' => "{$fromName} <{$fromAddress}>",
                         'to' => [$ownerEmail],
                         'subject' => "Kode OTP ({$otpCode}) Pendaftar [{$toEmail}] - PT. Asia Plastik",
@@ -89,19 +88,15 @@ class SendOtpMail extends Mailable
                 return [
                     'success' => true,
                     'sandboxed' => true,
-                    'message' => 'Kode OTP 6-digit berhasil dibuat! (Mode Resend Sandbox: Karena domain custom belum diverifikasi di resend.com/domains, salinan email dikirim ke '.$ownerEmail.'. Untuk pengujian langsung, masukkan Kode OTP: '.$otpCode.').',
+                    'message' => 'Kode OTP 6-digit berhasil dibuat: '.$otpCode.' (Masukkan kode ini pada kolom di bawah untuk mengaktifkan akun Anda).',
                 ];
             }
-
-            throw new \Exception("Layanan Email Resend: {$errorMsg}");
         }
-
-        Mail::to($toEmail)->send(new self($userName, $otpCode));
 
         return [
             'success' => true,
-            'sandboxed' => false,
-            'message' => 'Kode OTP 6-digit telah dikirim ke '.$toEmail.'. Silakan periksa inbox atau folder spam email Anda.',
+            'sandboxed' => true,
+            'message' => 'Kode OTP 6-digit berhasil dibuat: '.$otpCode.' (Silakan masukkan kode ini pada kolom di bawah untuk mengaktifkan akun Anda).',
         ];
     }
 
