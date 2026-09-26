@@ -156,6 +156,24 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
+        // Admin IT Utama (user123@gmail.com / password123)
+        User::updateOrCreate(
+            ['email' => 'user123@gmail.com'],
+            [
+                'name' => 'Admin IT',
+                'password' => $password,
+                'department_id' => $itDept->id,
+                'role' => 'admin',
+                'national_id_ktp' => '3578010101990001',
+                'whatsapp_number' => '081234567899',
+                'gender' => 'male',
+                'complete_address' => 'Head Office PT Asia Plastik, Surabaya',
+                'postal_code' => '60293',
+                'email_verified_at' => now(),
+                'avatar' => 'https://ui-avatars.com/api/?name=Admin+IT&background=0284c7&color=fff',
+            ]
+        );
+
         // 4. Buat Master Data Karyawan (HCM Core Master Data)
         EmployeeMasterData::updateOrCreate(
             ['ktp_number' => '3578015507940002'],
