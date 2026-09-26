@@ -3,7 +3,6 @@
 namespace App\Livewire;
 
 use App\Mail\SendOtpMail;
-use App\Models\Department;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -102,16 +101,13 @@ class RegisterUser extends Component
             // Generate UI Avatar based on name
             $avatarUrl = 'https://ui-avatars.com/api/?name='.urlencode($this->name).'&background=0284c7&color=fff';
 
-            // Assign default department
-            $defaultDeptId = Department::first()?->id;
-
             if ($existingUser) {
                 $existingUser->update([
                     'name' => trim($this->name),
                     'email' => $cleanEmail,
                     'password' => $this->password,
                     'whatsapp_number' => trim($this->whatsapp_number),
-                    'department_id' => $existingUser->department_id ?: $defaultDeptId,
+                    'department_id' => $existingUser->department_id ?: null,
                     'avatar' => $avatarUrl,
                     'otp_code' => $otpCode,
                     'email_verified_at' => null,
@@ -123,7 +119,7 @@ class RegisterUser extends Component
                     'email' => $cleanEmail,
                     'password' => $this->password,
                     'whatsapp_number' => trim($this->whatsapp_number),
-                    'department_id' => $defaultDeptId,
+                    'department_id' => null,
                     'avatar' => $avatarUrl,
                     'otp_code' => $otpCode,
                     'email_verified_at' => null,

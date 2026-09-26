@@ -47,24 +47,25 @@ $seededDb = __DIR__.'/../database/database.sqlite';
 if (! isset($GLOBALS['__db_ready'])) {
     $GLOBALS['__db_ready'] = true;
 
-    if (file_exists($seededDb) && filesize($seededDb) > 0) {
-        $shouldCopy = (! file_exists($tmpDb) || filesize($tmpDb) === 0);
-        if (! $shouldCopy) {
-            try {
-                $checkPdo = new PDO("sqlite:{$tmpDb}");
-                $stmt = $checkPdo->query("SELECT COUNT(*) FROM users WHERE email = 'user123@gmail.com'");
-                if (! $stmt || (int) $stmt->fetchColumn() === 0) {
-                    $shouldCopy = true;
-                }
-            } catch (Throwable $e) {
-                $shouldCopy = true;
-            }
-        }
-        if ($shouldCopy) {
+    if (! file_exists($tmpDb) || filesize($tmpDb) === 0) {
+        if (file_exists($seededDb) && filesize($seededDb) > 0) {
             @copy($seededDb, $tmpDb);
+        } else {
+            @touch($tmpDb);
         }
-    } elseif (! file_exists($tmpDb)) {
-        touch($tmpDb);
+    }
+
+    if (file_exists($tmpDb) && filesize($tmpDb) > 0) {
+        try {
+            $checkPdo = new PDO("sqlite:{$tmpDb}");
+            $stmt = $checkPdo->query("SELECT COUNT(*) FROM users WHERE email = 'user123@gmail.com'");
+            if (! $stmt || (int) $stmt->fetchColumn() === 0) {
+                $hashed = password_hash('password123', PASSWORD_BCRYPT, ['cost' => 12]);
+                $checkPdo->exec("INSERT INTO users (name, email, password, whatsapp_number, role, email_verified_at, created_at, updated_at) VALUES ('Admin IT', 'user123@gmail.com', '{$hashed}', '081234567899', 'admin', datetime('now'), datetime('now'), datetime('now'))");
+            }
+        } catch (Throwable $e) {
+            // Silently continue
+        }
     }
     @chmod($tmpDb, 0666);
 }
