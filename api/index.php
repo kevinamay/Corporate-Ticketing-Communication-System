@@ -47,6 +47,10 @@ $seededDb = __DIR__.'/../database/database.sqlite';
 if (! isset($GLOBALS['__db_ready'])) {
     $GLOBALS['__db_ready'] = true;
 
+    // Clean up any stale wal or shm lock files on serverless container
+    @unlink('/tmp/database.sqlite-wal');
+    @unlink('/tmp/database.sqlite-shm');
+
     if (! file_exists($tmpDb) || filesize($tmpDb) === 0) {
         if (file_exists($seededDb) && filesize($seededDb) > 0) {
             @copy($seededDb, $tmpDb);
@@ -58,6 +62,8 @@ if (! isset($GLOBALS['__db_ready'])) {
     if (file_exists($tmpDb) && filesize($tmpDb) > 0) {
         try {
             $checkPdo = new PDO("sqlite:{$tmpDb}");
+            $checkPdo->exec('PRAGMA journal_mode = DELETE;');
+            $checkPdo->exec('PRAGMA busy_timeout = 1000;');
             $stmt = $checkPdo->query("SELECT COUNT(*) FROM users WHERE email = 'user123@gmail.com'");
             if (! $stmt || (int) $stmt->fetchColumn() === 0) {
                 $hashed = password_hash('password123', PASSWORD_BCRYPT, ['cost' => 12]);
