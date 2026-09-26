@@ -194,56 +194,60 @@ class CorporateTicketingModulesTest extends TestCase
         // 1. Manual Add Employee
         Livewire::test(HcmEmployeeMaster::class)
             ->call('openCreateModal')
-            ->set('ktp_number', '3578012345678901')
             ->set('name', 'Ahmad Dani')
+            ->set('whatsapp_number', '081234567801')
+            ->set('email', 'ahmad.dani@asiaplastik.com')
             ->set('department_id', $this->itDept->id)
             ->call('saveEmployee')
             ->assertHasNoErrors();
 
-        $this->assertDatabaseHas('employee_master_data', [
-            'ktp_number' => '3578012345678901',
+        $this->assertDatabaseHas('users', [
             'name' => 'Ahmad Dani',
+            'email' => 'ahmad.dani@asiaplastik.com',
+            'whatsapp_number' => '081234567801',
             'department_id' => $this->itDept->id,
         ]);
 
-        $emp = EmployeeMasterData::where('ktp_number', '3578012345678901')->first();
+        $emp = User::where('email', 'ahmad.dani@asiaplastik.com')->first();
 
         // 2. Manual Edit Employee
         Livewire::test(HcmEmployeeMaster::class)
             ->call('openEditModal', $emp->id)
             ->set('name', 'Ahmad Dani Updated')
+            ->set('whatsapp_number', '081234567802')
+            ->set('email', 'ahmad.dani@asiaplastik.com')
             ->set('department_id', $this->prodDept->id)
             ->call('saveEmployee')
             ->assertHasNoErrors();
 
-        $this->assertDatabaseHas('employee_master_data', [
+        $this->assertDatabaseHas('users', [
             'id' => $emp->id,
             'name' => 'Ahmad Dani Updated',
+            'whatsapp_number' => '081234567802',
             'department_id' => $this->prodDept->id,
         ]);
 
         // 3. CSV Bulk Upload
-        $csvContent = "ktp_number,name,department_id\n"
-            ."3578011122223333,Siti CSV,2\n"
-            ."3578014455556666,Budi CSV,1\n";
+        $csvContent = "name,whatsapp_number,email,department_id\n"
+            ."Siti CSV,081234567803,siti.csv@asiaplastik.com,2\n"
+            ."Budi CSV,081234567804,budi.csv@asiaplastik.com,1\n";
 
         $file = UploadedFile::fake()->createWithContent('employees.csv', $csvContent);
 
         Livewire::test(HcmEmployeeMaster::class)
             ->set('csvFile', $file)
-            ->call('uploadCsv')
-            ->assertHasNoErrors()
-            ->assertSee('Bulk Import Berhasil');
+            ->call('importCsv')
+            ->assertHasNoErrors();
 
-        $this->assertDatabaseHas('employee_master_data', [
-            'ktp_number' => '3578011122223333',
+        $this->assertDatabaseHas('users', [
             'name' => 'Siti CSV',
+            'email' => 'siti.csv@asiaplastik.com',
             'department_id' => 2,
         ]);
 
-        $this->assertDatabaseHas('employee_master_data', [
-            'ktp_number' => '3578014455556666',
+        $this->assertDatabaseHas('users', [
             'name' => 'Budi CSV',
+            'email' => 'budi.csv@asiaplastik.com',
             'department_id' => 1,
         ]);
 
@@ -253,7 +257,7 @@ class CorporateTicketingModulesTest extends TestCase
             ->call('deleteEmployee')
             ->assertHasNoErrors();
 
-        $this->assertDatabaseMissing('employee_master_data', [
+        $this->assertDatabaseMissing('users', [
             'id' => $emp->id,
         ]);
     }

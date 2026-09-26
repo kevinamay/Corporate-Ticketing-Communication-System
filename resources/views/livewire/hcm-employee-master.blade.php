@@ -9,7 +9,7 @@
                 <div class="flex items-center gap-2.5">
                     <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-blue-500/30 text-blue-200 border border-blue-400/30">
                         <svg class="w-3.5 h-3.5 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                        {{ __('HCM Core Security Vault') }}
+                        {{ __('Manajemen Data Karyawan') }}
                     </span>
                     <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
@@ -18,10 +18,10 @@
                 </div>
 
                 <h1 class="text-2xl sm:text-3xl font-black tracking-tight text-white">
-                    {{ __('HCM Employee Master Data') }}
+                    {{ __('Daftar Akun Karyawan Terdaftar') }}
                 </h1>
                 <p class="text-xs sm:text-sm text-blue-100/90 max-w-2xl leading-relaxed">
-                    {{ __('Pusat otorisasi identitas resmi NIK/KTP karyawan PT Asia Plastik. Data di sini menjadi gerbang tunggal (Gatekeeper) validasi pendaftaran akun karyawan baru di seluruh divisi.') }}
+                    {{ __('Memuat seluruh data akun karyawan yang terdaftar di sistem. Terdiri dari Nama Lengkap, Nomor HP/WhatsApp, Email Aktif, Divisi, dan Waktu Registrasi.') }}
                 </p>
             </div>
 
@@ -40,11 +40,11 @@
                 <!-- 2. Import CSV Button (Emerald: bg-emerald-600) -->
                 <button type="button" 
                         wire:click="openCsvModal"
-                        class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold text-xs uppercase tracking-wider shadow-lg shadow-emerald-950/30 border border-emerald-400/30 transition-all cursor-pointer">
+                        class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold text-xs uppercase tracking-wider shadow-lg shadow-emerald-900/30 border border-emerald-400/30 transition-all cursor-pointer">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
                     </svg>
-                    <span>{{ __('Upload CSV') }}</span>
+                    <span>{{ __('Import CSV') }}</span>
                 </button>
 
                 <!-- 3. Download Format Template CSV -->
@@ -63,16 +63,16 @@
         <!-- Metric Counters Ribbon -->
         <div class="mt-6 pt-5 border-t border-blue-700/50 grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
             <div>
-                <span class="text-blue-200/80 block text-[11px]">{{ __('Total Karyawan Terdaftar:') }}</span>
-                <span class="text-lg font-black text-white">{{ $totalEmployees }} {{ __('Jiwa') }}</span>
+                <span class="text-blue-200/80 block text-[11px]">{{ __('Total Akun Terdaftar:') }}</span>
+                <span class="text-lg font-black text-white">{{ $totalEmployees }} {{ __('Pengguna') }}</span>
             </div>
             <div>
                 <span class="text-blue-200/80 block text-[11px]">{{ __('Status Verifikasi:') }}</span>
-                <span class="text-lg font-black text-emerald-300">100% {{ __('Valid') }}</span>
+                <span class="text-lg font-black text-emerald-300">100% {{ __('Sudah Registrasi') }}</span>
             </div>
             <div>
-                <span class="text-blue-200/80 block text-[11px]">{{ __('Sudah Registrasi:') }}</span>
-                <span class="text-lg font-black text-emerald-300">{{ $totalEmployees }} {{ __('Karyawan') }}</span>
+                <span class="text-blue-200/80 block text-[11px]">{{ __('Email Aktif & Terverifikasi:') }}</span>
+                <span class="text-lg font-black text-emerald-300">{{ $registeredCount }} {{ __('Akun') }}</span>
             </div>
             <div>
                 <span class="text-blue-200/80 block text-[11px]">{{ __('Otoritas Akses:') }}</span>
@@ -94,27 +94,41 @@
         </div>
     @endif
 
-    <!-- Main Data Table Container Card -->
-    <div class="bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 shadow-md p-5 sm:p-6 transition-colors">
+    @if (session()->has('error_message'))
+        <div class="p-4 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-300 text-xs font-semibold flex items-center justify-between shadow-xs animate-fade-in">
+            <div class="flex items-center gap-2.5">
+                <svg class="w-5 h-5 text-rose-600 dark:text-rose-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span>{{ session('error_message') }}</span>
+            </div>
+            <button type="button" @click="$el.parentElement.remove()" class="text-rose-600 hover:text-rose-800 cursor-pointer">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+    @endif
+
+    <!-- Main Table Container -->
+    <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-md border border-gray-200 dark:border-slate-800 p-5 sm:p-6 transition-colors">
         
-        <!-- Search & Filter Controls -->
-        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6 pb-5 border-b border-gray-100 dark:border-slate-800">
-            <!-- Search Bar -->
-            <div class="w-full sm:w-96 relative">
+        <!-- Search and Filter Bar -->
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 mb-6">
+            <!-- Search Input -->
+            <div class="relative flex-1">
+                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                </div>
                 <input type="text" 
-                       wire:model.live.debounce.300ms="search" 
-                       placeholder="{{ __('Cari NIK/KTP, nama karyawan, atau divisi...') }}"
-                       class="w-full pl-9 pr-4 py-2 text-xs text-slate-800 dark:text-slate-100 bg-slate-50 dark:bg-slate-800/90 rounded-xl border border-gray-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition shadow-2xs">
-                <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                </svg>
+                       wire:model.live.debounce.300ms="search"
+                       placeholder="{{ __('Cari nama, no hp, email, atau divisi...') }}"
+                       class="w-full pl-10 pr-4 py-2 text-xs rounded-xl border border-gray-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition">
             </div>
 
-            <!-- Department Filter -->
+            <!-- Department Filter Dropdown -->
             <div class="w-full sm:w-64">
-                <select wire:model.live="departmentFilter" 
-                        class="w-full px-3 py-2 text-xs text-slate-800 dark:text-slate-100 bg-slate-50 dark:bg-slate-800/90 rounded-xl border border-gray-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition shadow-2xs">
-                    <option value="all">{{ __('Semua Departemen Penugasan') }}</option>
+                <select wire:model.live="departmentFilter"
+                        class="w-full px-3.5 py-2 text-xs rounded-xl border border-gray-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition">
+                    <option value="all">{{ __('Semua Divisi') }}</option>
                     @foreach ($departments as $dept)
                         <option value="{{ $dept->id }}">{{ $dept->name }}</option>
                     @endforeach
@@ -122,17 +136,17 @@
             </div>
         </div>
 
-        <!-- Employees Data Table -->
-        <div class="overflow-x-auto rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xs">
-            <table class="min-w-full divide-y divide-gray-200 dark:divide-slate-800 text-left text-xs">
-                <thead class="bg-slate-50 dark:bg-slate-800/70 text-slate-500 dark:text-slate-400 uppercase tracking-wider font-bold text-[10px]">
+        <!-- Table Data -->
+        <div class="overflow-x-auto rounded-xl border border-gray-100 dark:border-slate-800">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold border-b border-gray-100 dark:border-slate-800">
                     <tr>
-                        <th scope="col" class="py-3.5 px-4">{{ __('No') }}</th>
-                        <th scope="col" class="py-3.5 px-4">{{ __('Nomor KTP (NIK)') }}</th>
-                        <th scope="col" class="py-3.5 px-4">{{ __('Nama Karyawan') }}</th>
-                        <th scope="col" class="py-3.5 px-4">{{ __('Departemen') }}</th>
-                        <th scope="col" class="py-3.5 px-4">{{ __('Status Akun Portal') }}</th>
-                        <th scope="col" class="py-3.5 px-4">{{ __('Terdaftar Sejak') }}</th>
+                        <th scope="col" class="py-3.5 px-4 w-12">{{ __('No') }}</th>
+                        <th scope="col" class="py-3.5 px-4">{{ __('Nama Lengkap') }}</th>
+                        <th scope="col" class="py-3.5 px-4">{{ __('No. HP / WhatsApp') }}</th>
+                        <th scope="col" class="py-3.5 px-4">{{ __('Email Aktif') }}</th>
+                        <th scope="col" class="py-3.5 px-4">{{ __('Divisi') }}</th>
+                        <th scope="col" class="py-3.5 px-4">{{ __('Waktu Mendaftar') }}</th>
                         <th scope="col" class="py-3.5 px-4 text-right">{{ __('Aksi') }}</th>
                     </tr>
                 </thead>
@@ -144,19 +158,39 @@
                                 {{ $employees->firstItem() + $index }}
                             </td>
 
-                            <!-- KTP / NIK Number -->
+                            <!-- Nama Lengkap -->
                             <td class="py-3 px-4">
-                                <span class="font-mono font-bold text-blue-900 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/60 px-2 py-0.5 rounded border border-blue-200/60 dark:border-blue-900/60">
-                                    {{ $emp->ktp_number }}
+                                <div class="flex items-center gap-2.5">
+                                    <img src="{{ $emp->avatar ?: 'https://ui-avatars.com/api/?name='.urlencode($emp->name).'&background=0284c7&color=fff' }}" 
+                                         alt="{{ $emp->name }}" 
+                                         class="w-7 h-7 rounded-full object-cover shrink-0 border border-gray-200 dark:border-slate-700">
+                                    <div>
+                                        <p class="font-bold text-slate-900 dark:text-white">{{ $emp->name }}</p>
+                                        <span class="text-[10px] uppercase font-semibold text-slate-400">{{ $emp->role ?? 'staff' }}</span>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- No HP -->
+                            <td class="py-3 px-4">
+                                <span class="font-mono font-semibold text-slate-800 dark:text-slate-200">
+                                    {{ $emp->whatsapp_number ?: '-' }}
                                 </span>
                             </td>
 
-                            <!-- Name -->
+                            <!-- Email Aktif -->
                             <td class="py-3 px-4">
-                                <span class="font-bold text-slate-900 dark:text-white">{{ $emp->name }}</span>
+                                <div class="inline-flex items-center gap-1.5">
+                                    <span class="font-medium text-slate-800 dark:text-slate-200">{{ $emp->email }}</span>
+                                    @if ($emp->email_verified_at)
+                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
+                                            {{ __('Aktif') }}
+                                        </span>
+                                    @endif
+                                </div>
                             </td>
 
-                            <!-- Department -->
+                            <!-- Divisi -->
                             <td class="py-3 px-4">
                                 <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-gray-200 dark:border-slate-700">
                                     <span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
@@ -164,17 +198,9 @@
                                 </span>
                             </td>
 
-                            <!-- Account Registration Status -->
-                            <td class="py-3 px-4">
-                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                                    <svg class="w-3 h-3 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
-                                    {{ __('Sudah Registrasi') }} {{ $emp->registeredUser ? '('.$emp->registeredUser->email.')' : '('.__('Valid').')' }}
-                                </span>
-                            </td>
-
-                            <!-- Created At -->
-                            <td class="py-3 px-4 text-slate-500 dark:text-slate-400 text-[11px]">
-                                {{ $emp->created_at ? $emp->created_at->format('d M Y') : '-' }}
+                            <!-- Timestamp Mendaftar -->
+                            <td class="py-3 px-4 text-slate-500 dark:text-slate-400 text-[11px] font-mono whitespace-nowrap">
+                                {{ $emp->created_at ? $emp->created_at->format('d M Y, H:i') : '-' }}
                             </td>
 
                             <!-- Actions (Edit & Delete) -->
@@ -183,7 +209,7 @@
                                     <!-- Edit Button -->
                                     <button type="button" 
                                             wire:click="openEditModal({{ $emp->id }})"
-                                            title="{{ __('Edit Karyawan') }}"
+                                            title="{{ __('Edit Data Karyawan') }}"
                                             class="p-1.5 rounded-lg text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/60 transition cursor-pointer">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                                     </button>
@@ -203,10 +229,10 @@
                             <td colspan="7" class="py-12 text-center text-slate-400 dark:text-slate-500">
                                 <svg class="w-12 h-12 mx-auto text-slate-300 dark:text-slate-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                                 <p class="text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">{{ __('Belum ada data karyawan.') }}</p>
-                                <p class="text-[11px] text-slate-400 max-w-sm mx-auto mb-4">{{ __('Gunakan tombol "Tambah Manual" atau "Import CSV" untuk mengisi Master Data Admin IT.') }}</p>
+                                <p class="text-[11px] text-slate-400 max-w-sm mx-auto mb-4">{{ __('Gunakan tombol "Tambah Manual" atau "Import CSV" untuk mengisi data karyawan.') }}</p>
                                 <div class="flex items-center justify-center gap-2">
-                                    <button type="button" wire:click="openCreateModal" class="px-3 py-1.5 rounded-lg bg-blue-600 text-white font-bold text-xs">{{ __('Tambah Manual') }}</button>
-                                    <button type="button" wire:click="openCsvModal" class="px-3 py-1.5 rounded-lg bg-emerald-600 text-white font-bold text-xs">{{ __('Import CSV') }}</button>
+                                    <button type="button" wire:click="openCreateModal" class="px-3 py-1.5 rounded-lg bg-blue-600 text-white font-bold text-xs cursor-pointer">{{ __('Tambah Manual') }}</button>
+                                    <button type="button" wire:click="openCsvModal" class="px-3 py-1.5 rounded-lg bg-emerald-600 text-white font-bold text-xs cursor-pointer">{{ __('Import CSV') }}</button>
                                 </div>
                             </td>
                         </tr>
@@ -222,7 +248,7 @@
     </div>
 
     <!-- ======================================================== -->
-    <!-- MODAL 1: TAMBAH / EDIT KARYAWAN MANUAL -->
+    <!-- MODAL 1: TAMBAH / EDIT KARYAWAN SECARA MANUAL -->
     <!-- ======================================================== -->
     @if ($isFormModalOpen)
         <div class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 sm:p-6"
@@ -245,10 +271,10 @@
                         </div>
                         <div>
                             <h3 class="text-sm font-bold text-slate-900 dark:text-white">
-                                {{ $editingEmployeeId ? __('Edit Data Karyawan') : __('Tambah Karyawan ke Master Data') }}
+                                {{ $editingEmployeeId ? __('Edit Data Akun Karyawan') : __('Tambah Akun Karyawan Baru') }}
                             </h3>
                             <p class="text-[11px] text-slate-400">
-                                {{ __('Data ini menjadi acuan validasi NIK saat registrasi akun baru.') }}
+                                {{ __('Input Nama, No HP, Email aktif, dan Divisi karyawan.') }}
                             </p>
                         </div>
                     </div>
@@ -262,42 +288,54 @@
 
                 <!-- Modal Body Form -->
                 <form wire:submit.prevent="saveEmployee" class="p-6 space-y-4 text-xs">
-                    <!-- KTP Number -->
-                    <div>
-                        <label for="form_ktp" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                            {{ __('Nomor KTP (NIK 16 Digit)') }} <span class="text-rose-500">*</span>
-                        </label>
-                        <input type="text" 
-                               id="form_ktp" 
-                               wire:model="ktp_number" 
-                               maxlength="16" 
-                               placeholder="{{ __('Contoh: 3578012345670001') }}"
-                               class="w-full text-xs font-mono px-3.5 py-2.5 rounded-lg border @error('ktp_number') border-rose-400 bg-rose-50 dark:bg-rose-950/30 @else border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 @enderror focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition">
-                        @error('ktp_number') <p class="text-[11px] text-rose-600 dark:text-rose-400 mt-1">{{ $message }}</p> @enderror
-                    </div>
-
-                    <!-- Name -->
+                    <!-- Nama Lengkap -->
                     <div>
                         <label for="form_name" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                            {{ __('Nama Lengkap Karyawan') }} <span class="text-rose-500">*</span>
+                            {{ __('Nama Lengkap') }} <span class="text-rose-500">*</span>
                         </label>
                         <input type="text" 
-                               id="form_name" 
-                               wire:model="name" 
-                               placeholder="{{ __('Contoh: Budi Santoso') }}"
-                               class="w-full text-xs px-3.5 py-2.5 rounded-lg border @error('name') border-rose-400 bg-rose-50 dark:bg-rose-950/30 @else border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 @enderror focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition">
+                                id="form_name" 
+                                wire:model="name" 
+                                placeholder="{{ __('Contoh: Budi Santoso') }}"
+                                class="w-full text-xs px-3.5 py-2.5 rounded-lg border @error('name') border-rose-400 bg-rose-50 dark:bg-rose-950/30 @else border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 @enderror focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition">
                         @error('name') <p class="text-[11px] text-rose-600 dark:text-rose-400 mt-1">{{ $message }}</p> @enderror
                     </div>
 
-                    <!-- Department -->
+                    <!-- No HP / WhatsApp -->
+                    <div>
+                        <label for="form_whatsapp" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                            {{ __('Nomor HP / WhatsApp Aktif') }} <span class="text-rose-500">*</span>
+                        </label>
+                        <input type="text" 
+                                id="form_whatsapp" 
+                                wire:model="whatsapp_number" 
+                                placeholder="{{ __('Contoh: 081234567890') }}"
+                                class="w-full text-xs font-mono px-3.5 py-2.5 rounded-lg border @error('whatsapp_number') border-rose-400 bg-rose-50 dark:bg-rose-950/30 @else border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 @enderror focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition">
+                        @error('whatsapp_number') <p class="text-[11px] text-rose-600 dark:text-rose-400 mt-1">{{ $message }}</p> @enderror
+                    </div>
+
+                    <!-- Email Aktif -->
+                    <div>
+                        <label for="form_email" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                            {{ __('Alamat Email Aktif') }} <span class="text-rose-500">*</span>
+                        </label>
+                        <input type="email" 
+                                id="form_email" 
+                                wire:model="email" 
+                                placeholder="{{ __('Contoh: budi.santoso@asiaplastik.com') }}"
+                                class="w-full text-xs px-3.5 py-2.5 rounded-lg border @error('email') border-rose-400 bg-rose-50 dark:bg-rose-950/30 @else border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 @enderror focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition">
+                        @error('email') <p class="text-[11px] text-rose-600 dark:text-rose-400 mt-1">{{ $message }}</p> @enderror
+                    </div>
+
+                    <!-- Departemen / Divisi -->
                     <div>
                         <label for="form_dept" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                            {{ __('Departemen Penugasan') }} <span class="text-rose-500">*</span>
+                            {{ __('Divisi / Departemen') }} <span class="text-rose-500">*</span>
                         </label>
                         <select id="form_dept" 
                                 wire:model="department_id"
                                 class="w-full text-xs px-3.5 py-2.5 rounded-lg border @error('department_id') border-rose-400 bg-rose-50 dark:bg-rose-950/30 @else border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 @enderror focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition">
-                            <option value="">{{ __('-- Pilih Departemen --') }}</option>
+                            <option value="">{{ __('-- Pilih Divisi --') }}</option>
                             @foreach ($departments as $dept)
                                 <option value="{{ $dept->id }}">{{ $dept->name }}</option>
                             @endforeach
@@ -316,7 +354,7 @@
                         <button type="submit" 
                                 wire:loading.attr="disabled"
                                 class="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs uppercase tracking-wider shadow-md transition flex items-center gap-2 cursor-pointer">
-                            <span wire:loading.remove wire:target="saveEmployee">{{ $editingEmployeeId ? __('Simpan Perubahan') : __('Simpan Karyawan') }}</span>
+                            <span wire:loading.remove wire:target="saveEmployee">{{ $editingEmployeeId ? __('Simpan Perubahan') : __('Simpan Akun') }}</span>
                             <span wire:loading wire:target="saveEmployee">{{ __('Menyimpan...') }}</span>
                         </button>
                     </div>
@@ -347,10 +385,10 @@
                 </div>
 
                 <h3 class="text-sm font-bold text-slate-900 dark:text-white mb-1">
-                    {{ __('Konfirmasi Hapus Data Karyawan') }}
+                    {{ __('Konfirmasi Hapus Akun Karyawan') }}
                 </h3>
                 <p class="text-xs text-slate-500 dark:text-slate-400 mb-6">
-                    {{ __('Apakah Anda yakin ingin menghapus') }} <strong class="text-slate-800 dark:text-slate-200">{{ $deletingEmployeeName }}</strong> {{ __('dari Master Data Admin IT? Tindakan ini tidak dapat dibatalkan.') }}
+                    {{ __('Apakah Anda yakin ingin menghapus akun') }} <strong class="text-slate-800 dark:text-slate-200">{{ $deletingEmployeeName }}</strong>? {{ __('Tindakan ini tidak dapat dibatalkan.') }}
                 </p>
 
                 <div class="flex items-center justify-center gap-3">
@@ -362,8 +400,10 @@
 
                     <button type="button" 
                             wire:click="deleteEmployee" 
+                            wire:loading.attr="disabled"
                             class="w-1/2 py-2.5 px-3 rounded-lg text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 shadow-md transition cursor-pointer">
-                        {{ __('Ya, Hapus') }}
+                        <span wire:loading.remove wire:target="deleteEmployee">{{ __('Ya, Hapus') }}</span>
+                        <span wire:loading wire:target="deleteEmployee">{{ __('Menghapus...') }}</span>
                     </button>
                 </div>
 
@@ -372,7 +412,7 @@
     @endif
 
     <!-- ======================================================== -->
-    <!-- MODAL 3: BULK UPLOAD CSV MASTER DATA -->
+    <!-- MODAL 3: IMPORT BULK CSV KARYAWAN -->
     <!-- ======================================================== -->
     @if ($isCsvModalOpen)
         <div class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 sm:p-6"
@@ -385,20 +425,20 @@
                  wire:click="closeCsvModal"></div>
 
             <!-- Modal Content Card -->
-            <div class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-slate-800 w-full max-w-xl z-10 animate-fade-in text-slate-800 dark:text-slate-100 overflow-hidden">
+            <div class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-slate-800 w-full max-w-lg z-10 animate-fade-in text-slate-800 dark:text-slate-100 overflow-hidden">
                 
                 <!-- Modal Header -->
-                <div class="px-6 py-4 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/80 dark:bg-slate-800/40">
+                <div class="px-6 py-4 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between bg-emerald-50/60 dark:bg-emerald-950/30">
                     <div class="flex items-center gap-2.5">
                         <div class="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold shadow-xs">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
                         </div>
                         <div>
                             <h3 class="text-sm font-bold text-slate-900 dark:text-white">
-                                {{ __('Bulk Upload CSV Master Data Karyawan') }}
+                                {{ __('Import Massal Data Karyawan (CSV)') }}
                             </h3>
                             <p class="text-[11px] text-slate-400">
-                                {{ __('Unggah berkas spreadsheet CSV untuk menyinkronkan data massal.') }}
+                                {{ __('Unggah file CSV dengan kolom: name, whatsapp_number, email, department_id.') }}
                             </p>
                         </div>
                     </div>
@@ -410,93 +450,67 @@
                     </button>
                 </div>
 
-                <!-- Modal Body -->
-                <div class="p-6 space-y-5 text-xs">
+                <!-- Modal Body Form -->
+                <form wire:submit.prevent="importCsv" class="p-6 space-y-4 text-xs">
                     
-                    @if ($csvErrorMessage)
-                        <div class="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-xs flex items-center gap-2">
-                            <svg class="w-4 h-4 text-rose-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            <span>{{ $csvErrorMessage }}</span>
-                        </div>
-                    @endif
-
                     @if ($csvSuccessMessage)
-                        <div class="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs flex items-center gap-2">
-                            <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
-                            <span>{{ $csvSuccessMessage }}</span>
+                        <div class="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs">
+                            {{ $csvSuccessMessage }}
                         </div>
                     @endif
 
-                    <!-- CSV Format Guide Box -->
-                    <div class="p-3.5 rounded-xl bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200/60 dark:border-blue-900/60 text-slate-700 dark:text-slate-300 space-y-2">
-                        <div class="flex items-center gap-1.5 font-bold text-blue-900 dark:text-blue-300">
-                            <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            <span>{{ __('Ketentuan Format Kolom CSV (Headers):') }}</span>
+                    @if ($csvErrorMessage)
+                        <div class="p-3 rounded-lg bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-300 text-xs">
+                            {{ $csvErrorMessage }}
                         </div>
-                        <p class="text-[11px] leading-relaxed">
-                            {{ __('Baris pertama wajib berisi header:') }} <code class="font-mono font-bold bg-white dark:bg-slate-800 px-1 py-0.5 rounded text-blue-700 dark:text-blue-300">ktp_number,name,department_id</code>
-                        </p>
-                        <div class="p-2 rounded bg-white dark:bg-slate-800 border border-blue-100 dark:border-blue-950 font-mono text-[10px] text-slate-600 dark:text-slate-400 overflow-x-auto">
-ktp_number,name,department_id
-3578015507940002,Siti Rahmawati,4
-3578011203900001,Budi Pratama,1
-3578012408880003,Agus Santoso,3
-3578011805850004,Hendra Wijaya,5
-                        </div>
-                        <div class="flex items-center justify-between pt-1">
-                            <span class="text-[10px] text-slate-500 dark:text-slate-400">
-                                <span class="font-bold">{{ __('ID Departemen:') }}</span>
-                                @foreach ($departments as $d)
-                                    <span class="mr-2">{{ $d->id }} = {{ $d->name }}</span>
-                                @endforeach
-                            </span>
-                            <button type="button" wire:click="downloadTemplateCsv" class="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 hover:text-blue-700 underline cursor-pointer shrink-0">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                                <span>{{ __('Download Template CSV') }}</span>
-                            </button>
-                        </div>
-                    </div>
+                    @endif
 
-                    <!-- File Upload Input Dropzone -->
+                    <!-- File Input Box -->
                     <div>
                         <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                            {{ __('Pilih File CSV (.csv)') }} <span class="text-rose-500">*</span>
+                            {{ __('Pilih File CSV (.csv / .txt)') }} <span class="text-rose-500">*</span>
                         </label>
-                        <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border-2 border-dashed border-gray-300 dark:border-slate-700 text-center">
+                        <div class="border-2 border-dashed border-gray-300 dark:border-slate-700 rounded-xl p-4 text-center hover:border-emerald-500 dark:hover:border-emerald-500 transition">
                             <input type="file" 
                                    wire:model="csvFile" 
-                                   accept=".csv,text/csv,text/plain"
-                                   id="csv_file_input"
-                                   class="text-xs text-slate-500 dark:text-slate-400 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-emerald-600 file:text-white hover:file:bg-emerald-700 cursor-pointer">
-                            <div wire:loading wire:target="csvFile" class="mt-2 text-[11px] text-blue-600 font-semibold flex items-center justify-center gap-1.5">
-                                <svg class="animate-spin h-3.5 w-3.5 text-blue-600" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
-                                <span>{{ __('Mengunggah file sementara ke server...') }}</span>
-                            </div>
+                                   accept=".csv,.txt"
+                                   class="block w-full text-xs text-slate-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 dark:file:bg-emerald-950/60 dark:file:text-emerald-300 cursor-pointer">
                         </div>
                         @error('csvFile') <p class="text-[11px] text-rose-600 dark:text-rose-400 mt-1">{{ $message }}</p> @enderror
                     </div>
 
-                    <!-- Footer Buttons -->
-                    <div class="pt-4 border-t border-gray-100 dark:border-slate-800 flex items-center justify-end gap-3">
-                        <button type="button" 
-                                wire:click="closeCsvModal" 
-                                class="px-4 py-2 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 transition cursor-pointer">
-                            {{ __('Tutup') }}
-                        </button>
-
-                        <button type="button" 
-                                wire:click="uploadCsv" 
-                                wire:loading.attr="disabled"
-                                class="px-5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider shadow-md transition flex items-center gap-2 cursor-pointer disabled:opacity-50">
-                            <span wire:loading.remove wire:target="uploadCsv">{{ __('Proses Import CSV') }}</span>
-                            <span wire:loading wire:target="uploadCsv" class="flex items-center gap-2">
-                                <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
-                                <span>{{ __('Memproses...') }}</span>
-                            </span>
-                        </button>
+                    <!-- Guide Info -->
+                    <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-gray-100 dark:border-slate-800 text-[11px] space-y-1">
+                        <p class="font-bold text-slate-700 dark:text-slate-200">{{ __('Panduan Format CSV:') }}</p>
+                        <p class="text-slate-500 dark:text-slate-400">{{ __('1. Header wajib: name, whatsapp_number, email, department_id.') }}</p>
+                        <p class="text-slate-500 dark:text-slate-400">{{ __('2. Password awal otomatis diset ke "password123".') }}</p>
                     </div>
 
-                </div>
+                    <!-- Footer Buttons -->
+                    <div class="pt-4 border-t border-gray-100 dark:border-slate-800 flex items-center justify-between">
+                        <button type="button" 
+                                wire:click="downloadTemplateCsv"
+                                class="text-emerald-600 dark:text-emerald-400 hover:underline font-semibold text-xs flex items-center gap-1 cursor-pointer">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                            <span>{{ __('Unduh Contoh CSV') }}</span>
+                        </button>
+
+                        <div class="flex items-center gap-2">
+                            <button type="button" 
+                                    wire:click="closeCsvModal" 
+                                    class="px-3.5 py-2 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 transition cursor-pointer">
+                                {{ __('Tutup') }}
+                            </button>
+
+                            <button type="submit" 
+                                    wire:loading.attr="disabled"
+                                    class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider shadow-md transition flex items-center gap-2 cursor-pointer">
+                                <span wire:loading.remove wire:target="importCsv">{{ __('Proses Import') }}</span>
+                                <span wire:loading wire:target="importCsv">{{ __('Mengunggah...') }}</span>
+                            </button>
+                        </div>
+                    </div>
+                </form>
 
             </div>
         </div>

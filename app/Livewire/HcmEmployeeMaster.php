@@ -3,10 +3,9 @@
 namespace App\Livewire;
 
 use App\Models\Department;
-use App\Models\EmployeeMasterData;
+use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
@@ -28,9 +27,11 @@ class HcmEmployeeMaster extends Component
 
     public ?int $editingEmployeeId = null;
 
-    public string $ktp_number = '';
-
     public string $name = '';
+
+    public string $whatsapp_number = '';
+
+    public string $email = '';
 
     public ?int $department_id = null;
 
@@ -57,6 +58,16 @@ class HcmEmployeeMaster extends Component
      */
     public function mount(): void
     {
+        $this->ensureAuthorized();
+
+        $defaultDept = Department::first();
+        if ($defaultDept) {
+            $this->department_id = $defaultDept->id;
+        }
+    }
+
+    protected function ensureAuthorized(): void
+    {
         $user = Auth::user();
         if (! $user && session('active_user_id')) {
             $user = User::find(session('active_user_id'));
@@ -70,13 +81,7 @@ class HcmEmployeeMaster extends Component
         }
 
         if ($user->email !== 'user123@gmail.com') {
-            abort(403, 'Akses Ditolak: Modul HCM Master Data khusus dan hanya dapat diakses oleh Admin IT (user123@gmail.com).');
-        }
-
-        // Set default department for adding employee if available
-        $defaultDept = Department::first();
-        if ($defaultDept) {
-            $this->department_id = $defaultDept->id;
+            abort(403, 'Akses Ditolak: Modul Manajemen Data Karyawan khusus dan hanya dapat diakses oleh Admin IT (user123@gmail.com).');
         }
     }
 
@@ -95,10 +100,12 @@ class HcmEmployeeMaster extends Component
      */
     public function openCreateModal(): void
     {
+        $this->ensureAuthorized();
         $this->resetValidation();
         $this->editingEmployeeId = null;
-        $this->ktp_number = '';
         $this->name = '';
+        $this->whatsapp_number = '';
+        $this->email = '';
 
         $firstDept = Department::first();
         $this->department_id = $firstDept ? $firstDept->id : null;
@@ -111,13 +118,15 @@ class HcmEmployeeMaster extends Component
      */
     public function openEditModal(int $id): void
     {
+        $this->ensureAuthorized();
         $this->resetValidation();
-        $employee = EmployeeMasterData::findOrFail($id);
+        $user = User::findOrFail($id);
 
-        $this->editingEmployeeId = $employee->id;
-        $this->ktp_number = $employee->ktp_number;
-        $this->name = $employee->name;
-        $this->department_id = $employee->department_id;
+        $this->editingEmployeeId = $user->id;
+        $this->name = $user->name;
+        $this->whatsapp_number = $user->whatsapp_number ?? '';
+        $this->email = $user->email;
+        $this->department_id = $user->department_id;
 
         $this->isFormModalOpen = true;
     }
@@ -129,7 +138,7 @@ class HcmEmployeeMaster extends Component
     {
         $this->isFormModalOpen = false;
         $this->editingEmployeeId = null;
-        $this->reset(['ktp_number', 'name']);
+        $this->reset(['name', 'whatsapp_number', 'email']);
         $this->resetValidation();
     }
 
@@ -138,44 +147,57 @@ class HcmEmployeeMaster extends Component
      */
     public function saveEmployee(): void
     {
+        $this->ensureAuthorized();
+
         $this->validate([
-            'ktp_number' => [
-                'required',
-                'string',
-                'size:16',
-                'regex:/^[0-9]+$/',
-                Rule::unique('employee_master_data', 'ktp_number')->ignore($this->editingEmployeeId),
-            ],
             'name' => 'required|string|min:3|max:150',
+            'whatsapp_number' => 'required|string|min:10|max:20|regex:/^[0-9+ ]+$/',
+            'email' => [
+                'required',
+                'email',
+                'max:150',
+                Rule::unique('users', 'email')->ignore($this->editingEmployeeId),
+            ],
             'department_id' => 'required|exists:departments,id',
         ], [
-            'ktp_number.required' => 'Nomor KTP (NIK) wajib diisi.',
-            'ktp_number.size' => 'Nomor KTP harus tepat 16 digit angka.',
-            'ktp_number.regex' => 'Nomor KTP hanya boleh berisi angka.',
-            'ktp_number.unique' => 'Nomor KTP ini sudah terdaftar dalam Master Data.',
-            'name.required' => 'Nama lengkap karyawan wajib diisi.',
-            'name.min' => 'Nama minimal 3 karakter.',
-            'department_id.required' => 'Silakan pilih departemen penugasan.',
-            'department_id.exists' => 'Departemen yang dipilih tidak valid.',
+            'name.required' => 'Nama lengkap wajib diisi.',
+            'name.min' => 'Nama lengkap minimal 3 karakter.',
+            'whatsapp_number.required' => 'Nomor HP / WhatsApp aktif wajib diisi.',
+            'whatsapp_number.min' => 'Nomor HP minimal 10 digit.',
+            'whatsapp_number.regex' => 'Format nomor HP tidak valid.',
+            'email.required' => 'Alamat email aktif wajib diisi.',
+            'email.email' => 'Format alamat email tidak valid.',
+            'email.unique' => 'Email ini sudah terdaftar dalam sistem.',
+            'department_id.required' => 'Silakan pilih divisi penugasan.',
+            'department_id.exists' => 'Divisi yang dipilih tidak valid.',
         ]);
 
+        $avatarUrl = 'https://ui-avatars.com/api/?name='.urlencode(trim($this->name)).'&background=0284c7&color=fff';
+
         if ($this->editingEmployeeId) {
-            $employee = EmployeeMasterData::findOrFail($this->editingEmployeeId);
-            $employee->update([
-                'ktp_number' => trim($this->ktp_number),
+            $user = User::findOrFail($this->editingEmployeeId);
+            $user->update([
                 'name' => trim($this->name),
+                'whatsapp_number' => trim($this->whatsapp_number),
+                'email' => strtolower(trim($this->email)),
                 'department_id' => (int) $this->department_id,
+                'avatar' => $avatarUrl,
             ]);
 
-            session()->flash('success_message', "Data karyawan {$employee->name} berhasil diperbarui.");
+            session()->flash('success_message', 'Data akun karyawan "'.$user->name.'" berhasil diperbarui.');
         } else {
-            EmployeeMasterData::create([
-                'ktp_number' => trim($this->ktp_number),
+            User::create([
                 'name' => trim($this->name),
+                'whatsapp_number' => trim($this->whatsapp_number),
+                'email' => strtolower(trim($this->email)),
+                'password' => 'password123',
                 'department_id' => (int) $this->department_id,
+                'role' => 'staff',
+                'avatar' => $avatarUrl,
+                'email_verified_at' => now(),
             ]);
 
-            session()->flash('success_message', 'Karyawan baru berhasil ditambahkan ke Master Data Admin IT.');
+            session()->flash('success_message', 'Akun karyawan baru berhasil ditambahkan.');
         }
 
         $this->closeFormModal();
@@ -186,9 +208,10 @@ class HcmEmployeeMaster extends Component
      */
     public function confirmDelete(int $id): void
     {
-        $employee = EmployeeMasterData::findOrFail($id);
-        $this->deletingEmployeeId = $employee->id;
-        $this->deletingEmployeeName = $employee->name;
+        $this->ensureAuthorized();
+        $user = User::findOrFail($id);
+        $this->deletingEmployeeId = $user->id;
+        $this->deletingEmployeeName = $user->name;
         $this->isDeleteModalOpen = true;
     }
 
@@ -203,51 +226,58 @@ class HcmEmployeeMaster extends Component
     }
 
     /**
-     * Delete an employee record from Master Data.
+     * Delete employee record from database.
      */
     public function deleteEmployee(): void
     {
-        if ($this->deletingEmployeeId) {
-            $employee = EmployeeMasterData::find($this->deletingEmployeeId);
-            if ($employee) {
-                $name = $employee->name;
-                $employee->delete();
-                session()->flash('success_message', "Data karyawan {$name} berhasil dihapus dari Master Data.");
-            }
-        }
+        $this->ensureAuthorized();
 
-        $this->closeDeleteModal();
+        if ($this->deletingEmployeeId) {
+            $user = User::findOrFail($this->deletingEmployeeId);
+
+            // Prevent self-deletion
+            if ($user->id === Auth::id() || $user->email === 'user123@gmail.com') {
+                session()->flash('error_message', 'Anda tidak dapat menghapus akun Admin IT utama.');
+                $this->closeDeleteModal();
+
+                return;
+            }
+
+            $name = $user->name;
+            $user->delete();
+
+            session()->flash('success_message', 'Akun karyawan "'.$name.'" berhasil dihapus dari sistem.');
+            $this->closeDeleteModal();
+        }
     }
 
     /**
-     * Open CSV Bulk Upload Modal.
+     * Open CSV Import modal.
      */
     public function openCsvModal(): void
     {
+        $this->ensureAuthorized();
+        $this->reset(['csvFile', 'csvSuccessMessage', 'csvErrorMessage', 'csvImportStats']);
         $this->resetValidation();
-        $this->csvFile = null;
-        $this->csvSuccessMessage = null;
-        $this->csvErrorMessage = null;
-        $this->csvImportStats = [];
         $this->isCsvModalOpen = true;
     }
 
     /**
-     * Close CSV Bulk Upload Modal.
+     * Close CSV Import modal.
      */
     public function closeCsvModal(): void
     {
         $this->isCsvModalOpen = false;
-        $this->csvFile = null;
+        $this->reset(['csvFile', 'csvSuccessMessage', 'csvErrorMessage', 'csvImportStats']);
         $this->resetValidation();
     }
 
     /**
-     * Bulk Upload and Synchronize Employees via CSV.
-     * Expected CSV headers: ktp_number, name, department_id
+     * Process bulk CSV import for employee accounts.
      */
-    public function uploadCsv(): void
+    public function importCsv(): void
     {
+        $this->ensureAuthorized();
         $this->csvSuccessMessage = null;
         $this->csvErrorMessage = null;
         $this->csvImportStats = [];
@@ -270,13 +300,10 @@ class HcmEmployeeMaster extends Component
             }
 
             $content = file_get_contents($filePath);
-
-            // Strip UTF-8 BOM if present
             if (str_starts_with($content, "\xEF\xBB\xBF")) {
                 $content = substr($content, 3);
             }
 
-            // Split into lines
             $lines = preg_split('/\r\n|\r|\n/', trim($content));
             if (empty($lines)) {
                 $this->csvErrorMessage = 'File CSV kosong atau tidak memiliki data.';
@@ -284,7 +311,6 @@ class HcmEmployeeMaster extends Component
                 return;
             }
 
-            // Determine delimiter: comma, semicolon, or tab
             $firstLine = $lines[0];
             $delimiter = ',';
             if (substr_count($firstLine, ';') > substr_count($firstLine, ',')) {
@@ -293,150 +319,159 @@ class HcmEmployeeMaster extends Component
                 $delimiter = "\t";
             }
 
-            // Parse headers
             $headers = str_getcsv($firstLine, $delimiter);
             $normalizedHeaders = array_map(function ($h) {
                 return strtolower(trim(preg_replace('/[^a-zA-Z0-9_]/', '', $h)));
             }, $headers);
-
-            $ktpIdx = array_search('ktp_number', $normalizedHeaders, true);
-            if ($ktpIdx === false) {
-                // Try common alternative column names
-                $ktpIdx = array_search('ktp', $normalizedHeaders, true);
-                if ($ktpIdx === false) {
-                    $ktpIdx = array_search('nik', $normalizedHeaders, true);
-                }
-            }
 
             $nameIdx = array_search('name', $normalizedHeaders, true);
             if ($nameIdx === false) {
                 $nameIdx = array_search('nama', $normalizedHeaders, true);
             }
 
-            $deptIdx = array_search('department_id', $normalizedHeaders, true);
-            if ($deptIdx === false) {
-                $deptIdx = array_search('department', $normalizedHeaders, true);
+            $waIdx = array_search('whatsapp_number', $normalizedHeaders, true);
+            if ($waIdx === false) {
+                $waIdx = array_search('whatsapp', $normalizedHeaders, true) ?: array_search('nohp', $normalizedHeaders, true);
             }
 
-            if ($ktpIdx === false || $nameIdx === false || $deptIdx === false) {
-                $this->csvErrorMessage = 'Format header CSV tidak valid. Wajib memiliki kolom: ktp_number, name, department_id. Ditemukan: '.implode(', ', $headers);
+            $emailIdx = array_search('email', $normalizedHeaders, true);
+
+            $deptIdx = array_search('department_id', $normalizedHeaders, true);
+            if ($deptIdx === false) {
+                $deptIdx = array_search('divisi', $normalizedHeaders, true) ?: array_search('department', $normalizedHeaders, true);
+            }
+
+            if ($nameIdx === false || $emailIdx === false) {
+                $this->csvErrorMessage = 'Format CSV tidak valid. Kolom "name" dan "email" wajib ada di header CSV.';
 
                 return;
             }
 
-            $existingDeptIds = Department::pluck('id')->toArray();
-            $defaultDeptId = $existingDeptIds[0] ?? 1;
+            $departments = Department::all()->keyBy('id');
+            $deptNames = Department::all()->mapWithKeys(function ($d) {
+                return [strtolower(trim($d->name)) => $d->id];
+            });
 
             $insertedCount = 0;
             $updatedCount = 0;
             $skippedCount = 0;
-            $rowNum = 1;
-
-            DB::beginTransaction();
+            $errors = [];
 
             for ($i = 1; $i < count($lines); $i++) {
                 $line = trim($lines[$i]);
-                if ($line === '') {
+                if (empty($line)) {
                     continue;
                 }
 
-                $rowNum++;
                 $row = str_getcsv($line, $delimiter);
+                $rowNumber = $i + 1;
 
-                $rawKtp = trim($row[$ktpIdx] ?? '');
-                $rawName = trim($row[$nameIdx] ?? '');
-                $rawDept = trim($row[$deptIdx] ?? '');
+                $name = isset($row[$nameIdx]) ? trim($row[$nameIdx]) : '';
+                $email = isset($row[$emailIdx]) ? strtolower(trim($row[$emailIdx])) : '';
+                $wa = ($waIdx !== false && isset($row[$waIdx])) ? trim($row[$waIdx]) : '081234567890';
+                $deptRaw = ($deptIdx !== false && isset($row[$deptIdx])) ? trim($row[$deptIdx]) : '';
 
-                // Clean KTP to alphanumeric/digits
-                $cleanKtp = preg_replace('/[^0-9]/', '', $rawKtp);
-
-                if (empty($cleanKtp) || empty($rawName)) {
+                if (empty($name) || empty($email) || ! filter_var($email, FILTER_VALIDATE_EMAIL)) {
                     $skippedCount++;
+                    $errors[] = "Baris {$rowNumber}: Nama atau Email tidak valid.";
 
                     continue;
                 }
 
-                $deptId = is_numeric($rawDept) && in_array((int) $rawDept, $existingDeptIds, true)
-                    ? (int) $rawDept
-                    : $defaultDeptId;
+                $resolvedDeptId = null;
+                if (is_numeric($deptRaw) && isset($departments[(int) $deptRaw])) {
+                    $resolvedDeptId = (int) $deptRaw;
+                } elseif (isset($deptNames[strtolower($deptRaw)])) {
+                    $resolvedDeptId = $deptNames[strtolower($deptRaw)];
+                } else {
+                    $resolvedDeptId = Department::first()?->id ?? 1;
+                }
 
-                // Check if existing
-                $existing = EmployeeMasterData::where('ktp_number', $cleanKtp)->first();
-
-                // Secure updateOrCreate as explicitly specified
-                EmployeeMasterData::updateOrCreate(
-                    ['ktp_number' => $cleanKtp],
-                    [
-                        'name' => $rawName,
-                        'department_id' => $deptId,
-                    ]
-                );
+                $existing = User::where('email', $email)->first();
+                $avatarUrl = 'https://ui-avatars.com/api/?name='.urlencode($name).'&background=0284c7&color=fff';
 
                 if ($existing) {
+                    $existing->update([
+                        'name' => $name,
+                        'whatsapp_number' => $wa,
+                        'department_id' => $resolvedDeptId,
+                    ]);
                     $updatedCount++;
                 } else {
+                    User::create([
+                        'name' => $name,
+                        'email' => $email,
+                        'whatsapp_number' => $wa,
+                        'department_id' => $resolvedDeptId,
+                        'password' => 'password123',
+                        'role' => 'staff',
+                        'avatar' => $avatarUrl,
+                        'email_verified_at' => now(),
+                    ]);
                     $insertedCount++;
                 }
             }
 
-            DB::commit();
-
-            $totalProcessed = $insertedCount + $updatedCount;
             $this->csvImportStats = [
-                'total' => $totalProcessed,
                 'inserted' => $insertedCount,
                 'updated' => $updatedCount,
                 'skipped' => $skippedCount,
+                'total_processed' => $insertedCount + $updatedCount + $skippedCount,
+                'errors' => array_slice($errors, 0, 5),
             ];
 
-            $this->csvSuccessMessage = "Bulk Import Berhasil: {$totalProcessed} data karyawan diproses ({$insertedCount} baru, {$updatedCount} diperbarui, {$skippedCount} dilewati).";
-            session()->flash('success_message', $this->csvSuccessMessage);
-            $this->csvFile = null;
+            $this->csvSuccessMessage = "Import berhasil diproses: {$insertedCount} akun baru ditambahkan, {$updatedCount} diperbarui.";
+            $this->reset('csvFile');
         } catch (\Throwable $e) {
-            DB::rollBack();
-            Log::error('HCM CSV Upload Error: '.$e->getMessage()."\n".$e->getTraceAsString());
+            Log::error('CSV Upload Error: '.$e->getMessage());
             $this->csvErrorMessage = 'Gagal memproses file CSV: '.$e->getMessage();
         }
     }
 
     /**
-     * Download CSV template file for HRD bulk import.
+     * Download CSV template file for bulk import.
      */
     public function downloadTemplateCsv(): StreamedResponse
     {
+        $this->ensureAuthorized();
+
         $headers = [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="template_master_karyawan_admin_it.csv"',
+            'Content-Disposition' => 'attachment; filename="template_data_karyawan_admin_it.csv"',
         ];
 
         return response()->stream(function () {
             $handle = fopen('php://output', 'w');
-            // Write standard CSV header required by Gatekeeper & Vault
-            fputcsv($handle, ['ktp_number', 'name', 'department_id']);
+            fputcsv($handle, ['name', 'whatsapp_number', 'email', 'department_id']);
 
             $departments = Department::all();
             if ($departments->isNotEmpty()) {
                 foreach ($departments as $idx => $dept) {
-                    $sampleNik = '357801'.str_pad((string) (1000000000 + $idx + 1), 10, '0', STR_PAD_LEFT);
-                    fputcsv($handle, [$sampleNik, 'Karyawan '.$dept->name, $dept->id]);
+                    fputcsv($handle, [
+                        'Karyawan '.$dept->name,
+                        '0812'.str_pad((string) (10000000 + $idx + 1), 8, '0', STR_PAD_LEFT),
+                        'staff.'.strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $dept->name)).'@asiaplastik.com',
+                        $dept->id,
+                    ]);
                 }
             } else {
-                fputcsv($handle, ['3578015507940002', 'Siti Rahmawati', 4]);
+                fputcsv($handle, ['Contoh Karyawan', '081234567890', 'karyawan@asiaplastik.com', 1]);
             }
+
             fclose($handle);
         }, 200, $headers);
     }
 
     public function render(): View
     {
-        $query = EmployeeMasterData::query()
-            ->with(['department', 'registeredUser']);
+        $query = User::query()->with('department');
 
         if (trim($this->search) !== '') {
             $searchTerm = '%'.trim($this->search).'%';
             $query->where(function ($q) use ($searchTerm) {
                 $q->where('name', 'like', $searchTerm)
-                    ->orWhere('ktp_number', 'like', $searchTerm)
+                    ->orWhere('email', 'like', $searchTerm)
+                    ->orWhere('whatsapp_number', 'like', $searchTerm)
                     ->orWhereHas('department', function ($dq) use ($searchTerm) {
                         $dq->where('name', 'like', $searchTerm);
                     });
@@ -447,13 +482,13 @@ class HcmEmployeeMaster extends Component
             $query->where('department_id', (int) $this->departmentFilter);
         }
 
-        $employees = $query->orderBy('name')->paginate(10);
+        $users = $query->orderBy('name')->paginate(10);
 
         return view('livewire.hcm-employee-master', [
-            'employees' => $employees,
+            'employees' => $users,
             'departments' => Department::orderBy('name')->get(),
-            'totalEmployees' => EmployeeMasterData::count(),
-            'registeredCount' => EmployeeMasterData::whereHas('registeredUser')->count(),
+            'totalEmployees' => User::count(),
+            'registeredCount' => User::whereNotNull('email_verified_at')->count(),
         ]);
     }
 }
