@@ -23,7 +23,6 @@
         <div class="p-6 sm:p-8">
             <div class="mb-6 text-center">
                 <h1 class="text-2xl font-black text-slate-900 dark:text-white tracking-tight">{{ __('Selamat Datang') }}</h1>
-                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">{{ __('Masuk dengan Alamat Email, No. WhatsApp, atau No. KTP Anda.') }}</p>
             </div>
 
             @if (session('status'))
