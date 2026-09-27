@@ -79,11 +79,12 @@ class AuthFlowTest extends TestCase
         $this->assertFalse(Auth::check());
     }
 
-    public function test_login_with_ktp_and_email(): void
+    public function test_login_with_whatsapp_and_email(): void
     {
         $dept = Department::first();
         $ktp = '3578'.str_pad((string) random_int(100000000000, 999999999999), 12, '0', STR_PAD_LEFT);
         $email = 'login_'.uniqid().'@asiaplastik.com';
+        $whatsapp = '081299998888';
 
         $user = User::create([
             'name' => 'Login Tester',
@@ -91,17 +92,17 @@ class AuthFlowTest extends TestCase
             'password' => bcrypt('password123'),
             'national_id_ktp' => $ktp,
             'gender' => 'female',
-            'whatsapp_number' => '081299998888',
+            'whatsapp_number' => $whatsapp,
             'complete_address' => 'Surabaya, Jawa Timur',
             'postal_code' => '60111',
             'department_id' => $dept?->id,
             'role' => 'staff',
         ]);
 
-        // Test login with KTP
+        // Test login with WhatsApp Number
         Auth::logout();
         Livewire::test(LoginUser::class)
-            ->set('login_id', $ktp)
+            ->set('login_id', $whatsapp)
             ->set('password', 'password123')
             ->call('login')
             ->assertRedirect(route('dashboard'));
@@ -117,5 +118,15 @@ class AuthFlowTest extends TestCase
             ->assertRedirect(route('dashboard'));
         $this->assertTrue(Auth::check());
         $this->assertEquals($user->id, Auth::id());
+
+        // Test that login with KTP is rejected
+        Auth::logout();
+        Livewire::test(LoginUser::class)
+            ->set('login_id', $ktp)
+            ->set('password', 'password123')
+            ->call('login')
+            ->assertHasNoErrors()
+            ->assertSet('errorMessage', 'Akun dengan Email atau No. WhatsApp tersebut belum terdaftar. Silakan lakukan registrasi terlebih dahulu.');
+        $this->assertFalse(Auth::check());
     }
 }

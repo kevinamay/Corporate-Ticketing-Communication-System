@@ -34,7 +34,7 @@ class LoginUser extends Component
     protected function messages(): array
     {
         return [
-            'login_id.required' => 'Nomor KTP atau Alamat Email wajib diisi.',
+            'login_id.required' => 'Email atau Nomor WhatsApp wajib diisi.',
             'password.required' => 'Password wajib diisi.',
         ];
     }
@@ -54,14 +54,28 @@ class LoginUser extends Component
             || Auth::attempt(['email' => $input, 'password' => $this->password], $this->remember)) {
             $authenticated = true;
         }
-        // 2. Try WhatsApp / Phone Number
-        elseif (Auth::attempt(['whatsapp_number' => $input, 'password' => $this->password], $this->remember)) {
-            $authenticated = true;
+
+        // 2. Try WhatsApp / Phone Number (support exact or 08xx / 62xx / +62xx formats)
+        $phoneVariations = [$input];
+        $digitsOnly = preg_replace('/[^0-9]/', '', $input);
+        if (! empty($digitsOnly)) {
+            $phoneVariations[] = $digitsOnly;
+            if (str_starts_with($digitsOnly, '62')) {
+                $phoneVariations[] = '0'.substr($digitsOnly, 2);
+            } elseif (str_starts_with($digitsOnly, '0')) {
+                $phoneVariations[] = '62'.substr($digitsOnly, 1);
+                $phoneVariations[] = '+62'.substr($digitsOnly, 1);
+            }
         }
-        // 3. Try KTP Number
-        elseif (Auth::attempt(['ktp_number' => $input, 'password' => $this->password], $this->remember)
-            || Auth::attempt(['national_id_ktp' => $input, 'password' => $this->password], $this->remember)) {
-            $authenticated = true;
+        $phoneVariations = array_values(array_unique($phoneVariations));
+
+        if (! $authenticated) {
+            foreach ($phoneVariations as $phone) {
+                if (Auth::attempt(['whatsapp_number' => $phone, 'password' => $this->password], $this->remember)) {
+                    $authenticated = true;
+                    break;
+                }
+            }
         }
 
         if ($authenticated) {
@@ -77,12 +91,13 @@ class LoginUser extends Component
         // Provide specific diagnostic feedback
         $existing = User::where('email', $cleanEmail)
             ->orWhere('email', $input)
-            ->orWhere('whatsapp_number', $input)
-            ->orWhere('ktp_number', $input)
+            ->orWhere(function ($query) use ($phoneVariations) {
+                $query->whereIn('whatsapp_number', $phoneVariations);
+            })
             ->first();
 
         if (! $existing) {
-            $this->errorMessage = 'Akun dengan Email / No. WhatsApp tersebut belum terdaftar. Silakan lakukan registrasi terlebih dahulu.';
+            $this->errorMessage = 'Akun dengan Email atau No. WhatsApp tersebut belum terdaftar. Silakan lakukan registrasi terlebih dahulu.';
         } elseif (! Hash::check($this->password, $existing->password)) {
             $this->errorMessage = 'Password yang Anda masukkan salah. Silakan periksa kembali.';
         } else {

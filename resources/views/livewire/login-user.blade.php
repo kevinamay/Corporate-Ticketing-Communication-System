@@ -41,16 +41,16 @@
 
             <form wire:submit.prevent="login" class="space-y-4">
                 
-                <!-- Input: Email, WA, or KTP -->
+                <!-- Input: Email or WhatsApp -->
                 <div>
                     <label for="login_id" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                        {{ __('Email / No. WhatsApp / No. KTP') }} <span class="text-rose-500">*</span>
+                        {{ __('Email / No. WhatsApp') }} <span class="text-rose-500">*</span>
                     </label>
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                         </div>
-                        <input type="text" id="login_id" wire:model="login_id" placeholder="{{ __('email@perusahaan.com atau No. WhatsApp / KTP') }}"
+                        <input type="text" id="login_id" wire:model="login_id" placeholder="{{ __('email@perusahaan.com atau No. WhatsApp') }}"
                                class="w-full text-xs pl-9 pr-3.5 py-2.5 rounded-lg border @error('login_id') border-rose-400 bg-rose-50 dark:bg-rose-950/30 @else border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 @enderror focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition">
                     </div>
                     @error('login_id') <p class="text-[11px] text-rose-600 dark:text-rose-400 mt-1">{{ $message }}</p> @enderror
