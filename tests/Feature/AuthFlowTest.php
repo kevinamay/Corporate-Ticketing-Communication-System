@@ -69,7 +69,7 @@ class AuthFlowTest extends TestCase
         // 3. Admin ACC/Approves the employee in HcmEmployeeMaster
         $this->actingAs($admin);
         Livewire::test(HcmEmployeeMaster::class)
-            ->call('approveEmployee', $user->id)
+            ->call('toggleApproval', $user->id)
             ->assertHasNoErrors();
 
         $user->refresh();

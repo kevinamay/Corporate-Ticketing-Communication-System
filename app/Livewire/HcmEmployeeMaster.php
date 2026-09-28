@@ -238,34 +238,28 @@ class HcmEmployeeMaster extends Component
     }
 
     /**
-     * Approve/ACC employee account so it becomes active and can log in.
+     * Toggle ACC / UNACC approval status of employee account.
      */
-    public function approveEmployee(int $id): void
-    {
-        $this->ensureAuthorized();
-        $user = User::findOrFail($id);
-        $user->update(['email_verified_at' => now()]);
-
-        session()->flash('success_message', 'Akun karyawan "'.$user->name.'" ('.$user->email.') berhasil di-ACC / Dikonfirmasi dan sekarang sudah aktif.');
-    }
-
-    /**
-     * Revoke ACC / Deactivate employee account.
-     */
-    public function unapproveEmployee(int $id): void
+    public function toggleApproval(int $id): void
     {
         $this->ensureAuthorized();
         $user = User::findOrFail($id);
 
-        if ($user->id === Auth::id() || $user->email === 'user123@gmail.com') {
-            session()->flash('error_message', 'Anda tidak dapat menonaktifkan status akun Admin IT utama.');
+        if ($user->email_verified_at) {
+            // Already ACC'd -> UNACC
+            if ($user->id === Auth::id() || $user->email === 'user123@gmail.com') {
+                session()->flash('error_message', 'Anda tidak dapat menonaktifkan status akun Admin IT utama.');
 
-            return;
+                return;
+            }
+
+            $user->update(['email_verified_at' => null]);
+            session()->flash('success_message', 'Akun karyawan "'.$user->name.'" berhasil di-UNACC (dinonaktifkan).');
+        } else {
+            // Not ACC'd -> ACC
+            $user->update(['email_verified_at' => now()]);
+            session()->flash('success_message', 'Akun karyawan "'.$user->name.'" berhasil di-ACC dan sekarang sudah aktif.');
         }
-
-        $user->update(['email_verified_at' => null]);
-
-        session()->flash('success_message', 'Status persetujuan akun "'.$user->name.'" berhasil dibatalkan. Akun kini tidak aktif.');
     }
 
     /**

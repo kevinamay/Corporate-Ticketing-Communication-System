@@ -197,31 +197,28 @@
                                 </div>
                             </td>
 
-                            <!-- Konfirmasi / ACC Column -->
+                            <!-- Konfirmasi / ACC Column (Toggle ACC / UNACC) -->
                             <td class="py-3 px-4 text-center whitespace-nowrap">
-                                @if ($emp->email_verified_at)
-                                    <div class="inline-flex items-center gap-1.5 justify-center">
-                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                                            <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
-                                            <span>{{ __('Sudah di-ACC') }}</span>
-                                        </span>
-                                        @if ($emp->email !== 'user123@gmail.com')
-                                            <button type="button" 
-                                                    wire:click="unapproveEmployee({{ $emp->id }})" 
-                                                    wire:confirm="{{ __('Batalkan ACC dan nonaktifkan login akun ini?') }}"
-                                                    title="{{ __('Batalkan persetujuan ACC dan nonaktifkan akun') }}"
-                                                    class="px-2 py-0.5 rounded text-[10px] text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition cursor-pointer">
-                                                {{ __('Batal ACC') }}
-                                            </button>
-                                        @endif
-                                    </div>
+                                @if ($emp->email === 'user123@gmail.com')
+                                    <span class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 font-bold text-xs shadow-2xs min-w-[85px]" title="{{ __('Admin Utama (Selalu Aktif)') }}">
+                                        <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                                        <span>{{ __('ACC') }}</span>
+                                    </span>
+                                @elseif ($emp->email_verified_at)
+                                    <button type="button" 
+                                            wire:click="toggleApproval({{ $emp->id }})" 
+                                            title="{{ __('Akun sudah di-ACC. Klik untuk ubah menjadi UNACC') }}"
+                                            class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-900/50 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 active:scale-95 font-bold text-xs shadow-2xs transition-all cursor-pointer min-w-[85px]">
+                                        <svg class="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                        <span>{{ __('UNACC') }}</span>
+                                    </button>
                                 @else
                                     <button type="button" 
-                                            wire:click="approveEmployee({{ $emp->id }})"
-                                            title="{{ __('ACC / Konfirmasi dan aktifkan akun pegawai ini') }}"
-                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs shadow-xs transition-all cursor-pointer">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
-                                        <span>{{ __('ACC / Konfirmasi') }}</span>
+                                            wire:click="toggleApproval({{ $emp->id }})"
+                                            title="{{ __('Akun belum di-ACC. Klik untuk ACC') }}"
+                                            class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs shadow-xs transition-all cursor-pointer min-w-[85px]">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                                        <span>{{ __('ACC') }}</span>
                                     </button>
                                 @endif
                             </td>
