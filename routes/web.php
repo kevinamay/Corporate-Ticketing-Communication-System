@@ -18,6 +18,13 @@ Route::get('/', function () {
         }
     }
 
+    if ($activeUser && $activeUser->email_verified_at === null) {
+        Auth::logout();
+        session()->forget('active_user_id');
+
+        return redirect()->route('login');
+    }
+
     if (! Auth::check()) {
         return redirect()->route('login');
     }
@@ -96,6 +103,13 @@ Route::get('/dashboard', function () {
         if ($activeUser) {
             Auth::login($activeUser);
         }
+    }
+
+    if ($activeUser && $activeUser->email_verified_at === null) {
+        Auth::logout();
+        session()->forget('active_user_id');
+
+        return redirect()->route('login');
     }
 
     if (! Auth::check()) {

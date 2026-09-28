@@ -65,11 +65,11 @@
                     @if ($currentUser->email_verified_at)
                         <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
                             <svg class="w-3 h-3 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
-                            {{ __('Terverifikasi OTP') }}
+                            {{ __('Aktif (Disetujui)') }}
                         </span>
                     @else
                         <span class="text-[10px] font-semibold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/50 px-2 py-0.5 rounded border border-amber-200 dark:border-amber-800">
-                            {{ __('Belum Verifikasi') }}
+                            {{ __('Menunggu ACC') }}
                         </span>
                     @endif
                 </div>

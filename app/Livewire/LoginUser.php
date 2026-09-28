@@ -79,6 +79,15 @@ class LoginUser extends Component
         }
 
         if ($authenticated) {
+            $user = Auth::user();
+            if ($user && $user->email_verified_at === null) {
+                Auth::logout();
+                session()->forget('active_user_id');
+                $this->errorMessage = 'Akun Anda belum aktif karena masih menunggu persetujuan (ACC/Konfirmasi) dari Administrator. Silakan hubungi Administrator untuk aktivasi akun.';
+
+                return;
+            }
+
             session()->regenerate();
             session(['active_user_id' => Auth::id()]);
             session(['auth.password_confirmed_at' => time()]);
@@ -100,6 +109,8 @@ class LoginUser extends Component
             $this->errorMessage = 'Akun dengan Email atau No. WhatsApp tersebut belum terdaftar. Silakan lakukan registrasi terlebih dahulu.';
         } elseif (! Hash::check($this->password, $existing->password)) {
             $this->errorMessage = 'Password yang Anda masukkan salah. Silakan periksa kembali.';
+        } elseif ($existing->email_verified_at === null) {
+            $this->errorMessage = 'Akun Anda belum aktif karena masih menunggu persetujuan (ACC/Konfirmasi) dari Administrator. Silakan hubungi Administrator untuk aktivasi akun.';
         } else {
             $this->errorMessage = 'Kredensial tidak cocok dengan data kami. Silakan periksa kembali Email/No. WhatsApp dan Password Anda.';
         }

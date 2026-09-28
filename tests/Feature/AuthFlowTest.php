@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Livewire\HcmEmployeeMaster;
 use App\Livewire\LoginUser;
 use App\Livewire\RegisterUser;
 use App\Models\Department;
@@ -15,68 +16,75 @@ class AuthFlowTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_registration_and_otp_verification_flow(): void
+    public function test_registration_awaits_admin_acc_and_blocks_login_until_approved(): void
     {
         $dept = Department::firstOrCreate(
             ['name' => 'IT Support'],
             ['icon' => 'laptop', 'description' => 'IT Support Dept']
         );
 
-        $testEmail = 'test_'.uniqid().'@asiaplastik.com';
+        $admin = User::factory()->create([
+            'name' => 'Admin IT',
+            'email' => 'user123@gmail.com',
+            'role' => 'admin',
+            'department_id' => $dept->id,
+            'email_verified_at' => now(),
+        ]);
 
-        // 1. Submit Registration Form with 5 required fields
+        $testEmail = 'test_'.uniqid().'@asiaplastik.com';
+        $testPhone = '081234567890';
+
+        // 1. Submit Registration Form without OTP
         $testComponent = Livewire::test(RegisterUser::class)
             ->set('name', 'Budi Santoso')
-            ->set('whatsapp_number', '081234567890')
+            ->set('whatsapp_number', $testPhone)
             ->set('email', $testEmail)
             ->set('password', 'secret12345')
             ->set('password_confirmation', 'secret12345')
             ->call('register');
 
-        // Check user created in database with the specified fields
+        // Check user created in database with email_verified_at = null (pending Admin ACC)
         $user = User::where('email', $testEmail)->first();
         $this->assertNotNull($user);
         $this->assertEquals('Budi Santoso', $user->name);
         $this->assertEquals($testEmail, $user->email);
-        $this->assertEquals('081234567890', $user->whatsapp_number);
-        $this->assertNotNull($user->avatar);
-        $this->assertNotNull($user->otp_code);
-        $this->assertEquals(6, strlen($user->otp_code));
+        $this->assertEquals($testPhone, $user->whatsapp_number);
+        $this->assertNull($user->otp_code);
         $this->assertNull($user->email_verified_at);
 
-        // 2. Component transitioned to step 2 (OTP)
-        $testComponent->assertSet('step', 2);
-        $generatedOtp = $user->otp_code;
+        // Component should show registered success state
+        $testComponent->assertSet('isRegisteredSuccess', true);
+        $testComponent->assertSee('Pendaftaran Berhasil Dikirim!');
 
-        // 3. Test Invalid OTP
-        $testComponent
-            ->set('otp1', '9')
-            ->set('otp2', '9')
-            ->set('otp3', '9')
-            ->set('otp4', '9')
-            ->set('otp5', '9')
-            ->set('otp6', '9')
-            ->call('verifyOtp')
-            ->assertSee('Kode OTP tidak cocok');
+        // 2. User tries to login before admin approval -> must be rejected
+        Auth::logout();
+        Livewire::test(LoginUser::class)
+            ->set('login_id', $testEmail)
+            ->set('password', 'secret12345')
+            ->call('login')
+            ->assertSet('errorMessage', 'Akun Anda belum aktif karena masih menunggu persetujuan (ACC/Konfirmasi) dari Administrator. Silakan hubungi Administrator untuk aktivasi akun.');
 
-        // 4. Test Valid OTP verification
-        $testComponent
-            ->set('otp1', $generatedOtp[0])
-            ->set('otp2', $generatedOtp[1])
-            ->set('otp3', $generatedOtp[2])
-            ->set('otp4', $generatedOtp[3])
-            ->set('otp5', $generatedOtp[4])
-            ->set('otp6', $generatedOtp[5])
-            ->call('verifyOtp')
-            ->assertRedirect(route('login'));
+        $this->assertFalse(Auth::check());
 
-        // Refresh user from DB to verify verified status
+        // 3. Admin ACC/Approves the employee in HcmEmployeeMaster
+        $this->actingAs($admin);
+        Livewire::test(HcmEmployeeMaster::class)
+            ->call('approveEmployee', $user->id)
+            ->assertHasNoErrors();
+
         $user->refresh();
         $this->assertNotNull($user->email_verified_at);
-        $this->assertNull($user->otp_code);
 
-        // Verify redirected back to login without auto-login per user requirement
-        $this->assertFalse(Auth::check());
+        // 4. Now the employee can log in successfully
+        Auth::logout();
+        Livewire::test(LoginUser::class)
+            ->set('login_id', $testEmail)
+            ->set('password', 'secret12345')
+            ->call('login')
+            ->assertRedirect(route('dashboard'));
+
+        $this->assertTrue(Auth::check());
+        $this->assertEquals($user->id, Auth::id());
     }
 
     public function test_login_with_whatsapp_and_email(): void
@@ -97,6 +105,7 @@ class AuthFlowTest extends TestCase
             'postal_code' => '60111',
             'department_id' => $dept?->id,
             'role' => 'staff',
+            'email_verified_at' => now(),
         ]);
 
         // Test login with WhatsApp Number

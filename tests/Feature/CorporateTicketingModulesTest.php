@@ -83,12 +83,13 @@ class CorporateTicketingModulesTest extends TestCase
             ->set('password_confirmation', 'password123')
             ->call('register')
             ->assertHasNoErrors()
-            ->assertSet('step', 2);
+            ->assertSet('isRegisteredSuccess', true);
 
         $createdUser = User::where('email', 'baru@asiaplastik.com')->first();
         $this->assertNotNull($createdUser);
         $this->assertEquals('Karyawan Baru Terdaftar', $createdUser->name);
         $this->assertEquals('081234567890', $createdUser->whatsapp_number);
+        $this->assertNull($createdUser->email_verified_at);
     }
 
     /**

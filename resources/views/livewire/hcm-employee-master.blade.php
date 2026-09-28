@@ -67,12 +67,14 @@
                 <span class="text-lg font-black text-white">{{ $totalEmployees }} {{ __('Pengguna') }}</span>
             </div>
             <div>
-                <span class="text-blue-200/80 block text-[11px]">{{ __('Status Verifikasi:') }}</span>
-                <span class="text-lg font-black text-emerald-300">100% {{ __('Sudah Registrasi') }}</span>
+                <span class="text-blue-200/80 block text-[11px]">{{ __('Menunggu ACC / Konfirmasi:') }}</span>
+                <span class="text-lg font-black {{ $pendingCount > 0 ? 'text-amber-300 animate-pulse' : 'text-slate-300' }}">
+                    {{ $pendingCount }} {{ __('Akun') }}
+                </span>
             </div>
             <div>
-                <span class="text-blue-200/80 block text-[11px]">{{ __('Email Aktif & Terverifikasi:') }}</span>
-                <span class="text-lg font-black text-emerald-300">{{ $registeredCount }} {{ __('Akun') }}</span>
+                <span class="text-blue-200/80 block text-[11px]">{{ __('Sudah Di-ACC & Aktif:') }}</span>
+                <span class="text-lg font-black text-emerald-300">{{ $activeCount }} {{ __('Akun') }}</span>
             </div>
             <div>
                 <span class="text-blue-200/80 block text-[11px]">{{ __('Otoritas Akses:') }}</span>
@@ -109,10 +111,10 @@
     <!-- Main Table Container -->
     <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-md border border-gray-200 dark:border-slate-800 p-5 sm:p-6 transition-colors">
         
-        <!-- Search Bar -->
-        <div class="mb-6">
+        <!-- Search and Filter Bar -->
+        <div class="mb-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
             <!-- Search Input -->
-            <div class="relative w-full">
+            <div class="relative flex-1">
                 <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
                     <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
@@ -122,6 +124,26 @@
                        wire:model.live.debounce.300ms="search"
                        placeholder="{{ __('Cari nama lengkap, no hp, atau email...') }}"
                        class="w-full pl-10 pr-4 py-2.5 text-xs rounded-xl border border-gray-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition">
+            </div>
+
+            <!-- Status Filter Pill Buttons -->
+            <div class="inline-flex items-center rounded-xl bg-slate-100 dark:bg-slate-800/80 p-1 border border-gray-200 dark:border-slate-700 gap-1 text-xs self-start sm:self-auto">
+                <button type="button" 
+                        wire:click="$set('statusFilter', 'all')" 
+                        class="px-3 py-1.5 rounded-lg font-bold text-xs transition cursor-pointer {{ $statusFilter === 'all' ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-2xs' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white' }}">
+                    {{ __('Semua') }} ({{ $totalEmployees }})
+                </button>
+                <button type="button" 
+                        wire:click="$set('statusFilter', 'pending')" 
+                        class="px-3 py-1.5 rounded-lg font-bold text-xs transition flex items-center gap-1.5 cursor-pointer {{ $statusFilter === 'pending' ? 'bg-amber-500 text-white shadow-2xs' : 'text-amber-700 dark:text-amber-400 hover:bg-amber-100/50' }}">
+                    <span>{{ __('Menunggu ACC') }}</span>
+                    <span class="px-1.5 py-0.5 rounded-full text-[10px] {{ $statusFilter === 'pending' ? 'bg-white/30 text-white' : 'bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-200' }}">{{ $pendingCount }}</span>
+                </button>
+                <button type="button" 
+                        wire:click="$set('statusFilter', 'active')" 
+                        class="px-3 py-1.5 rounded-lg font-bold text-xs transition cursor-pointer {{ $statusFilter === 'active' ? 'bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-2xs' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white' }}">
+                    {{ __('Aktif') }} ({{ $activeCount }})
+                </button>
             </div>
         </div>
 
@@ -134,6 +156,7 @@
                         <th scope="col" class="py-3.5 px-4">{{ __('Nama Lengkap') }}</th>
                         <th scope="col" class="py-3.5 px-4">{{ __('No. HP / WhatsApp') }}</th>
                         <th scope="col" class="py-3.5 px-4">{{ __('Email Aktif') }}</th>
+                        <th scope="col" class="py-3.5 px-4 text-center">{{ __('Konfirmasi / ACC') }}</th>
                         <th scope="col" class="py-3.5 px-4">{{ __('Waktu Mendaftar') }}</th>
                         <th scope="col" class="py-3.5 px-4 text-right">{{ __('Aksi') }}</th>
                     </tr>
@@ -166,8 +189,41 @@
                                         <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
                                             {{ __('Aktif') }}
                                         </span>
+                                    @else
+                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 animate-pulse">
+                                            {{ __('Menunggu ACC') }}
+                                        </span>
                                     @endif
                                 </div>
+                            </td>
+
+                            <!-- Konfirmasi / ACC Column -->
+                            <td class="py-3 px-4 text-center whitespace-nowrap">
+                                @if ($emp->email_verified_at)
+                                    <div class="inline-flex items-center gap-1.5 justify-center">
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                                            <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                                            <span>{{ __('Sudah di-ACC') }}</span>
+                                        </span>
+                                        @if ($emp->email !== 'user123@gmail.com')
+                                            <button type="button" 
+                                                    wire:click="unapproveEmployee({{ $emp->id }})" 
+                                                    wire:confirm="{{ __('Batalkan ACC dan nonaktifkan login akun ini?') }}"
+                                                    title="{{ __('Batalkan persetujuan ACC dan nonaktifkan akun') }}"
+                                                    class="px-2 py-0.5 rounded text-[10px] text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition cursor-pointer">
+                                                {{ __('Batal ACC') }}
+                                            </button>
+                                        @endif
+                                    </div>
+                                @else
+                                    <button type="button" 
+                                            wire:click="approveEmployee({{ $emp->id }})"
+                                            title="{{ __('ACC / Konfirmasi dan aktifkan akun pegawai ini') }}"
+                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs shadow-xs transition-all cursor-pointer">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                                        <span>{{ __('ACC / Konfirmasi') }}</span>
+                                    </button>
+                                @endif
                             </td>
 
                             <!-- Timestamp Mendaftar -->
@@ -198,7 +254,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="py-12 text-center text-slate-400 dark:text-slate-500">
+                            <td colspan="7" class="py-12 text-center text-slate-400 dark:text-slate-500">
                                 <svg class="w-12 h-12 mx-auto text-slate-300 dark:text-slate-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                                 <p class="text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">{{ __('Belum ada data karyawan.') }}</p>
                                 <p class="text-[11px] text-slate-400 max-w-sm mx-auto mb-4">{{ __('Gunakan tombol "Tambah Manual" atau "Import CSV" untuk mengisi data karyawan.') }}</p>

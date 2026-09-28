@@ -17,8 +17,10 @@ class HcmEmployeeMaster extends Component
 {
     use WithFileUploads, WithPagination;
 
-    // Search
+    // Search & Filter
     public string $search = '';
+
+    public string $statusFilter = 'all';
 
     // Form Modal (Add / Edit)
     public bool $isFormModalOpen = false;
@@ -77,6 +79,11 @@ class HcmEmployeeMaster extends Component
     }
 
     public function updatingSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingStatusFilter(): void
     {
         $this->resetPage();
     }
@@ -228,6 +235,37 @@ class HcmEmployeeMaster extends Component
             session()->flash('success_message', 'Akun karyawan "'.$name.'" berhasil dihapus dari sistem.');
             $this->closeDeleteModal();
         }
+    }
+
+    /**
+     * Approve/ACC employee account so it becomes active and can log in.
+     */
+    public function approveEmployee(int $id): void
+    {
+        $this->ensureAuthorized();
+        $user = User::findOrFail($id);
+        $user->update(['email_verified_at' => now()]);
+
+        session()->flash('success_message', 'Akun karyawan "'.$user->name.'" ('.$user->email.') berhasil di-ACC / Dikonfirmasi dan sekarang sudah aktif.');
+    }
+
+    /**
+     * Revoke ACC / Deactivate employee account.
+     */
+    public function unapproveEmployee(int $id): void
+    {
+        $this->ensureAuthorized();
+        $user = User::findOrFail($id);
+
+        if ($user->id === Auth::id() || $user->email === 'user123@gmail.com') {
+            session()->flash('error_message', 'Anda tidak dapat menonaktifkan status akun Admin IT utama.');
+
+            return;
+        }
+
+        $user->update(['email_verified_at' => null]);
+
+        session()->flash('success_message', 'Status persetujuan akun "'.$user->name.'" berhasil dibatalkan. Akun kini tidak aktif.');
     }
 
     /**
@@ -424,11 +462,19 @@ class HcmEmployeeMaster extends Component
             });
         }
 
+        if ($this->statusFilter === 'pending') {
+            $query->whereNull('email_verified_at');
+        } elseif ($this->statusFilter === 'active') {
+            $query->whereNotNull('email_verified_at');
+        }
+
         $users = $query->latest()->paginate(10);
 
         return view('livewire.hcm-employee-master', [
             'employees' => $users,
             'totalEmployees' => User::count(),
+            'pendingCount' => User::whereNull('email_verified_at')->count(),
+            'activeCount' => User::whereNotNull('email_verified_at')->count(),
             'registeredCount' => User::whereNotNull('email_verified_at')->count(),
         ]);
     }
