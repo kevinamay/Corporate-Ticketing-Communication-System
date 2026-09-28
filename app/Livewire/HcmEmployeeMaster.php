@@ -445,7 +445,10 @@ class HcmEmployeeMaster extends Component
 
     public function render(): View
     {
-        $query = User::query();
+        $currentUserId = Auth::id();
+
+        $query = User::query()
+            ->where('id', '!=', $currentUserId);
 
         if (trim($this->search) !== '') {
             $searchTerm = '%'.trim($this->search).'%';
@@ -464,12 +467,14 @@ class HcmEmployeeMaster extends Component
 
         $users = $query->latest()->paginate(10);
 
+        $otherUsers = User::where('id', '!=', $currentUserId);
+
         return view('livewire.hcm-employee-master', [
             'employees' => $users,
-            'totalEmployees' => User::count(),
-            'pendingCount' => User::whereNull('email_verified_at')->count(),
-            'activeCount' => User::whereNotNull('email_verified_at')->count(),
-            'registeredCount' => User::whereNotNull('email_verified_at')->count(),
+            'totalEmployees' => (clone $otherUsers)->count(),
+            'pendingCount' => (clone $otherUsers)->whereNull('email_verified_at')->count(),
+            'activeCount' => (clone $otherUsers)->whereNotNull('email_verified_at')->count(),
+            'registeredCount' => (clone $otherUsers)->whereNotNull('email_verified_at')->count(),
         ]);
     }
 }
