@@ -34,7 +34,6 @@
     $languages = [
         'id' => ['name' => 'Bahasa Indonesia', 'short' => 'ID', 'flag' => '🇮🇩'],
         'en' => ['name' => 'English', 'short' => 'EN', 'flag' => '🇬🇧'],
-        'ja' => ['name' => '日本語', 'short' => 'JA', 'flag' => '🇯🇵'],
         'zh' => ['name' => '简体中文', 'short' => 'ZH', 'flag' => '🇨🇳'],
     ];
     $currentLang = $languages[$currentLocale] ?? $languages['id'];
