@@ -15,27 +15,12 @@ class UserSwitcher extends Component
         $this->activeUserId = Auth::id() ?? session('active_user_id');
     }
 
-    public function switchUser(int $userId): void
-    {
-        $user = User::find($userId);
-        if ($user) {
-            Auth::login($user);
-            session(['active_user_id' => $userId]);
-            session(['auth.password_confirmed_at' => time()]);
-            $this->activeUserId = $userId;
-            $this->dispatch('userSwitched', userId: $userId);
-            $this->redirect(request()->header('Referer', '/'));
-        }
-    }
-
     public function render()
     {
         $this->activeUserId = Auth::id() ?? session('active_user_id');
         $currentUser = $this->activeUserId ? User::with('department')->find($this->activeUserId) : null;
-        $users = User::with('department')->get();
 
         return view('livewire.user-switcher', [
-            'users' => $users,
             'currentUser' => $currentUser,
         ]);
     }

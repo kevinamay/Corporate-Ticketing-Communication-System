@@ -63,100 +63,9 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // 3. Buat Akun Pengguna Nyata per Divisi untuk Keperluan Uji Komunikasi Antar Divisi
+        // 3. Akun Administrator IT Utama (user123@gmail.com / password123)
         $password = Hash::make('password123');
 
-        // Divisi HRD (Staff pengirim permohonan / tiket)
-        User::updateOrCreate(
-            ['email' => 'siti.hrd@asiaplastik.com'],
-            [
-                'name' => 'Siti Rahmawati',
-                'password' => $password,
-                'department_id' => $hrDept->id,
-                'role' => 'staff',
-                'national_id_ktp' => '3578015507940002',
-                'whatsapp_number' => '081234567892',
-                'gender' => 'female',
-                'complete_address' => 'Jl. Rungkut Industri III No. 15, Surabaya',
-                'postal_code' => '60293',
-                'email_verified_at' => now(),
-                'avatar' => 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150',
-            ]
-        );
-
-        // Divisi IT Support (Agent penerima masalah teknis)
-        User::updateOrCreate(
-            ['email' => 'budi.it@asiaplastik.com'],
-            [
-                'name' => 'Budi Pratama',
-                'password' => $password,
-                'department_id' => $itDept->id,
-                'role' => 'agent',
-                'national_id_ktp' => '3578011203900001',
-                'whatsapp_number' => '081234567891',
-                'gender' => 'male',
-                'complete_address' => 'Jl. Jemursari No. 42, Surabaya',
-                'postal_code' => '60237',
-                'email_verified_at' => now(),
-                'avatar' => 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150',
-            ]
-        );
-
-        // Divisi Maintenance & Fasilitas (Teknisi)
-        User::updateOrCreate(
-            ['email' => 'agus.teknisi@asiaplastik.com'],
-            [
-                'name' => 'Agus Santoso',
-                'password' => $password,
-                'department_id' => $maintDept->id,
-                'role' => 'agent',
-                'national_id_ktp' => '3578012408880003',
-                'whatsapp_number' => '081234567893',
-                'gender' => 'male',
-                'complete_address' => 'Jl. Kendangsari Blok C No. 8, Surabaya',
-                'postal_code' => '60292',
-                'email_verified_at' => now(),
-                'avatar' => 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=150',
-            ]
-        );
-
-        // Divisi Produksi
-        User::updateOrCreate(
-            ['email' => 'hendra.produksi@asiaplastik.com'],
-            [
-                'name' => 'Hendra Wijaya',
-                'password' => $password,
-                'department_id' => $prodDept->id,
-                'role' => 'staff',
-                'national_id_ktp' => '3578011805850004',
-                'whatsapp_number' => '081234567894',
-                'gender' => 'male',
-                'complete_address' => 'Jl. Kutisari Indah No. 20, Surabaya',
-                'postal_code' => '60291',
-                'email_verified_at' => now(),
-                'avatar' => 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
-            ]
-        );
-
-        // Administrator Sistem
-        User::updateOrCreate(
-            ['email' => 'admin@asiaplastik.com'],
-            [
-                'name' => 'Admin Sistem',
-                'password' => $password,
-                'department_id' => null,
-                'role' => 'admin',
-                'national_id_ktp' => '3578010101900000',
-                'whatsapp_number' => '081234567890',
-                'gender' => 'male',
-                'complete_address' => 'Head Office PT Asia Plastik, Surabaya',
-                'postal_code' => '60293',
-                'email_verified_at' => now(),
-                'avatar' => 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
-            ]
-        );
-
-        // Admin IT Utama (user123@gmail.com / password123)
         User::updateOrCreate(
             ['email' => 'user123@gmail.com'],
             [
@@ -174,38 +83,15 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // 4. Buat Master Data Karyawan (HCM Core Master Data)
+        // 4. Master Data Karyawan Resmi (HCM Core)
         EmployeeMasterData::updateOrCreate(
-            ['ktp_number' => '3578015507940002'],
-            ['name' => 'Siti Rahmawati', 'department_id' => $hrDept->id]
+            ['ktp_number' => '3578010101990001'],
+            ['name' => 'Admin IT', 'department_id' => $itDept->id]
         );
 
         EmployeeMasterData::updateOrCreate(
-            ['ktp_number' => '3578011203900001'],
-            ['name' => 'Budi Pratama', 'department_id' => $itDept->id]
+            ['ktp_number' => '3502016305030001'],
+            ['name' => 'Kevina Maydiva Heriansaputri', 'department_id' => $itDept->id]
         );
-
-        EmployeeMasterData::updateOrCreate(
-            ['ktp_number' => '3578012408880003'],
-            ['name' => 'Agus Santoso', 'department_id' => $maintDept->id]
-        );
-
-        EmployeeMasterData::updateOrCreate(
-            ['ktp_number' => '3578011805850004'],
-            ['name' => 'Hendra Wijaya', 'department_id' => $prodDept->id]
-        );
-
-        EmployeeMasterData::updateOrCreate(
-            ['ktp_number' => '3578016609950005'],
-            ['name' => 'Dewi Lestari', 'department_id' => $logDept->id]
-        );
-
-        EmployeeMasterData::updateOrCreate(
-            ['ktp_number' => '3578010502930006'],
-            ['name' => 'Rian Hidayat', 'department_id' => $prodDept->id]
-        );
-
-        // Catatan: Tidak ada tiket dummy atau pesan dummy yang dibuat di sini.
-        // Semua tiket dan pesan akan dibuat secara riil oleh pengguna selama pengujian.
     }
 }

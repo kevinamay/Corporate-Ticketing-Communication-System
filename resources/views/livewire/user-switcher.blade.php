@@ -110,26 +110,6 @@
                 </div>
             @endif
 
-            @if ($users->count() > 1)
-                <!-- Perspective Switcher (Simulasi Role) -->
-                <div class="p-3 border-b border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900">
-                    <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2">{{ __('Ganti Akun Demo / Perspektif:') }}</p>
-                    <div class="space-y-1 max-h-36 overflow-y-auto">
-                        @foreach ($users as $user)
-                            <button wire:click="switchUser({{ $user->id }})" type="button"
-                                class="w-full text-left p-1.5 rounded-lg flex items-center justify-between text-xs transition cursor-pointer {{ $user->id === $currentUser->id ? 'bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 font-bold' : 'hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300' }}">
-                                <div class="flex items-center gap-2 truncate">
-                                    <span class="w-2 h-2 rounded-full {{ $user->id === $currentUser->id ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-600' }}"></span>
-                                    <span class="truncate">{{ $user->name }}</span>
-                                </div>
-                                <span class="text-[9px] uppercase px-1 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
-                                    {{ $user->role }}
-                                </span>
-                            </button>
-                        @endforeach
-                    </div>
-                </div>
-            @endif
 
             <!-- Tombol Logout -->
             <div class="p-2 bg-white dark:bg-slate-900">
@@ -216,32 +196,6 @@
                     <span>{{ __('Registrasi Akun Baru (KTP)') }}</span>
                 </a>
             </div>
-
-            <!-- Perspective Switcher (1-Klik Masuk Akun Demo untuk Pengujian) -->
-            @if ($users->count() > 0)
-                <div class="p-3 border-t border-gray-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
-                    <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2">{{ __('Pilih Akun Demo (1-Klik Masuk):') }}</p>
-                    <div class="space-y-1.5 max-h-48 overflow-y-auto">
-                        @foreach ($users as $u)
-                            <button wire:click="switchUser({{ $u->id }})" type="button"
-                                class="w-full text-left p-2 rounded-lg flex items-center justify-between text-xs transition cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-950/60 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700">
-                                <div class="truncate">
-                                    <div class="flex items-center gap-1.5">
-                                        <p class="font-bold text-slate-800 dark:text-slate-100 truncate">{{ $u->name }}</p>
-                                        @if ($u->email === 'user123@gmail.com' || (int) $u->department_id === 2)
-                                            <span class="text-[9px] font-black uppercase px-1 py-0.2 rounded bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">ADMIN IT</span>
-                                        @endif
-                                    </div>
-                                    <p class="text-[10px] text-blue-600 dark:text-blue-400 truncate">{{ $u->department?->name ?? 'Corporate' }}</p>
-                                </div>
-                                <span class="shrink-0 text-[9px] uppercase px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold border border-gray-200 dark:border-slate-700">
-                                    {{ $u->role }}
-                                </span>
-                            </button>
-                        @endforeach
-                    </div>
-                </div>
-            @endif
         </div>
     @endif
 </div>
