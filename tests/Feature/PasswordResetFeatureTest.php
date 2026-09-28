@@ -7,6 +7,7 @@ use App\Livewire\ResetPassword;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Livewire;
@@ -92,6 +93,11 @@ class PasswordResetFeatureTest extends TestCase
 
         $user->refresh();
         $this->assertTrue(Hash::check('BrandNewPassword123!', $user->password));
+        $this->assertFalse(Hash::check('oldpassword123', $user->password));
+        $this->assertTrue(Auth::attempt([
+            'email' => 'employee@asiaplastik.com',
+            'password' => 'BrandNewPassword123!',
+        ]));
         $this->assertDatabaseMissing('password_reset_tokens', [
             'email' => $user->email,
         ]);
