@@ -52,16 +52,7 @@
         <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <!-- Top Utility Bar (Email, Phone, Language) -->
             <div class="py-2.5 flex items-center justify-end text-[11px] text-white/80 border-b border-white/10 gap-4 sm:gap-5 font-medium tracking-wide">
-                <a href="mailto:marketing@asiaplastik.com" class="hover:text-white transition flex items-center gap-1.5 hidden md:flex">
-                    <svg class="w-3.5 h-3.5 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-                    <span>marketing@asiaplastik.com</span>
-                </a>
-                <span class="text-white/40 hidden md:inline">|</span>
-                <a href="tel:+62318433078" class="hover:text-white transition flex items-center gap-1.5 hidden sm:flex">
-                    <svg class="w-3.5 h-3.5 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
-                    <span>+6231 8433078</span>
-                </a>
-                <span class="text-white/40 hidden sm:inline">|</span>
+
                 @auth
                     @if (Auth::user()->email === 'user123@gmail.com')
                         <a href="{{ request()->is('/') ? '#hcm-master-section' : url('/#hcm-master-section') }}" 
