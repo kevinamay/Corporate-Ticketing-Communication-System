@@ -168,28 +168,6 @@
             @enderror
         </div>
 
-        <!-- Priority Level Badges -->
-        <div>
-            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">{{ __('Priority Level') }}</label>
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                @php
-                    $priorities = [
-                        'Low' => ['base' => 'border-gray-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 hover:text-emerald-700 dark:hover:text-emerald-300', 'active' => 'bg-emerald-600 text-white border-emerald-600 shadow-sm'],
-                        'Medium' => ['base' => 'border-gray-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-950/50 hover:text-blue-700 dark:hover:text-blue-300', 'active' => 'bg-blue-600 text-white border-blue-600 shadow-sm'],
-                        'High' => ['base' => 'border-gray-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-amber-50 dark:hover:bg-amber-950/50 hover:text-amber-700 dark:hover:text-amber-300', 'active' => 'bg-amber-500 text-white border-amber-500 shadow-sm'],
-                        'Critical' => ['base' => 'border-gray-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-rose-50 dark:hover:bg-rose-950/50 hover:text-rose-700 dark:hover:text-rose-300', 'active' => 'bg-rose-600 text-white border-rose-600 shadow-sm'],
-                    ];
-                @endphp
-                @foreach ($priorities as $level => $styles)
-                    <button type="button" wire:click="setPriority('{{ $level }}')" 
-                        class="py-2.5 px-3 text-xs font-bold rounded-lg border text-center transition cursor-pointer {{ $priority === $level ? $styles['active'] : $styles['base'] }}">
-                        {{ __($level) }}
-                    </button>
-                @endforeach
-            </div>
-            @error('priority') <span class="text-xs text-rose-600 dark:text-rose-400 mt-1 block font-medium">{{ $message }}</span> @enderror
-        </div>
-
         <!-- Submit Button: Solid Corporate Blue, hover effect, standard rounded corners -->
         <div class="pt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-gray-100 dark:border-slate-800">
             <span class="text-xs text-slate-500 dark:text-slate-400">{{ __('Dispatching instantly initiates the inter-department communication thread') }}</span>

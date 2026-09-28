@@ -242,7 +242,6 @@ class TicketList extends Component
             'editTitle' => 'required|min:5|max:150',
             'editTargetDepartmentId' => 'required|exists:departments,id',
             'editCategory' => 'required|string|max:50',
-            'editPriority' => 'required|in:Low,Medium,High,Critical',
             'editDescription' => 'required|min:10',
             'editPhoto' => 'nullable|image|max:10240',
         ], [

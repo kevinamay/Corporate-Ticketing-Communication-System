@@ -26,8 +26,6 @@ class GlobalTickets extends Component
 
     public string $departmentFilter = 'all';
 
-    public string $priorityFilter = 'all';
-
     public ?int $viewingTicketId = null;
 
     public bool $isDetailModalOpen = false;
@@ -284,12 +282,8 @@ class GlobalTickets extends Component
             $query->where('target_department_id', (int) $this->departmentFilter);
         }
 
-        // Priority Filter
-        if ($this->priorityFilter !== 'all') {
-            $query->where('priority', $this->priorityFilter);
-        }
-
-        $tickets = $query->latest()->paginate(10);
+        // Ordered by timestamp ASC: first entered ticket appears at the very top (FIFO queue)
+        $tickets = $query->orderBy('created_at', 'asc')->paginate(10);
 
         $viewingTicket = $this->viewingTicketId
             ? Ticket::with(['sender', 'targetDepartment', 'messages.user'])->find($this->viewingTicketId)

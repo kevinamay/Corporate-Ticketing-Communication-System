@@ -95,8 +95,9 @@
                     <!-- Top Meta: Priority, Photo, ID -->
                     <div class="flex items-center justify-between mb-2">
                         <div class="flex items-center gap-1.5">
-                            <span class="text-[10px] font-bold px-2 py-0.5 rounded border {{ $priorityBadge }}">
-                                {{ __($t->priority) }}
+                            <span class="text-[10px] font-semibold text-slate-500 dark:text-slate-400 font-mono flex items-center gap-1">
+                                <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <span>{{ $t->created_at ? $t->created_at->format('d/m/Y H:i') : '' }}</span>
                             </span>
                             @if ($t->photo_path)
                                 <span class="inline-flex items-center gap-1 text-[9px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-1.5 py-0.5 rounded border border-blue-200 dark:border-blue-800" title="{{ __('Ada Bukti Foto') }}">
@@ -278,8 +279,8 @@
                             <span class="font-semibold text-slate-700 dark:text-slate-300 mt-0.5 block">{{ $viewingTicket->category }}</span>
                         </div>
                         <div>
-                            <span class="block text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500">{{ __('Prioritas') }}</span>
-                            <span class="font-bold text-slate-800 dark:text-slate-200 mt-0.5 block">{{ $viewingTicket->priority }}</span>
+                            <span class="block text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500">{{ __('Waktu Masuk') }}</span>
+                            <span class="font-mono font-semibold text-slate-800 dark:text-slate-200 mt-0.5 block text-xs">{{ $viewingTicket->created_at ? $viewingTicket->created_at->format('d/m/Y H:i:s') : '-' }}</span>
                         </div>
                         <div>
                             <span class="block text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500">{{ __('Status') }}</span>
@@ -467,28 +468,6 @@
                             </select>
                             @error('editCategory') <span class="text-xs text-rose-600 dark:text-rose-400 mt-1 block font-medium">{{ $message }}</span> @enderror
                         </div>
-                    </div>
-
-                    <!-- Priority Level -->
-                    <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">{{ __('Tingkat Prioritas') }}</label>
-                        @php
-                            $priorities = [
-                                'Low' => ['base' => 'border-gray-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 hover:text-emerald-700 dark:hover:text-emerald-300', 'active' => 'bg-emerald-600 text-white border-emerald-600 shadow-sm'],
-                                'Medium' => ['base' => 'border-gray-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-950/50 hover:text-blue-700 dark:hover:text-blue-300', 'active' => 'bg-blue-600 text-white border-blue-600 shadow-sm'],
-                                'High' => ['base' => 'border-gray-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-amber-50 dark:hover:bg-amber-950/50 hover:text-amber-700 dark:hover:text-amber-300', 'active' => 'bg-amber-500 text-white border-amber-500 shadow-sm'],
-                                'Critical' => ['base' => 'border-gray-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-rose-50 dark:hover:bg-rose-950/50 hover:text-rose-700 dark:hover:text-rose-300', 'active' => 'bg-rose-600 text-white border-rose-600 shadow-sm'],
-                            ];
-                        @endphp
-                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                            @foreach ($priorities as $level => $styles)
-                                <button type="button" wire:click="setEditPriority('{{ $level }}')" 
-                                        class="py-2 px-2 text-xs font-bold rounded-lg border text-center transition cursor-pointer {{ $editPriority === $level ? $styles['active'] : $styles['base'] }}">
-                                    {{ __($level) }}
-                                </button>
-                            @endforeach
-                        </div>
-                        @error('editPriority') <span class="text-xs text-rose-600 dark:text-rose-400 mt-1 block font-medium">{{ $message }}</span> @enderror
                     </div>
 
                     <!-- Description -->

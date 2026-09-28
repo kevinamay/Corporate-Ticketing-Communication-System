@@ -1,5 +1,8 @@
 {
     "Aktif: ": "Active: ",
+    "Waktu Masuk": "Timestamp",
+    "Waktu Masuk:": "Timestamp:",
+    "Waktu Masuk (Timestamp)": "Created Timestamp",
     "Masuk (Login)": "Sign In (Login)",
     "Registrasi KTP": "Register ID",
     "Logout": "Log Out",

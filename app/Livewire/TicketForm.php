@@ -52,7 +52,6 @@ class TicketForm extends Component
             'sender_department_id' => 'required|exists:departments,id',
             'target_department_id' => 'required|exists:departments,id',
             'category' => 'required|string|max:50',
-            'priority' => 'required|in:Low,Medium,High,Critical',
             'description' => 'required|min:10',
             'photo' => 'nullable|image|max:10240',
         ];

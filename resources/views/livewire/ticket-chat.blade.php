@@ -68,7 +68,7 @@
 
         <!-- Ticket Summary Quick Strip -->
         <div class="px-4 py-2 bg-slate-100/70 dark:bg-slate-800/40 border-b border-gray-200 dark:border-slate-800 flex items-center justify-between text-xs text-slate-600 dark:text-slate-400">
-            <span>{{ __('Priority:') }} <strong class="text-slate-900 dark:text-white">{{ __($ticket->priority) }}</strong></span>
+            <span>{{ __('Waktu Masuk:') }} <strong class="text-slate-900 dark:text-white font-mono">{{ $ticket->created_at ? $ticket->created_at->format('d/m/Y H:i') : '-' }}</strong></span>
             <span>{{ __('Category:') }} <strong class="text-slate-900 dark:text-white">{{ $ticket->category }}</strong></span>
             <span>{{ __('Originator:') }} <strong class="text-slate-900 dark:text-white">{{ $ticket->sender->name }}</strong></span>
         </div>

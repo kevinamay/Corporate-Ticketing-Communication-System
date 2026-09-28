@@ -67,7 +67,7 @@
         </div>
 
         <!-- Target Department Filter -->
-        <div class="lg:col-span-3">
+        <div class="lg:col-span-4">
             <select wire:model.live="departmentFilter" 
                     class="w-full px-3 py-2 text-xs text-slate-800 dark:text-slate-100 bg-slate-50 dark:bg-slate-800/90 rounded-xl border border-gray-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition shadow-2xs">
                 <option value="all">{{ __('Semua Departemen Tujuan') }}</option>
@@ -78,7 +78,7 @@
         </div>
 
         <!-- Status Filter -->
-        <div class="lg:col-span-2">
+        <div class="lg:col-span-3">
             <select wire:model.live="statusFilter" 
                     class="w-full px-3 py-2 text-xs text-slate-800 dark:text-slate-100 bg-slate-50 dark:bg-slate-800/90 rounded-xl border border-gray-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition shadow-2xs">
                 <option value="all">{{ __('Semua Status') }}</option>
@@ -86,18 +86,6 @@
                 <option value="Open">{{ __('Open') }}</option>
                 <option value="In Progress">{{ __('In Progress') }}</option>
                 <option value="Resolved">{{ __('Resolved') }}</option>
-            </select>
-        </div>
-
-        <!-- Priority Filter -->
-        <div class="lg:col-span-2">
-            <select wire:model.live="priorityFilter" 
-                    class="w-full px-3 py-2 text-xs text-slate-800 dark:text-slate-100 bg-slate-50 dark:bg-slate-800/90 rounded-xl border border-gray-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition shadow-2xs">
-                <option value="all">{{ __('Semua Prioritas') }}</option>
-                <option value="Critical">{{ __('Critical') }}</option>
-                <option value="High">{{ __('High') }}</option>
-                <option value="Medium">{{ __('Medium') }}</option>
-                <option value="Low">{{ __('Low') }}</option>
             </select>
         </div>
     </div>
@@ -111,7 +99,7 @@
                     <th scope="col" class="py-3.5 px-3.5">{{ __('Judul & Pelapor') }}</th>
                     <th scope="col" class="py-3.5 px-3.5">{{ __('Departemen Tujuan') }}</th>
                     <th scope="col" class="py-3.5 px-3.5">{{ __('Kategori') }}</th>
-                    <th scope="col" class="py-3.5 px-3.5">{{ __('Prioritas') }}</th>
+                    <th scope="col" class="py-3.5 px-3.5">{{ __('Waktu Masuk') }}</th>
                     <th scope="col" class="py-3.5 px-3.5">{{ __('Status') }}</th>
                     <th scope="col" class="py-3.5 px-3.5 text-right">{{ __('Aksi / Penanganan') }}</th>
                 </tr>
@@ -119,12 +107,6 @@
             <tbody class="divide-y divide-gray-100 dark:divide-slate-800/80 text-slate-700 dark:text-slate-300">
                 @forelse ($tickets as $ticket)
                     @php
-                        $priorityStyle = match($ticket->priority) {
-                            'Critical' => 'bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800',
-                            'High' => 'bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800',
-                            'Medium' => 'bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800',
-                            default => 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800',
-                        };
                         $statusStyle = match($ticket->status) {
                             'Resolved' => 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800',
                             'In Progress' => 'bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800',
@@ -169,10 +151,14 @@
                             </span>
                         </td>
 
-                        <!-- Priority -->
-                        <td class="py-3 px-3.5">
-                            <span class="px-2 py-0.5 rounded border font-bold text-[10px] {{ $priorityStyle }}">
-                                {{ __($ticket->priority) }}
+                        <!-- Timestamp Masuk (Urutan Pengerjaan Admin) -->
+                        <td class="py-3 px-3.5 whitespace-nowrap">
+                            <div class="flex items-center gap-1.5 font-mono font-bold text-slate-900 dark:text-slate-100 text-xs">
+                                <svg class="w-3.5 h-3.5 text-blue-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <span>{{ $ticket->created_at ? $ticket->created_at->format('d/m/Y H:i:s') : '-' }}</span>
+                            </div>
+                            <span class="text-[10px] text-slate-400 dark:text-slate-500 block pl-5 mt-0.5 font-medium">
+                                {{ $ticket->created_at ? $ticket->created_at->diffForHumans() : '' }}
                             </span>
                         </td>
 
@@ -320,8 +306,10 @@
                             <span class="font-semibold text-slate-700 dark:text-slate-300 mt-0.5 block">{{ $viewingTicket->category }}</span>
                         </div>
                         <div>
-                            <span class="block text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500">{{ __('Prioritas') }}</span>
-                            <span class="font-bold text-slate-800 dark:text-slate-200 mt-0.5 block">{{ $viewingTicket->priority }}</span>
+                            <span class="block text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500">{{ __('Waktu Masuk') }}</span>
+                            <span class="font-mono font-bold text-slate-900 dark:text-slate-100 mt-0.5 block text-xs">
+                                {{ $viewingTicket->created_at ? $viewingTicket->created_at->format('d/m/Y H:i:s') : '-' }}
+                            </span>
                         </div>
                         <div>
                             <span class="block text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500">{{ __('Status') }}</span>
