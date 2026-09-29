@@ -461,5 +461,7 @@
     "Volume Tiket Harian": "Daily Ticket Volume",
     "Tiket Terselesaikan": "Resolved Tickets",
     "Tiket Pending": "Pending Tickets",
-    "Diperbarui secara real-time setiap kali tiket dibuat atau diproses.": "Updated in real-time whenever tickets are submitted or handled."
+    "Diperbarui secara real-time setiap kali tiket dibuat atau diproses.": "Updated in real-time whenever tickets are submitted or handled.",
+    "Grafik Tiket": "Ticket Chart",
+    "0 Tiket": "0 Tickets"
 }

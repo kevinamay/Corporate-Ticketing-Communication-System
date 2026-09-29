@@ -33,17 +33,17 @@ class TicketDailyChart extends Component
     #[On('ticketDeleted')]
     public function refreshChart(): void
     {
-        // Re-renders automatically on Livewire events
+        // Re-renders automatically when ticket events are emitted
     }
 
     public function render(): View
     {
-        $endDate = Carbon::today();
-        $startDate = Carbon::today()->subDays($this->days - 1);
+        $endDate = Carbon::now()->endOfDay();
+        $startDate = Carbon::now()->subDays($this->days - 1)->startOfDay();
 
         $query = Ticket::query()
-            ->whereDate('created_at', '>=', $startDate)
-            ->whereDate('created_at', '<=', $endDate);
+            ->where('created_at', '>=', $startDate)
+            ->where('created_at', '<=', $endDate);
 
         if ($this->departmentFilter !== 'all') {
             $query->where('target_department_id', (int) $this->departmentFilter);
@@ -121,17 +121,16 @@ class TicketDailyChart extends Component
             ];
         }
 
-        // SVG Coordinate mapping
+        // SVG Coordinate mapping (800 x 230 viewport)
         $chartLeft = 45;
         $chartRight = 780;
         $chartTop = 25;
-        $chartBottom = 205;
+        $chartBottom = 200;
         $chartWidth = $chartRight - $chartLeft; // 735
-        $chartHeight = $chartBottom - $chartTop; // 180
+        $chartHeight = $chartBottom - $chartTop; // 175
 
         $totalPoints = count($dataPoints);
         $linePathCoords = [];
-        $areaPathCoords = [];
 
         foreach ($dataPoints as $index => &$pt) {
             $x = $totalPoints > 1
@@ -190,6 +189,7 @@ class TicketDailyChart extends Component
             'chartLeft' => $chartLeft,
             'chartRight' => $chartRight,
             'chartBottom' => $chartBottom,
+            'chartTop' => $chartTop,
             'yMax' => $yMax,
         ]);
     }

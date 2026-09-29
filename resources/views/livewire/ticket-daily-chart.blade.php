@@ -1,13 +1,16 @@
-<div class="bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 shadow-md p-4 sm:p-6 transition-colors duration-200"
+<div class="bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 shadow-sm p-5 sm:p-6 transition-colors"
      x-data="{
          activePoint: null,
          tooltipX: 0,
          tooltipY: 0,
          setTooltip(e, pt) {
              this.activePoint = pt;
-             const rect = e.currentTarget.closest('svg').getBoundingClientRect();
-             this.tooltipX = e.clientX - rect.left;
-             this.tooltipY = e.clientY - rect.top;
+             const container = e.currentTarget.closest('.chart-area-container');
+             if (container) {
+                 const rect = container.getBoundingClientRect();
+                 this.tooltipX = Math.max(10, Math.min(rect.width - 10, e.clientX - rect.left));
+                 this.tooltipY = Math.max(10, e.clientY - rect.top);
+             }
          },
          clearTooltip() {
              this.activePoint = null;
@@ -35,7 +38,7 @@
             </p>
         </div>
 
-        <!-- Filter Controls: Days Period, Department, Chart Type -->
+        <!-- Filter Controls: Department Filter, Days Period, Chart Type -->
         <div class="flex flex-wrap items-center gap-2 sm:gap-2.5">
             
             <!-- Department Filter Dropdown -->
@@ -122,67 +125,78 @@
             <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 block">{{ __('Terselesaikan') }}</span>
             <div class="flex items-baseline gap-2 mt-1">
                 <span class="text-xl sm:text-2xl font-black text-emerald-600 dark:text-emerald-400">{{ $resolvedCount }}</span>
-                <span class="text-xs text-slate-500 dark:text-slate-400 font-medium">({{ $resolutionRate }}%)</span>
+                <span class="text-xs text-emerald-600/80 dark:text-emerald-400/80 font-medium">({{ $resolutionRate }}%)</span>
             </div>
         </div>
     </div>
 
-    <!-- MAIN CHART AREA (SVG Vector with Precision Coordinates) -->
-    <div class="relative w-full overflow-hidden rounded-xl border border-gray-200/80 dark:border-slate-800/80 bg-slate-50/40 dark:bg-slate-950/40 p-2 sm:p-4">
-        
-        <!-- Empty Data Callout (Matches image 1 "No data recorded" when 0 tickets) -->
-        @if ($totalCount === 0)
-            <div class="absolute inset-0 z-20 flex flex-col items-center justify-center bg-white/60 dark:bg-slate-900/60 backdrop-blur-[1px] rounded-xl pointer-events-none">
-                <div class="text-center p-4">
-                    <span class="text-sm font-bold text-slate-700 dark:text-slate-300 block">
-                        {{ __('No data recorded') }}
-                    </span>
-                    <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">
-                        {{ __('Belum ada permintaan tiket yang tercatat pada rentang periode ini.') }}
-                    </p>
-                </div>
+    <!-- Empty State / No Data Notification (Styled like Jira CSAT reference) -->
+    @if ($totalCount === 0)
+        <div class="mb-3 px-3 py-2 rounded-lg bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200/50 dark:border-amber-900/30 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                <h4 class="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200">
+                    {{ __('No data recorded') }}
+                </h4>
+                <span class="text-xs text-slate-500 dark:text-slate-400 hidden sm:inline">&bull; {{ __('Belum ada permintaan tiket yang tercatat pada rentang periode ini.') }}</span>
             </div>
-        @endif
+            <span class="text-[11px] text-amber-700 dark:text-amber-400 font-semibold">{{ __('0 Tiket') }}</span>
+        </div>
+    @endif
 
-        <div class="relative w-full aspect-[16/7] min-h-[220px]">
-            <svg viewBox="0 0 800 240" class="w-full h-full overflow-visible select-none" preserveAspectRatio="none">
+    <!-- Interactive SVG Chart Area with Alpine.js Tooltip Support -->
+    <div class="relative chart-area-container w-full select-none">
+        
+        <div class="w-full overflow-x-auto overflow-y-hidden">
+            <svg viewBox="0 0 800 230" class="w-full h-56 sm:h-64 min-w-[550px] overflow-visible" preserveAspectRatio="xMidYMid meet">
                 <defs>
-                    <!-- Area Gradient Fill for Line Chart -->
-                    <linearGradient id="ticketAreaGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.35" />
-                        <stop offset="60%" stop-color="#3b82f6" stop-opacity="0.08" />
-                        <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.0" />
+                    <!-- Gradient for Area Chart Fill -->
+                    <linearGradient id="ticketAreaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.32" />
+                        <stop offset="90%" stop-color="#3b82f6" stop-opacity="0.01" />
+                        <stop offset="100%" stop-color="#3b82f6" stop-opacity="0" />
                     </linearGradient>
 
-                    <!-- Bar Gradient Fill -->
-                    <linearGradient id="ticketBarGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stop-color="#3b82f6" />
-                        <stop offset="100%" stop-color="#2563eb" />
-                    </linearGradient>
+                    <!-- Glow filter for active point on hover -->
+                    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                        <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#2563eb" flood-opacity="0.4" />
+                    </filter>
                 </defs>
 
-                <!-- 1. Grid Lines and Y-Axis Scale Values (Matching Image 1: 0, 1, 2, 3, 4, 5...) -->
+                <!-- 1. Horizontal Background Grid Lines and Y-Axis Scale Values -->
                 @foreach ($gridLines as $grid)
-                    <g class="transition-all">
-                        <!-- Horizontal Grid Line -->
+                    <g>
+                        <!-- Horizontal Grid Guide -->
                         <line x1="{{ $chartLeft }}" y1="{{ $grid['y'] }}" x2="{{ $chartRight }}" y2="{{ $grid['y'] }}" 
-                            class="stroke-gray-200 dark:stroke-slate-800 transition-colors" 
-                            stroke-width="1" />
-                        <!-- Y-Axis Label -->
-                        <text x="{{ $chartLeft - 10 }}" y="{{ $grid['y'] + 4 }}" 
-                            class="fill-slate-400 dark:fill-slate-500 text-[10px] font-mono font-medium" 
+                            class="stroke-gray-100 dark:stroke-slate-800/80" 
+                            stroke-width="1" 
+                            stroke-dasharray="{{ $grid['val'] === 0 ? 'none' : '3 3' }}" />
+                        
+                        <!-- Y-Axis Tick mark -->
+                        <line x1="{{ $chartLeft - 4 }}" y1="{{ $grid['y'] }}" x2="{{ $chartLeft }}" y2="{{ $grid['y'] }}" 
+                            class="stroke-gray-400 dark:stroke-slate-600" 
+                            stroke-width="1.5" />
+
+                        <!-- Y-Axis Value Label -->
+                        <text x="{{ $chartLeft - 8 }}" y="{{ $grid['y'] + 4 }}" 
+                            class="fill-slate-400 dark:fill-slate-500 text-[11px] font-semibold select-none" 
                             text-anchor="end">
                             {{ $grid['val'] }}
                         </text>
                     </g>
                 @endforeach
 
-                <!-- 2. Base X-Axis Axis Line -->
+                <!-- 2. Left Spine Y-Axis Vertical Line -->
+                <line x1="{{ $chartLeft }}" y1="{{ $chartTop }}" x2="{{ $chartLeft }}" y2="{{ $chartBottom }}" 
+                    class="stroke-gray-300 dark:stroke-slate-700" 
+                    stroke-width="1.5" />
+
+                <!-- 3. Base X-Axis Axis Horizontal Line -->
                 <line x1="{{ $chartLeft }}" y1="{{ $chartBottom }}" x2="{{ $chartRight }}" y2="{{ $chartBottom }}" 
                     class="stroke-gray-300 dark:stroke-slate-700" 
                     stroke-width="1.5" />
 
-                <!-- 3. RENDER DATA (LINE OR BAR) -->
+                <!-- 4. RENDER DATA (LINE OR BAR) -->
                 @if ($chartType === 'line')
                     <!-- Area Fill -->
                     @if (!empty($areaPath) && $totalCount > 0)
@@ -210,7 +224,7 @@
                                 stroke-width="2" />
                             
                             <!-- Invisible Large Target for Smooth Hovering -->
-                            <circle cx="{{ $pt['x'] }}" cy="{{ $pt['y'] }}" r="18" fill="transparent" />
+                            <circle cx="{{ $pt['x'] }}" cy="{{ $pt['y'] }}" r="20" fill="transparent" />
                         </g>
                     @endforeach
                 @else
@@ -229,19 +243,25 @@
                                     class="fill-gray-300 dark:fill-slate-800" />
                             @endif
                             <!-- Invisible Hover Area for entire vertical column -->
-                            <rect x="{{ $pt['barX'] - 4 }}" y="{{ $chartBottom - 180 }}" width="{{ $pt['barWidth'] + 8 }}" height="180" fill="transparent" />
+                            <rect x="{{ $pt['barX'] - 4 }}" y="{{ $chartBottom - 175 }}" width="{{ $pt['barWidth'] + 8 }}" height="175" fill="transparent" />
                         </g>
                     @endforeach
                 @endif
 
-                <!-- 4. X-Axis Date Labels -->
+                <!-- 5. X-Axis Date Labels & Ticks -->
                 @php
                     $stepInterval = $days === 30 ? 3 : ($days === 14 ? 1 : 1);
                 @endphp
                 @foreach ($dataPoints as $idx => $pt)
                     @if ($idx % $stepInterval === 0 || $idx === count($dataPoints) - 1)
+                        <!-- X-Axis Tick -->
+                        <line x1="{{ $pt['x'] }}" y1="{{ $chartBottom }}" x2="{{ $pt['x'] }}" y2="{{ $chartBottom + 4 }}" 
+                            class="stroke-gray-400 dark:stroke-slate-600" 
+                            stroke-width="1.5" />
+
+                        <!-- X-Axis Label -->
                         <text x="{{ $pt['x'] }}" y="{{ $chartBottom + 18 }}" 
-                            class="fill-slate-400 dark:fill-slate-500 text-[10px] font-medium" 
+                            class="fill-slate-400 dark:fill-slate-500 text-[10px] font-medium select-none" 
                             text-anchor="middle">
                             {{ $pt['label'] }}
                         </text>
@@ -267,7 +287,7 @@
                 </div>
                 <div class="flex items-center justify-between font-black text-sm text-white mb-1.5">
                     <span>{{ __('Total Tiket:') }}</span>
-                    <span class="text-blue-400" x-text="activePoint ? activePoint.count + ' Tiket' : ''"></span>
+                    <span class="text-blue-400" x-text="activePoint ? activePoint.count + ' {{ __('tiket') }}' : ''"></span>
                 </div>
                 <div class="space-y-1 text-[10px] text-slate-300 pt-1 border-t border-slate-800/80">
                     <div class="flex items-center justify-between">

@@ -47,6 +47,9 @@
                         {{ __('+ Input Karyawan') }}
                     </a>
                 @endif
+                <a href="#daily-ticket-chart-section" class="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition border border-white/20">
+                    {{ __('Grafik Tiket') }}
+                </a>
                 <a href="#global-tickets" class="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition border border-white/20">
                     {{ __('Jawab Tiket Masuk') }}
                 </a>

@@ -461,5 +461,7 @@
     "Volume Tiket Harian": "每日工单量",
     "Tiket Terselesaikan": "已解决工单",
     "Tiket Pending": "待处理工单",
-    "Diperbarui secara real-time setiap kali tiket dibuat atau diproses.": "每当创建或处理工单时实时更新。"
+    "Diperbarui secara real-time setiap kali tiket dibuat atau diproses.": "每当创建或处理工单时实时更新。",
+    "Grafik Tiket": "工单图表",
+    "0 Tiket": "0 个工单"
 }
