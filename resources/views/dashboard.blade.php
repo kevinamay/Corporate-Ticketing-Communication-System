@@ -107,7 +107,12 @@
             </div>
         @endif
 
-        <!-- 2. MODUL MENJAWAB TIKET MASUK (Global Tickets Answering & Processing) -->
+        <!-- 2. GRAFIK TREN REQUEST TIKET HARIAN (Chart Permintaan Tiket Per Hari) -->
+        <div id="daily-ticket-chart-section" class="scroll-mt-24 mt-8">
+            <livewire:ticket-daily-chart />
+        </div>
+
+        <!-- 3. MODUL MENJAWAB TIKET MASUK (Global Tickets Answering & Processing) -->
         <div id="global-tickets" class="scroll-mt-24 mt-8">
             <livewire:global-tickets />
         </div>
