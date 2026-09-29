@@ -45,4 +45,11 @@ return [
         'groq_model' => env('GROQ_MODEL', 'llama-3.3-70b-versatile'),
     ],
 
+    'whatsapp' => [
+        'provider' => env('WA_GATEWAY_PROVIDER', 'fonnte'),
+        'url' => env('WA_API_URL', 'https://api.fonnte.com/send'),
+        'token' => env('WA_API_TOKEN'),
+        'admin_number' => env('WA_ADMIN_NUMBER'),
+    ],
+
 ];

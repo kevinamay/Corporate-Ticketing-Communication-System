@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\Department;
 use App\Models\Ticket;
 use App\Models\User;
+use App\Services\WhatsAppNotificationService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Livewire\Component;
@@ -157,6 +158,9 @@ class TicketForm extends Component
             'priority' => $this->priority,
             'status' => 'Pending',
         ]);
+
+        // Send WhatsApp notification to IT Admin (async / fail-safe on Vercel)
+        app(WhatsAppNotificationService::class)->sendNewTicketNotification($ticket);
 
         $this->reset(['title', 'description', 'photo']);
         $this->photo = null;

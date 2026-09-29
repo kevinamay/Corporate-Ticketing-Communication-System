@@ -37,6 +37,19 @@ class GlobalTickets extends Component
     public string $ticketStatusToUpdate = '';
 
     /**
+     * Automatically open ticket detail modal if 'ticket' query parameter is present in URL (e.g. from WhatsApp Bot link).
+     */
+    public function mount(): void
+    {
+        if (request()->has('ticket')) {
+            $ticketId = (int) request('ticket');
+            if ($ticketId > 0 && Ticket::where('id', $ticketId)->exists()) {
+                $this->viewTicketDetail($ticketId);
+            }
+        }
+    }
+
+    /**
      * Check if a user has authority to process, handle, or reply to a ticket.
      * Admin and Siti (HRD) have global authority across all departments.
      * Department agents have authority for tickets directed to their department.
