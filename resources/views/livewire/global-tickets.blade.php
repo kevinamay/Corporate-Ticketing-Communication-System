@@ -320,8 +320,8 @@
                     <!-- Detailed Description -->
                     <div>
                         <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">{{ __('Deskripsi Kendala') }}</h4>
-                        <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-gray-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 leading-relaxed whitespace-pre-line shadow-2xs">
-                            {{ $viewingTicket->description }}
+                        <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-gray-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 leading-relaxed shadow-2xs prose-ticket">
+                            {!! $viewingTicket->formatted_description !!}
                         </div>
                     </div>
 

@@ -120,7 +120,7 @@
                     <!-- Description Preview (Clickable to Read) -->
                     <p wire:click="viewTicket({{ $t->id }})" 
                        class="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 mb-3 cursor-pointer hover:text-slate-700 dark:hover:text-slate-300">
-                        {{ $t->description }}
+                        {{ strip_tags($t->formatted_description ?? $t->description) }}
                     </p>
                 </div>
 
@@ -291,8 +291,8 @@
                     <!-- Problem Details / Description -->
                     <div>
                         <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">{{ __('Deskripsi / Rincian Masalah') }}</h4>
-                        <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-gray-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 leading-relaxed whitespace-pre-line shadow-2xs">
-                            {{ $viewingTicket->description }}
+                        <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-gray-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 leading-relaxed shadow-2xs prose-ticket">
+                            {!! $viewingTicket->formatted_description !!}
                         </div>
                     </div>
 

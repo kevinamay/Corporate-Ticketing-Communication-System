@@ -48,3 +48,119 @@ html.dark ::-webkit-scrollbar-thumb {
 html.dark ::-webkit-scrollbar-thumb:hover {
     background: #475569;
 }
+
+/* Ticket Description Formatted Content */
+.prose-ticket {
+    font-size: 0.875rem;
+    line-height: 1.625;
+}
+.prose-ticket p {
+    margin-bottom: 0.5rem;
+}
+.prose-ticket p:last-child {
+    margin-bottom: 0;
+}
+.prose-ticket h1, .prose-ticket h2, .prose-ticket h3, .prose-ticket h4 {
+    font-weight: 700;
+    margin-top: 0.75rem;
+    margin-bottom: 0.35rem;
+    color: #0f172a;
+}
+html.dark .prose-ticket h1, 
+html.dark .prose-ticket h2, 
+html.dark .prose-ticket h3, 
+html.dark .prose-ticket h4 {
+    color: #f8fafc;
+}
+.prose-ticket h1 { font-size: 1.15rem; }
+.prose-ticket h2 { font-size: 1.05rem; }
+.prose-ticket h3 { font-size: 0.95rem; }
+.prose-ticket h4 { font-size: 0.875rem; }
+.prose-ticket ul {
+    list-style-type: disc;
+    padding-left: 1.25rem;
+    margin-bottom: 0.5rem;
+}
+.prose-ticket ol {
+    list-style-type: decimal;
+    padding-left: 1.25rem;
+    margin-bottom: 0.5rem;
+}
+.prose-ticket li {
+    margin-bottom: 0.2rem;
+}
+.prose-ticket blockquote {
+    border-left: 3px solid #3b82f6;
+    padding-left: 0.75rem;
+    font-style: italic;
+    color: #475569;
+    margin: 0.5rem 0;
+}
+html.dark .prose-ticket blockquote {
+    color: #94a3b8;
+    border-left-color: #60a5fa;
+}
+.prose-ticket code {
+    background-color: rgba(148, 163, 184, 0.2);
+    padding: 0.15rem 0.35rem;
+    border-radius: 0.25rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.85em;
+    color: #0284c7;
+}
+html.dark .prose-ticket code {
+    color: #38bdf8;
+    background-color: rgba(51, 65, 85, 0.6);
+}
+.prose-ticket pre {
+    background-color: #0f172a;
+    color: #f8fafc;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    overflow-x: auto;
+    font-size: 0.8rem;
+    margin: 0.5rem 0;
+}
+.prose-ticket hr {
+    border: 0;
+    border-top: 1px solid #e2e8f0;
+    margin: 0.75rem 0;
+}
+html.dark .prose-ticket hr {
+    border-top-color: #334155;
+}
+.prose-ticket table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0.5rem 0;
+    font-size: 0.8rem;
+}
+.prose-ticket th, .prose-ticket td {
+    border: 1px solid #cbd5e1;
+    padding: 0.35rem 0.5rem;
+}
+html.dark .prose-ticket th, html.dark .prose-ticket td {
+    border-color: #334155;
+}
+.prose-ticket th {
+    background-color: rgba(148, 163, 184, 0.12);
+    font-weight: 600;
+}
+.prose-ticket a {
+    color: #2563eb;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+html.dark .prose-ticket a {
+    color: #60a5fa;
+}
+.prose-ticket mark {
+    background-color: #fef08a;
+    color: #854d0e;
+    padding: 0.1rem 0.3rem;
+    border-radius: 0.2rem;
+}
+html.dark .prose-ticket mark {
+    background-color: rgba(234, 179, 8, 0.25);
+    color: #fef08a;
+}

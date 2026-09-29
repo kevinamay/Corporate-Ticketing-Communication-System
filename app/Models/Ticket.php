@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 #[Fillable([
     'user_id',
@@ -53,6 +54,21 @@ class Ticket extends Model
         return str_starts_with($path, '/storage/')
             ? $path
             : '/storage/'.ltrim($path, '/');
+    }
+
+    /**
+     * Get formatted HTML description (Markdown converted, XSS safe).
+     */
+    public function getFormattedDescriptionAttribute(): string
+    {
+        if (empty($this->description)) {
+            return '';
+        }
+
+        return Str::markdown($this->description, [
+            'html_input' => 'strip',
+            'allow_unsafe_links' => false,
+        ]);
     }
 
     /**

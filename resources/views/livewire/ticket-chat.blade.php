@@ -78,7 +78,9 @@
             <!-- Original Description Box -->
             <div class="p-3 rounded-lg bg-white dark:bg-slate-800/90 border border-gray-200 dark:border-slate-700 shadow-xs" x-data="{ imageModal: false }">
                 <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 block mb-1">{{ __('Issue Summary') }}</span>
-                <p class="text-xs text-slate-700 dark:text-slate-200 leading-relaxed">{{ $ticket->description }}</p>
+                <div class="text-xs text-slate-700 dark:text-slate-200 leading-relaxed prose-ticket">
+                    {!! $ticket->formatted_description !!}
+                </div>
 
                 @if ($ticket->photo_url)
                     <div class="mt-3 pt-2.5 border-t border-gray-100 dark:border-slate-700/60">
