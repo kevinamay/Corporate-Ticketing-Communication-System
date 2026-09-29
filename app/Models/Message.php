@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Str;
 
 #[Fillable([
     'ticket_id',
@@ -16,6 +17,21 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Message extends Model
 {
     use HasFactory;
+
+    /**
+     * Get formatted HTML message (Markdown converted, XSS safe).
+     */
+    public function getFormattedMessageAttribute(): string
+    {
+        if (empty($this->message)) {
+            return '';
+        }
+
+        return Str::markdown($this->message, [
+            'html_input' => 'strip',
+            'allow_unsafe_links' => false,
+        ]);
+    }
 
     /**
      * @return BelongsTo<Ticket, $this>

@@ -89,6 +89,7 @@ class GlobalTickets extends Component
         if (in_array($ticket->status, ['Pending', 'Open'], true)) {
             $ticket->update(['status' => 'In Progress']);
             $this->dispatch('ticketUpdated', ticketId: $ticket->id);
+            $this->dispatch('ticketStatusUpdated');
         }
 
         $this->viewingTicketId = $ticket->id;
@@ -182,11 +183,13 @@ class GlobalTickets extends Component
         // Update status if selected
         if (! empty($this->ticketStatusToUpdate) && in_array($this->ticketStatusToUpdate, ['Pending', 'Open', 'In Progress', 'Resolved'], true)) {
             $ticket->update(['status' => $this->ticketStatusToUpdate]);
+            $this->dispatch('ticketStatusUpdated');
         }
 
         $this->replyMessage = '';
         $this->replyPhoto = null;
         $this->dispatch('ticketUpdated', ticketId: $ticket->id);
+        $this->dispatch('ticketStatusUpdated');
         session()->flash('reply_success', 'Tanggapan / jawaban berhasil dikirim ke pelapor!');
     }
 
@@ -221,6 +224,7 @@ class GlobalTickets extends Component
             $ticket->update(['status' => $status]);
             $this->ticketStatusToUpdate = $status;
             $this->dispatch('ticketUpdated', ticketId: $ticket->id);
+            $this->dispatch('ticketStatusUpdated');
             session()->flash('handle_success', "Status tiket #{$ticket->id} berhasil diperbarui dari {$oldStatus} menjadi {$status}.");
             session()->flash('reply_success', "Status tiket #{$ticket->id} berhasil diperbarui dari {$oldStatus} menjadi {$status}.");
         }

@@ -6,6 +6,7 @@ use App\Livewire\GlobalTickets;
 use App\Livewire\HcmEmployeeMaster;
 use App\Livewire\RegisterUser;
 use App\Models\Department;
+use App\Models\Message;
 use App\Models\Ticket;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -293,5 +294,71 @@ class CorporateTicketingModulesTest extends TestCase
             ->assertSee('Permohonan Cuti Sakit')
             ->assertSee('Handle Ticket')
             ->assertSee('View Only - Not Your Dept');
+    }
+
+    /**
+     * MODULE 5: Admin Rich Reply Submission & Markdown Rendering.
+     */
+    public function test_admin_rich_reply_submission_and_formatted_markdown_rendering(): void
+    {
+        $itUser = User::create([
+            'name' => 'IT Admin Lead',
+            'email' => 'admin_it@asiaplastik.com',
+            'password' => bcrypt('password123'),
+            'department_id' => $this->itDept->id,
+            'role' => 'admin',
+        ]);
+
+        $reporter = User::create([
+            'name' => 'Staf Operasional',
+            'email' => 'staf_ops@asiaplastik.com',
+            'password' => bcrypt('password123'),
+            'department_id' => $this->prodDept->id,
+            'role' => 'staff',
+        ]);
+
+        $ticket = Ticket::create([
+            'sender_id' => $reporter->id,
+            'user_id' => $reporter->id,
+            'target_department_id' => $this->itDept->id,
+            'title' => 'Kendala PC Mesin Cetak Mati Total',
+            'category' => 'Hardware',
+            'description' => 'PC pada line 3 tidak dapat booting sama sekali.',
+            'priority' => 'Critical',
+            'status' => 'In Progress',
+        ]);
+
+        $this->actingAs($itUser);
+
+        $markdownSolution = "### 🛠️ Solusi Perbaikan PC & Hardware\n- **Tindakan**: Penggantian power supply dan uji booting.\n- **Status**: [SOLVED] Perangkat normal kembali.\n- [ ] Uji coba cetak";
+
+        Livewire::test(GlobalTickets::class)
+            ->call('viewTicketDetail', $ticket->id)
+            ->assertSet('isDetailModalOpen', true)
+            ->set('replyMessage', $markdownSolution)
+            ->set('ticketStatusToUpdate', 'Resolved')
+            ->call('sendTicketReply', $ticket->id)
+            ->assertDispatched('ticketStatusUpdated')
+            ->assertDispatched('ticketUpdated')
+            ->assertSet('replyMessage', '')
+            ->assertSet('replyPhoto', null);
+
+        $ticket->refresh();
+        $this->assertEquals('Resolved', $ticket->status);
+
+        $this->assertDatabaseHas('messages', [
+            'ticket_id' => $ticket->id,
+            'user_id' => $itUser->id,
+            'message' => $markdownSolution,
+        ]);
+
+        $createdMessage = Message::where('ticket_id', $ticket->id)->first();
+        $this->assertNotNull($createdMessage);
+
+        // Verify HTML formatted markdown rendering
+        $html = $createdMessage->formatted_message;
+        $this->assertStringContainsString('<h3>🛠️ Solusi Perbaikan PC &amp; Hardware</h3>', $html);
+        $this->assertStringContainsString('<strong>Tindakan</strong>', $html);
+        $this->assertStringContainsString('[SOLVED]', $html);
     }
 }
