@@ -8,7 +8,7 @@
                 </div>
                 <div>
                     <div class="flex items-center gap-2">
-                        <h3 class="font-bold text-slate-900 dark:text-white text-sm leading-tight">{{ $ticket->targetDepartment->name }}</h3>
+                        <h3 class="font-bold text-slate-900 dark:text-white text-sm leading-tight">{{ __($ticket->targetDepartment->name) }}</h3>
                         @php
                             $statusClasses = [
                                 'Pending' => 'bg-amber-50 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800',
@@ -57,7 +57,7 @@
                     </span>
                     <div>
                         <p class="text-xs font-bold leading-tight">{{ __('VoIP Channel Connected') }}</p>
-                        <p class="text-[11px] text-blue-200">{{ $ticket->targetDepartment->name }} {{ __('Specialist line • Encrypted') }}</p>
+                        <p class="text-[11px] text-blue-200">{{ __($ticket->targetDepartment->name) }} {{ __('Specialist line • Encrypted') }}</p>
                     </div>
                 </div>
                 <button wire:click="endCall" class="px-2.5 py-1 rounded bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-xs">
@@ -167,7 +167,7 @@
         <div class="p-3.5 border-t border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 transition-colors">
             @auth
                 <form wire:submit="sendMessage" class="flex items-center gap-2">
-                    <input type="text" wire:model="newMessage" placeholder="{{ __('Type message to') }} {{ $ticket->targetDepartment->name }}..."
+                    <input type="text" wire:model="newMessage" placeholder="{{ __('Type message to') }} {{ __($ticket->targetDepartment->name) }}..."
                         class="flex-1 px-3.5 py-2.5 text-xs md:text-sm text-slate-800 dark:text-slate-100 bg-slate-50 dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition shadow-xs placeholder:text-slate-400 dark:placeholder:text-slate-500" />
                     <button type="submit" 
                         class="px-4 py-2.5 rounded-lg text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 transition shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50">

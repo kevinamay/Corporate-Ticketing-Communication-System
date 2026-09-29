@@ -28,7 +28,7 @@
             <span class="text-slate-500 dark:text-slate-400 font-medium">{{ __('Departemen Anda:') }}</span>
             <span class="font-bold text-blue-600 dark:text-blue-400 flex items-center gap-1.5">
                 <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                {{ $currentUser?->department?->name ?? __('Belum login') }}
+                {{ __($currentUser?->department?->name ?? '') ?: __('Belum login') }}
             </span>
         </div>
     </div>
@@ -72,7 +72,7 @@
                     class="w-full px-3 py-2 text-xs text-slate-800 dark:text-slate-100 bg-slate-50 dark:bg-slate-800/90 rounded-xl border border-gray-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition shadow-2xs">
                 <option value="all">{{ __('Semua Departemen Tujuan') }}</option>
                 @foreach($departments as $dept)
-                    <option value="{{ $dept->id }}">{{ $dept->name }}</option>
+                    <option value="{{ $dept->id }}">{{ __($dept->name) }}</option>
                 @endforeach
             </select>
         </div>
@@ -140,7 +140,7 @@
                         <td class="py-3 px-3.5">
                             <span class="inline-flex items-center gap-1.5 font-semibold text-slate-800 dark:text-slate-200">
                                 <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-                                {{ $ticket->targetDepartment->name ?? '-' }}
+                                {{ __($ticket->targetDepartment->name ?? '-') }}
                             </span>
                         </td>
 
@@ -299,7 +299,7 @@
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700">
                         <div>
                             <span class="block text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500">{{ __('Departemen Tujuan') }}</span>
-                            <span class="font-bold text-slate-800 dark:text-slate-200 mt-0.5 block truncate">{{ $viewingTicket->targetDepartment->name ?? '-' }}</span>
+                            <span class="font-bold text-slate-800 dark:text-slate-200 mt-0.5 block truncate">{{ __($viewingTicket->targetDepartment->name ?? '-') }}</span>
                         </div>
                         <div>
                             <span class="block text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500">{{ __('Kategori') }}</span>

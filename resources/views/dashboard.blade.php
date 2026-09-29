@@ -201,7 +201,7 @@
                     @foreach (\App\Models\Department::all() as $dept)
                         <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-slate-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200">
                             <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-                            {{ $dept->name }}
+                            {{ __($dept->name) }}
                             <span class="text-[10px] text-slate-400 dark:text-slate-500">({{ $dept->tickets()->count() }})</span>
                         </span>
                     @endforeach

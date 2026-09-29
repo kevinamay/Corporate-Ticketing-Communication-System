@@ -51,7 +51,7 @@
                                 {{ $currentUser->role ?? 'Staff' }}
                             </span>
                             <span class="text-[9px] font-medium text-white/80">
-                                &bull; {{ $currentUser->department?->name ?? 'Corporate' }}
+                                &bull; {{ __($currentUser->department?->name ?? 'Corporate') }}
                             </span>
                         </div>
                     </div>

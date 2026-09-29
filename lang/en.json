@@ -388,5 +388,10 @@
     "Edit": "Edit",
     "Hapus": "Delete",
     "Di-ACC Admin": "Approved by Admin",
-    "Buka di Antrean Tiket &rarr;": "Open in Ticket Queue &rarr;"
+    "Buka di Antrean Tiket &rarr;": "Open in Ticket Queue &rarr;",
+    "IT Support": "IT Support",
+    "Human Resources (HRD)": "Human Resources (HRD)",
+    "Facility & Maintenance": "Facility & Maintenance",
+    "Produksi & Mesin": "Production & Machinery",
+    "Gudang & Logistik": "Warehouse & Logistics"
 }

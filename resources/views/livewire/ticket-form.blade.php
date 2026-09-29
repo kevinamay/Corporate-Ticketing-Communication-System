@@ -68,7 +68,7 @@
                 <select id="sender_department_id" wire:model="sender_department_id" 
                     class="w-full px-3 py-2.5 text-xs md:text-sm text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-800/90 rounded-lg border border-gray-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition shadow-xs">
                     @foreach ($departments as $dept)
-                        <option value="{{ $dept->id }}">{{ $dept->name }}</option>
+                        <option value="{{ $dept->id }}">{{ __($dept->name) }}</option>
                     @endforeach
                 </select>
                 @error('sender_department_id') <span class="text-xs text-rose-600 dark:text-rose-400 mt-1 block font-medium">{{ $message }}</span> @enderror
@@ -80,7 +80,7 @@
                 <select id="target_department_id" wire:model.live="target_department_id" 
                     class="w-full px-3 py-2.5 text-xs md:text-sm text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-800/90 rounded-lg border border-gray-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition shadow-xs">
                     @foreach ($targetDepartments as $dept)
-                        <option value="{{ $dept->id }}">{{ $dept->name }}</option>
+                        <option value="{{ $dept->id }}">{{ __($dept->name) }}</option>
                     @endforeach
                 </select>
                 @error('target_department_id') <span class="text-xs text-rose-600 dark:text-rose-400 mt-1 block font-medium">{{ $message }}</span> @enderror

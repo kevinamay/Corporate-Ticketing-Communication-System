@@ -66,7 +66,7 @@
         <select wire:model.live="departmentFilter" class="px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-xs text-slate-700 dark:text-slate-300 border border-gray-200 dark:border-slate-700 focus:ring-1 focus:ring-blue-500 focus:outline-none">
             <option value="all">{{ __('Semua Departemen') }}</option>
             @foreach ($departments as $dept)
-                <option value="{{ $dept->id }}">{{ $dept->name }}</option>
+                <option value="{{ $dept->id }}">{{ __($dept->name) }}</option>
             @endforeach
         </select>
     </div>
@@ -128,7 +128,7 @@
                 <div class="pt-2.5 border-t border-gray-100 dark:border-slate-700/50 space-y-2">
                     <div class="flex items-center justify-between text-[10px] text-slate-400 dark:text-slate-500">
                         <span class="font-medium text-slate-700 dark:text-slate-300 truncate max-w-[120px]">
-                            {{ $t->targetDepartment->name ?? '-' }}
+                            {{ __($t->targetDepartment->name ?? '-') }}
                         </span>
                         
                         <!-- Status Badge -->
@@ -272,7 +272,7 @@
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700">
                         <div>
                             <span class="block text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500">{{ __('Departemen Tujuan') }}</span>
-                            <span class="font-bold text-slate-800 dark:text-slate-200 mt-0.5 block truncate">{{ $viewingTicket->targetDepartment->name ?? '-' }}</span>
+                            <span class="font-bold text-slate-800 dark:text-slate-200 mt-0.5 block truncate">{{ __($viewingTicket->targetDepartment->name ?? '-') }}</span>
                         </div>
                         <div>
                             <span class="block text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500">{{ __('Kategori') }}</span>
@@ -450,7 +450,7 @@
                             <select id="modal_edit_target_dept" wire:model="editTargetDepartmentId"
                                     class="w-full px-3 py-2 text-xs md:text-sm text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-800/90 rounded-lg border border-gray-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition shadow-xs">
                                 @foreach($targetDepartments as $dept)
-                                    <option value="{{ $dept->id }}">{{ $dept->name }}</option>
+                                    <option value="{{ $dept->id }}">{{ __($dept->name) }}</option>
                                 @endforeach
                             </select>
                             @error('editTargetDepartmentId') <span class="text-xs text-rose-600 dark:text-rose-400 mt-1 block font-medium">{{ $message }}</span> @enderror
