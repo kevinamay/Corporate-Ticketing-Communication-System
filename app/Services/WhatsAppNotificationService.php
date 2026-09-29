@@ -11,57 +11,68 @@ use Illuminate\Support\Str;
 class WhatsAppNotificationService
 {
     /**
-     * Send a WhatsApp notification to IT Admin when a new ticket is submitted.
+     * Send a WhatsApp notification to IT Admin via official Meta WhatsApp Cloud API (Graph API).
      * Designed for serverless environments (e.g. Vercel) with fail-safe error handling.
      */
     public function sendNewTicketNotification(Ticket $ticket): bool
     {
         try {
-            $token = config('services.whatsapp.token');
-            $adminNumber = config('services.whatsapp.admin_number');
-            $apiUrl = config('services.whatsapp.url', 'https://api.fonnte.com/send');
+            $phoneNumberId = config('services.meta_whatsapp.phone_number_id') ?? env('META_WA_PHONE_NUMBER_ID');
+            $accessToken = config('services.meta_whatsapp.access_token') ?? env('META_WA_ACCESS_TOKEN');
+            $adminNumber = config('services.meta_whatsapp.admin_number') ?? env('WA_ADMIN_NUMBER');
+            $apiVersion = config('services.meta_whatsapp.api_version') ?? env('META_WA_API_VERSION', 'v20.0');
 
-            if (empty($token) || empty($adminNumber)) {
-                Log::info("WhatsApp notification skipped for ticket #{$ticket->id}: WA_API_TOKEN or WA_ADMIN_NUMBER is not set.");
+            if (empty($phoneNumberId) || empty($accessToken) || empty($adminNumber)) {
+                Log::info("WhatsApp notification skipped for ticket #{$ticket->id}: META_WA_PHONE_NUMBER_ID, META_WA_ACCESS_TOKEN, or WA_ADMIN_NUMBER is missing.");
 
                 return false;
             }
 
-            // Eager-load relations to build full message details
+            // Eager-load relations for message formatting
             $ticket->loadMissing(['sender.department', 'targetDepartment', 'user']);
 
             $message = $this->buildNewTicketMessage($ticket);
+            $formattedRecipient = $this->formatPhoneNumber($adminNumber);
 
-            // Execute HTTP request with strict timeout for serverless lifecycle
+            $endpoint = "https://graph.facebook.com/{$apiVersion}/{$phoneNumberId}/messages";
+
+            // Standard Meta WhatsApp Cloud API Text Message Payload
+            $payload = [
+                'messaging_product' => 'whatsapp',
+                'recipient_type' => 'individual',
+                'to' => $formattedRecipient,
+                'type' => 'text',
+                'text' => [
+                    'body' => $message,
+                ],
+            ];
+
+            // Execute HTTP POST request with strict 5-second timeout for serverless
             $response = Http::timeout(5)
-                ->withHeaders([
-                    'Authorization' => $token,
-                ])
-                ->post($apiUrl, [
-                    'target' => $this->formatPhoneNumber($adminNumber),
-                    'message' => $message,
-                    'countryCode' => '62',
-                ]);
+                ->withToken($accessToken)
+                ->acceptJson()
+                ->asJson()
+                ->post($endpoint, $payload);
 
             if ($response->successful()) {
-                Log::info("WhatsApp notification sent for ticket #{$ticket->id} to {$adminNumber}");
+                Log::info("Meta WhatsApp notification sent successfully for ticket #{$ticket->id} to {$formattedRecipient}");
 
                 return true;
             }
 
-            Log::warning("WhatsApp gateway response error for ticket #{$ticket->id} [Status {$response->status()}]: ".$response->body());
+            Log::warning("Meta WhatsApp Cloud API error for ticket #{$ticket->id} [Status {$response->status()}]: ".$response->body());
 
             return false;
         } catch (\Throwable $e) {
             // Fail silently so user ticket submission is NEVER interrupted or thrown on Vercel
-            Log::error("Failed to send WhatsApp notification for ticket #{$ticket->id}: ".$e->getMessage());
+            Log::error("Failed to send Meta WhatsApp notification for ticket #{$ticket->id}: ".$e->getMessage());
 
             return false;
         }
     }
 
     /**
-     * Build the exact message template required by corporate standards:
+     * Build the message template:
      *
      * 🚨 *TIKET BARU MASUK!* 🚨
      * 👤 *Pengirim:* {Employee Name}
@@ -77,7 +88,7 @@ class WhatsAppNotificationService
         // 1. Employee Name
         $employeeName = $ticket->sender?->name ?? $ticket->user?->name ?? 'Karyawan';
 
-        // 2. Department Name (Sender's department or Target department)
+        // 2. Department Name
         $departmentName = $ticket->sender?->department?->name
             ?? $ticket->targetDepartment?->name
             ?? 'Operasional';
@@ -107,10 +118,10 @@ class WhatsAppNotificationService
     }
 
     /**
-     * Normalize Indonesian phone number to international / gateway format.
-     * Examples: '08123456789' -> '08123456789' (or '628123456789')
+     * Normalize phone number to official E.164 international format required by Meta (without leading + or 0).
+     * Example: '081234567890' -> '6281234567890', '+6281234567890' -> '6281234567890'
      */
-    protected function formatPhoneNumber(string $number): string
+    public function formatPhoneNumber(string $number): string
     {
         $cleaned = preg_replace('/[^0-9]/', '', $number);
 
@@ -119,9 +130,9 @@ class WhatsAppNotificationService
         }
 
         if (str_starts_with($cleaned, '0')) {
-            return $cleaned;
+            return '62'.substr($cleaned, 1);
         }
 
-        return '0'.$cleaned;
+        return '62'.$cleaned;
     }
 }

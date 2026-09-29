@@ -46,10 +46,17 @@ return [
     ],
 
     'whatsapp' => [
-        'provider' => env('WA_GATEWAY_PROVIDER', 'fonnte'),
+        'provider' => env('WA_GATEWAY_PROVIDER', 'meta'),
         'url' => env('WA_API_URL', 'https://api.fonnte.com/send'),
         'token' => env('WA_API_TOKEN'),
         'admin_number' => env('WA_ADMIN_NUMBER'),
+    ],
+
+    'meta_whatsapp' => [
+        'phone_number_id' => env('META_WA_PHONE_NUMBER_ID'),
+        'access_token' => env('META_WA_ACCESS_TOKEN'),
+        'admin_number' => env('WA_ADMIN_NUMBER'),
+        'api_version' => env('META_WA_API_VERSION', 'v20.0'),
     ],
 
 ];
