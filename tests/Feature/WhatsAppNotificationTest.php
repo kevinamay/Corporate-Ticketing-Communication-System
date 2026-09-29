@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Livewire\TicketForm;
 use App\Models\Department;
 use App\Models\Ticket;
 use App\Models\User;
@@ -10,6 +11,7 @@ use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class WhatsAppNotificationTest extends TestCase
@@ -138,5 +140,40 @@ class WhatsAppNotificationTest extends TestCase
 
         $this->assertFalse($result);
         Http::assertNothingSent();
+    }
+
+    public function test_ticket_form_submits_and_triggers_whatsapp_notification_with_injected_service(): void
+    {
+        Config::set('services.whatsapp.token', 'test_token_livewire');
+        Config::set('services.whatsapp.admin_number', '089876543210');
+        Config::set('services.whatsapp.url', 'https://api.fonnte.com/send');
+
+        Http::fake([
+            'https://api.fonnte.com/send' => Http::response(['status' => true], 200),
+        ]);
+
+        $this->actingAs($this->sender);
+
+        Livewire::test(TicketForm::class)
+            ->set('title', 'Koneksi Printer Rusak')
+            ->set('category', 'Hardware')
+            ->set('priority', 'High')
+            ->set('description', 'Printer kasir macet dan tidak dapat mencetak struk.')
+            ->set('target_department_id', $this->itDept->id)
+            ->call('submit')
+            ->assertHasNoErrors()
+            ->assertSet('isSuccess', true)
+            ->assertDispatched('ticketCreated');
+
+        $this->assertDatabaseHas('tickets', [
+            'title' => 'Koneksi Printer Rusak',
+            'sender_id' => $this->sender->id,
+        ]);
+
+        Http::assertSent(function ($request) {
+            return $request->url() === 'https://api.fonnte.com/send'
+                && $request['target'] === '089876543210'
+                && str_contains($request['message'], 'Koneksi Printer Rusak');
+        });
     }
 }

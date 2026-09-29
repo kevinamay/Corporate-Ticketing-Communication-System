@@ -112,7 +112,7 @@ class TicketForm extends Component
         $this->photo = null;
     }
 
-    public function submit(): void
+    public function submit(WhatsAppNotificationService $whatsAppService): void
     {
         $currentUserId = Auth::id() ?? session('active_user_id');
 
@@ -159,8 +159,8 @@ class TicketForm extends Component
             'status' => 'Pending',
         ]);
 
-        // Send WhatsApp notification to IT Admin (async / fail-safe on Vercel)
-        app(WhatsAppNotificationService::class)->sendNewTicketNotification($ticket);
+        // Send WhatsApp notification immediately after ticket is inserted into Supabase
+        $whatsAppService->sendNewTicketNotification($ticket);
 
         $this->reset(['title', 'description', 'photo']);
         $this->photo = null;
