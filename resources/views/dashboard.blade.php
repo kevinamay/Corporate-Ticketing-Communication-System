@@ -23,38 +23,6 @@
         <!-- HALAMAN ADMIN & HRD: INPUT DATA KARYAWAN & MENJAWAB TIKET MASUK -->
         <!-- ==================================================================== -->
 
-        <!-- Admin Role Welcome & Security Clearance Banner -->
-        <div class="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white shadow-lg border border-blue-700/40 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div class="flex items-center gap-3.5">
-                <div class="w-12 h-12 rounded-xl bg-blue-500/20 border border-blue-400/30 flex items-center justify-center shrink-0">
-                    <svg class="w-6 h-6 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
-                </div>
-                <div>
-                    <div class="flex items-center gap-2">
-                        <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-500/30 text-blue-200 border border-blue-400/30">
-                            {{ __('Portal Admin IT') }}
-                        </span>
-                        <span class="text-xs text-blue-300">&bull; {{ $activeUser->name }}</span>
-                    </div>
-                    <h2 class="text-lg font-black tracking-tight mt-0.5">{{ __('Manajemen Data Karyawan & Penanganan Tiket Masuk') }}</h2>
-                    <p class="text-xs text-blue-200/80">{{ __('Kelola otorisasi data karyawan (CRUD & CSV) serta jawab dan tangani tiket kendala yang masuk dari seluruh divisi.') }}</p>
-                </div>
-            </div>
-
-            <div class="flex items-center gap-2 shrink-0">
-                @if ($canAccessMasterData)
-                    <a href="#hcm-master-section" class="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition shadow-sm">
-                        {{ __('+ Input Karyawan') }}
-                    </a>
-                @endif
-                <a href="#daily-ticket-chart-section" class="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition border border-white/20">
-                    {{ __('Grafik Tiket') }}
-                </a>
-                <a href="#global-tickets" class="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition border border-white/20">
-                    {{ __('Jawab Tiket Masuk') }}
-                </a>
-            </div>
-        </div>
 
         <!-- Elevated KPI Metrics Strip -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
