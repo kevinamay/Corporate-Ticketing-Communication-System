@@ -55,7 +55,7 @@ return [
     'meta_whatsapp' => [
         'phone_number_id' => env('META_WA_PHONE_NUMBER_ID'),
         'access_token' => env('META_WA_ACCESS_TOKEN'),
-        'admin_number' => env('WA_ADMIN_NUMBER'),
+        'admin_number' => env('ADMIN_WA_NUMBER', env('WA_ADMIN_NUMBER', '6285784694910')),
         'api_version' => env('META_WA_API_VERSION', 'v20.0'),
     ],
 

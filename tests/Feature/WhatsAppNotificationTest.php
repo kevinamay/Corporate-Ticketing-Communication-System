@@ -195,4 +195,38 @@ class WhatsAppNotificationTest extends TestCase
                 && str_contains($request['text']['body'], 'Koneksi Printer Rusak');
         });
     }
+
+    public function test_hello_world_template_sent_successfully_via_meta_cloud_api(): void
+    {
+        Config::set('services.meta_whatsapp.phone_number_id', '1389469127579066');
+        Config::set('services.meta_whatsapp.access_token', 'EAAB_test_token');
+        Config::set('services.meta_whatsapp.admin_number', '6285784694910');
+        Config::set('services.meta_whatsapp.api_version', 'v20.0');
+
+        $expectedEndpoint = 'https://graph.facebook.com/v20.0/1389469127579066/messages';
+
+        Http::fake([
+            $expectedEndpoint => Http::response([
+                'messaging_product' => 'whatsapp',
+                'contacts' => [['input' => '6285784694910', 'wa_id' => '6285784694910']],
+                'messages' => [['id' => 'wamid.HBgL123456789']],
+            ], 200),
+        ]);
+
+        $service = new WhatsAppNotificationService;
+        $result = $service->sendHelloWorldTemplate();
+
+        $this->assertTrue($result);
+
+        Http::assertSent(function ($request) use ($expectedEndpoint) {
+            return $request->url() === $expectedEndpoint
+                && $request->hasHeader('Authorization', 'Bearer EAAB_test_token')
+                && $request['messaging_product'] === 'whatsapp'
+                && $request['recipient_type'] === 'individual'
+                && $request['to'] === '6285784694910'
+                && $request['type'] === 'template'
+                && $request['template']['name'] === 'hello_world'
+                && $request['template']['language']['code'] === 'en_US';
+        });
+    }
 }
