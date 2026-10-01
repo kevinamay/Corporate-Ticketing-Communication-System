@@ -419,8 +419,11 @@
                     <!-- TAB 2: PAIRING CODE -->
                     <div id="tab-code" class="tab-pane">
                         <div class="input-group">
-                            <label>Nomor WhatsApp HP Anda (Format 08xxx atau 62xxx):</label>
-                            <input type="text" id="phone-pairing" placeholder="Contoh: 08123456789 atau 6281234567890">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <label>Nomor WhatsApp Bot Perusahaan (PENGIRIM PATEN):</label>
+                                <span style="font-size: 11px; background: rgba(37,211,102,0.2); color: #25d366; padding: 2px 8px; border-radius: 12px; font-weight: 600;">🤖 Bot Pengirim Paten</span>
+                            </div>
+                            <input type="text" id="phone-pairing" placeholder="082244109503" value="082244109503">
                             <button class="btn" id="btn-get-code" onclick="requestPairingCode()" style="margin-top: 6px;">Dapatkan Kode Pairing (8 Digit)</button>
                         </div>
                         <div class="code-box" id="pairing-code-box">
@@ -501,13 +504,13 @@
             <div class="steps">
                 <div class="step-item">
                     <span class="step-num">1</span>
-                    <b>1 Nomor Perusahaan (Bot Pengirim)</b><br>
-                    Tautkan nomor WhatsApp resmi/bot perusahaan di panel kiri (cukup scan QR sekali). Nomor ini akan bertindak sebagai Bot Pengirim resmi.
+                    <b>Bot Perusahaan (Pengirim Paten)</b><br>
+                    Nomor: <code>082244109503</code> (PT. Asia Plastik Bot). Ditautkan di panel kiri sebagai nomor pengirim resmi.
                 </div>
                 <div class="step-item">
                     <span class="step-num">2</span>
-                    <b>1 Nomor Admin IT (Penerima Paten)</b><br>
-                    Nomor penerima telah dipatenkan ke <code>085784694910</code> di sistem Laravel. Tidak perlu input manual setiap saat.
+                    <b>Admin IT (Penerima Paten)</b><br>
+                    Nomor: <code>085784694910</code> (IT Support Admin). Ditetapkan secara permanen di sistem Laravel sebagai penerima semua tiket baru.
                 </div>
                 <div class="step-item">
                     <span class="step-num">3</span>

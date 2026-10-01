@@ -48,10 +48,10 @@ Di panel kanan layar:
 ## 🔒 Arsitektur Sistem Notifikasi PATEN (1 Bot Pengirim & 1 IT Admin Penerima)
 
 Sistem notifikasi ini sudah dibuat **PATEN dan Terintegrasi Penuh** dengan sistem Laravel Corporate Ticketing:
-1. **1 Nomor Perusahaan (Bot Pengirim):** Nomor WhatsApp resmi yang ditautkan di gateway WAHA.
-2. **1 Nomor IT Admin (Penerima Paten):** Ditetapkan secara permanen ke `6285784694910` melalui konfigurasi `.env` (`ADMIN_WA_NUMBER=6285784694910`) dan `config/services.php`.
+1. **Nomor Pengirim (Bot Resmi Perusahaan):** `082244109503` (`6282244109503`) yang ditautkan di gateway WAHA.
+2. **Nomor Penerima (Admin IT Paten):** `085784694910` (`6285784694910`) yang ditetapkan secara permanen di konfigurasi `.env` (`ADMIN_WA_NUMBER=6285784694910`) dan `config/services.php`.
 3. **Pemberitahuan Otomatis (Tanpa Input Manual):**
-   - Setiap kali karyawan atau pengguna mengirim tiket baru melalui form website portal, Laravel service `WhatsAppNotificationService` akan otomatis mengeksekusi pengiriman notifikasi WhatsApp ke Admin IT (`6285784694910`).
+   - Setiap kali karyawan atau pengguna mengirim tiket baru melalui form website portal, Laravel service `WhatsAppNotificationService` akan otomatis mengeksekusi pengiriman notifikasi WhatsApp dari bot (`082244109503`) ke Admin IT (`085784694910`).
    - Tidak diperlukan input nomor tujuan secara manual dalam operasional harian.
 
 ---

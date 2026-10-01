@@ -63,6 +63,7 @@ return [
         'base_url' => env('WAHA_BASE_URL'),
         'api_key' => env('WAHA_API_KEY', 'e8928adf08ec4cfd8b30dea033ee38bc'),
         'session' => env('WAHA_SESSION', 'default'),
+        'sender_number' => env('COMPANY_WA_NUMBER', '6282244109503'),
         'admin_number' => env('ADMIN_WA_NUMBER', env('WA_ADMIN_NUMBER', '6285784694910')),
     ],
 
