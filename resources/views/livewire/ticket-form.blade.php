@@ -935,11 +935,22 @@
         };
     }
 
-    // Automated WhatsApp Bot Dispatcher (Sistem PATEN)
+    // Automated WhatsApp Bot Dispatcher (Sistem PATEN - Single Dispatch Guard)
+    let lastDispatchedTicketId = null;
+    let lastDispatchedTime = 0;
+
     function triggerWahaWhatsAppNotification(detail) {
         try {
             const data = (detail && detail.ticketData) ? detail.ticketData : (detail || {});
             if (!data || !data.id) return;
+
+            // Anti-Double Prevention: Prevent sending the same ticket more than once
+            const now = Date.now();
+            if (lastDispatchedTicketId === data.id && (now - lastDispatchedTime) < 5000) {
+                return;
+            }
+            lastDispatchedTicketId = data.id;
+            lastDispatchedTime = now;
 
             const sender = data.sender || 'Karyawan';
             const department = data.department || 'Staff';
@@ -948,9 +959,8 @@
             const title = data.title || '-';
             const ticketId = data.id;
 
-            const now = new Date();
-            const dateStr = now.toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'});
-            const timeStr = now.toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'});
+            const dateStr = new Date().toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'});
+            const timeStr = new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'});
 
             const message = `*TIKET BARU MASUK*\n━━━━━━━━━━━━━━━━━━━━\n*Pengirim:* ${sender}\n*Divisi:* ${department}\n*Kategori:* ${category}\n*Prioritas:* ${priority}\n*Masalah:* ${title}\n*Waktu:* ${dateStr}, ${timeStr} WIB\n━━━━━━━━━━━━━━━━━━━━\nSegera proses tiket ini dengan klik link berikut:\nhttps://ticketing-kappa-jet.vercel.app/dashboard?ticket=${ticketId}`;
 
@@ -969,7 +979,7 @@
                 })
             }).then(r => {
                 if (r.ok) {
-                    console.log('✅ WAHA Bot: Notifikasi tiket #' + ticketId + ' otomatis terkirim ke WhatsApp Admin IT (' + adminPhone + ')');
+                    console.log('✅ WAHA Bot: Notifikasi tiket #' + ticketId + ' berhasil terkirim 1 kali ke Admin IT (' + adminPhone + ')');
                 }
             }).catch(() => {
                 // Fail silently if local gateway is offline
@@ -977,15 +987,8 @@
         } catch (err) {}
     }
 
+    // Single Event Listener (No Duplicate)
     window.addEventListener('ticketCreated', (e) => {
         triggerWahaWhatsAppNotification(e.detail);
-    });
-
-    document.addEventListener('livewire:init', () => {
-        if (window.Livewire) {
-            Livewire.on('ticketCreated', (data) => {
-                triggerWahaWhatsAppNotification(Array.isArray(data) ? data[0] : data);
-            });
-        }
     });
 </script>
