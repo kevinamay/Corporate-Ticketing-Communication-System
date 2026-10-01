@@ -54,7 +54,7 @@ class AuthFlowTest extends TestCase
 
         // Component should show registered success state
         $testComponent->assertSet('isRegisteredSuccess', true);
-        $testComponent->assertSee('Pendaftaran Berhasil Dikirim!');
+        $testComponent->assertSee(__('Pendaftaran Berhasil Dikirim!'));
 
         // 2. User tries to login before admin approval -> must be rejected
         Auth::logout();

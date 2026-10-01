@@ -45,6 +45,17 @@ Di panel kanan layar:
 
 ---
 
+## 🔒 Arsitektur Sistem Notifikasi PATEN (1 Bot Pengirim & 1 IT Admin Penerima)
+
+Sistem notifikasi ini sudah dibuat **PATEN dan Terintegrasi Penuh** dengan sistem Laravel Corporate Ticketing:
+1. **1 Nomor Perusahaan (Bot Pengirim):** Nomor WhatsApp resmi yang ditautkan di gateway WAHA.
+2. **1 Nomor IT Admin (Penerima Paten):** Ditetapkan secara permanen ke `6285784694910` melalui konfigurasi `.env` (`ADMIN_WA_NUMBER=6285784694910`) dan `config/services.php`.
+3. **Pemberitahuan Otomatis (Tanpa Input Manual):**
+   - Setiap kali karyawan atau pengguna mengirim tiket baru melalui form website portal, Laravel service `WhatsAppNotificationService` akan otomatis mengeksekusi pengiriman notifikasi WhatsApp ke Admin IT (`6285784694910`).
+   - Tidak diperlukan input nomor tujuan secara manual dalam operasional harian.
+
+---
+
 ## 🌐 Integrasi API (HTTP POST)
 
 Jika Anda ingin mengirim pesan WhatsApp dari sistem lain atau curl, cukup panggil API lokal:
@@ -56,8 +67,9 @@ Jika Anda ingin mengirim pesan WhatsApp dari sistem lain atau curl, cukup panggi
 * **JSON Payload:**
   ```json
   {
-    "chatId": "6281234567890@c.us",
+    "chatId": "6285784694910@c.us",
     "text": "🚨 *TIKET BARU MASUK!*\nSegera cek di https://ticketing-kappa-jet.vercel.app",
     "session": "default"
   }
   ```
+

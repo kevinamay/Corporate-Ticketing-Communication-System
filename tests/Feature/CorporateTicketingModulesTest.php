@@ -131,7 +131,7 @@ class CorporateTicketingModulesTest extends TestCase
 
         $response = $this->get('/hcm-core/employees-master');
         $response->assertStatus(200);
-        $response->assertSee('Manajemen Data Karyawan');
+        $response->assertSee(__('Manajemen Data Karyawan'));
     }
 
     /**

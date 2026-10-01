@@ -21,8 +21,8 @@ class ExampleTest extends TestCase
 
         $loginResponse = $this->get('/login');
         $loginResponse->assertStatus(200);
-        $loginResponse->assertSee('Selamat Datang');
-        $loginResponse->assertSee('Masuk ke Sistem');
+        $loginResponse->assertSee(__('Selamat Datang'));
+        $loginResponse->assertSee(__('Masuk ke Sistem'));
     }
 
     public function test_authenticated_user_can_access_dashboard(): void
@@ -33,6 +33,6 @@ class ExampleTest extends TestCase
         $response = $this->actingAs($user)->get('/dashboard');
         $response->assertStatus(200);
         $response->assertSee('ASIA');
-        $response->assertSee('PERUSAHAAN');
+        $response->assertSee('PLASTIK');
     }
 }

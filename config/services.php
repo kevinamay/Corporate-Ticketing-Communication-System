@@ -59,4 +59,11 @@ return [
         'api_version' => env('META_WA_API_VERSION', 'v20.0'),
     ],
 
+    'waha' => [
+        'base_url' => env('WAHA_BASE_URL'),
+        'api_key' => env('WAHA_API_KEY', 'e8928adf08ec4cfd8b30dea033ee38bc'),
+        'session' => env('WAHA_SESSION', 'default'),
+        'admin_number' => env('ADMIN_WA_NUMBER', env('WA_ADMIN_NUMBER', '6285784694910')),
+    ],
+
 ];

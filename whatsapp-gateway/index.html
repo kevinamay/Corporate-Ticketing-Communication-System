@@ -452,8 +452,14 @@
                 </div>
 
                 <div class="input-group">
-                    <label>Nomor WhatsApp Tujuan (Karyawan / No Anda Sendiri):</label>
-                    <input type="text" id="target-phone" placeholder="Contoh: 081234567890 atau 6281234567890" value="">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <label>Nomor WhatsApp Admin IT Penerima (PATEN):</label>
+                        <span style="font-size: 11px; background: rgba(59,130,246,0.2); color: #60a5fa; padding: 2px 8px; border-radius: 12px; font-weight: 600;">🔒 Paten Terintegrasi Sistem</span>
+                    </div>
+                    <input type="text" id="target-phone" placeholder="Contoh: 085784694910 atau 6285784694910" value="6285784694910">
+                    <p style="font-size: 11px; color: var(--text-secondary); margin-top: 2px;">
+                        Nomor ini sudah dipatenkan di sistem Laravel (<code>ADMIN_WA_NUMBER=6285784694910</code>). Setiap tiket masuk otomatis dikirim ke sini.
+                    </p>
                 </div>
 
                 <div class="input-group">
@@ -491,27 +497,27 @@
 
         <!-- STEP BY STEP GUIDE -->
         <div class="guide-box">
-            <div class="guide-title">📋 Panduan Step-by-Step Cara Menjalankan &amp; Mencoba Program Chat</div>
+            <div class="guide-title">📋 Panduan Sistem Notifikasi WhatsApp Otomatis (Sistem Paten)</div>
             <div class="steps">
                 <div class="step-item">
                     <span class="step-num">1</span>
-                    <b>Hubungkan Nomor WhatsApp</b><br>
-                    Tautkan nomor WhatsApp Anda di panel kiri (bisa scan QR atau pakai Kode Tautan 8 digit). Cukup lakukan satu kali.
+                    <b>1 Nomor Perusahaan (Bot Pengirim)</b><br>
+                    Tautkan nomor WhatsApp resmi/bot perusahaan di panel kiri (cukup scan QR sekali). Nomor ini akan bertindak sebagai Bot Pengirim resmi.
                 </div>
                 <div class="step-item">
                     <span class="step-num">2</span>
-                    <b>Masukkan Nomor Tujuan</b><br>
-                    Di panel kanan, ketik nomor WhatsApp HP Anda sendiri (contoh: <code>0857...</code>) untuk menerima pesan uji coba.
+                    <b>1 Nomor Admin IT (Penerima Paten)</b><br>
+                    Nomor penerima telah dipatenkan ke <code>085784694910</code> di sistem Laravel. Tidak perlu input manual setiap saat.
                 </div>
                 <div class="step-item">
                     <span class="step-num">3</span>
-                    <b>Pilih Template &amp; Kirim</b><br>
-                    Pilih format notifikasi tiket atau ketik pesan Anda, lalu klik tombol <b>"KIRIM KE WHATSAPP SEKARANG"</b>.
+                    <b>Terhubung Otomatis ke Web Ticketing</b><br>
+                    Setiap kali karyawan submit tiket di website portal (Vercel / Lokal), sistem Laravel otomatis mengirim notifikasi ke Admin IT.
                 </div>
                 <div class="step-item">
                     <span class="step-num">4</span>
-                    <b>Cek HP Anda</b><br>
-                    Pesan notifikasi tiket resmi akan langsung masuk ke WhatsApp HP Anda dengan link menuju aplikasi Vercel: <code>https://ticketing-kappa-jet.vercel.app</code>.
+                    <b>Langsung Masuk ke HP Admin</b><br>
+                    Notifikasi real-time langsung berdering di WhatsApp HP Admin IT lengkap dengan detail tiket, nama pengirim, divisi, dan direct link tiket.
                 </div>
             </div>
         </div>

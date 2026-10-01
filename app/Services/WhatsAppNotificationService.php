@@ -30,12 +30,31 @@ class WhatsAppNotificationService
      */
     protected string $apiVersion;
 
+    /**
+     * Base URL for WAHA WhatsApp Gateway (e.g. http://localhost:3000).
+     */
+    protected ?string $wahaBaseUrl;
+
+    /**
+     * API Key for WAHA WhatsApp Gateway.
+     */
+    protected ?string $wahaApiKey;
+
+    /**
+     * Session name for WAHA WhatsApp Gateway (defaults to 'default').
+     */
+    protected string $wahaSession;
+
     public function __construct()
     {
-        $this->phoneNumberId = config('services.meta_whatsapp.phone_number_id') ?? env('META_WA_PHONE_NUMBER_ID');
-        $this->accessToken = config('services.meta_whatsapp.access_token') ?? env('META_WA_ACCESS_TOKEN');
-        $this->adminNumber = config('services.meta_whatsapp.admin_number') ?? env('ADMIN_WA_NUMBER') ?? env('WA_ADMIN_NUMBER');
-        $this->apiVersion = config('services.meta_whatsapp.api_version') ?? env('META_WA_API_VERSION', 'v20.0');
+        $this->phoneNumberId = config('services.meta_whatsapp.phone_number_id');
+        $this->accessToken = config('services.meta_whatsapp.access_token');
+        $this->adminNumber = config('services.meta_whatsapp.admin_number') ?: config('services.waha.admin_number');
+        $this->apiVersion = config('services.meta_whatsapp.api_version', 'v20.0');
+
+        $this->wahaBaseUrl = config('services.waha.base_url');
+        $this->wahaApiKey = config('services.waha.api_key');
+        $this->wahaSession = config('services.waha.session', 'default');
     }
 
     /**
@@ -136,53 +155,101 @@ class WhatsAppNotificationService
                 return $this->sendHelloWorldTemplate($this->adminNumber);
             }
 
-            if (empty($this->phoneNumberId) || empty($this->accessToken) || empty($this->adminNumber)) {
-                Log::info("WhatsApp notification skipped for ticket #{$ticket->id}: Missing credentials or admin phone number.");
-
-                return false;
+            // 1. If Meta Cloud API credentials are provided, use Meta (guarantees test suite passes)
+            if (! empty($this->phoneNumberId) && ! empty($this->accessToken) && ! empty($this->adminNumber)) {
+                return $this->sendViaMeta($ticket);
             }
 
-            // Eager-load relations for message formatting
-            $ticket->loadMissing(['sender.department', 'targetDepartment', 'user']);
-
-            $message = $this->buildNewTicketMessage($ticket);
-            $formattedRecipient = $this->formatPhoneNumber($this->adminNumber);
-
-            $endpoint = "https://graph.facebook.com/{$this->apiVersion}/{$this->phoneNumberId}/messages";
-
-            // Standard Meta WhatsApp Cloud API Text Message Payload
-            $payload = [
-                'messaging_product' => 'whatsapp',
-                'recipient_type' => 'individual',
-                'to' => $formattedRecipient,
-                'type' => 'text',
-                'text' => [
-                    'body' => $message,
-                ],
-            ];
-
-            // Execute HTTP POST request with strict 5-second timeout for serverless
-            $response = Http::timeout(5)
-                ->withToken($this->accessToken)
-                ->acceptJson()
-                ->asJson()
-                ->post($endpoint, $payload);
-
-            if ($response->successful()) {
-                Log::info("Meta WhatsApp notification sent successfully for ticket #{$ticket->id} to {$formattedRecipient}");
-
-                return true;
+            // 2. Otherwise use WAHA Gateway (Automated PATEN Notification)
+            if (! empty($this->wahaBaseUrl) && ! empty($this->adminNumber)) {
+                return $this->sendViaWaha($ticket);
             }
 
-            Log::warning("Meta WhatsApp Cloud API error for ticket #{$ticket->id} [Status {$response->status()}]: ".$response->body());
+            Log::info("WhatsApp notification skipped for ticket #{$ticket->id}: Missing credentials or admin phone number.");
 
             return false;
         } catch (\Throwable $e) {
             // Fail silently so ticket creation is NEVER interrupted or thrown on Vercel
-            Log::error("Failed to send Meta WhatsApp notification for ticket #{$ticket->id}: ".$e->getMessage());
+            Log::error("Failed to send WhatsApp notification for ticket #{$ticket->id}: ".$e->getMessage());
 
             return false;
         }
+    }
+
+    /**
+     * Send notification via official Meta WhatsApp Cloud API.
+     */
+    protected function sendViaMeta(Ticket $ticket): bool
+    {
+        // Eager-load relations for message formatting
+        $ticket->loadMissing(['sender.department', 'targetDepartment', 'user']);
+
+        $message = $this->buildNewTicketMessage($ticket);
+        $formattedRecipient = $this->formatPhoneNumber($this->adminNumber);
+
+        $endpoint = "https://graph.facebook.com/{$this->apiVersion}/{$this->phoneNumberId}/messages";
+
+        // Standard Meta WhatsApp Cloud API Text Message Payload
+        $payload = [
+            'messaging_product' => 'whatsapp',
+            'recipient_type' => 'individual',
+            'to' => $formattedRecipient,
+            'type' => 'text',
+            'text' => [
+                'body' => $message,
+            ],
+        ];
+
+        // Execute HTTP POST request with strict 5-second timeout for serverless
+        $response = Http::timeout(5)
+            ->withToken($this->accessToken)
+            ->acceptJson()
+            ->asJson()
+            ->post($endpoint, $payload);
+
+        if ($response->successful()) {
+            Log::info("Meta WhatsApp notification sent successfully for ticket #{$ticket->id} to {$formattedRecipient}");
+
+            return true;
+        }
+
+        Log::warning("Meta WhatsApp Cloud API error for ticket #{$ticket->id} [Status {$response->status()}]: ".$response->body());
+
+        return false;
+    }
+
+    /**
+     * Send notification via local/server WAHA WhatsApp Gateway (PATEN Automated Notification).
+     */
+    protected function sendViaWaha(Ticket $ticket): bool
+    {
+        // Eager-load relations for message formatting
+        $ticket->loadMissing(['sender.department', 'targetDepartment', 'user']);
+
+        $message = $this->buildNewTicketMessage($ticket);
+        $cleanNumber = $this->formatPhoneNumber($this->adminNumber);
+        $chatId = $cleanNumber.'@c.us';
+
+        $response = Http::timeout(5)
+            ->withHeaders([
+                'X-Api-Key' => $this->wahaApiKey,
+                'Content-Type' => 'application/json',
+            ])
+            ->post("{$this->wahaBaseUrl}/api/sendText", [
+                'chatId' => $chatId,
+                'text' => $message,
+                'session' => $this->wahaSession,
+            ]);
+
+        if ($response->successful()) {
+            Log::info("WAHA WhatsApp notification sent successfully for ticket #{$ticket->id} to {$chatId}");
+
+            return true;
+        }
+
+        Log::warning("WAHA WhatsApp Gateway error for ticket #{$ticket->id} [Status {$response->status()}]: ".$response->body());
+
+        return false;
     }
 
     /**

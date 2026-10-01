@@ -147,6 +147,8 @@ class WhatsAppNotificationTest extends TestCase
         Config::set('services.meta_whatsapp.phone_number_id', null);
         Config::set('services.meta_whatsapp.access_token', null);
         Config::set('services.meta_whatsapp.admin_number', null);
+        Config::set('services.waha.base_url', null);
+        Config::set('services.waha.admin_number', null);
 
         Http::fake();
 
@@ -227,6 +229,36 @@ class WhatsAppNotificationTest extends TestCase
                 && $request['type'] === 'template'
                 && $request['template']['name'] === 'hello_world'
                 && $request['template']['language']['code'] === 'en_US';
+        });
+    }
+
+    public function test_notification_sent_successfully_via_waha_gateway(): void
+    {
+        Config::set('services.meta_whatsapp.phone_number_id', null);
+        Config::set('services.meta_whatsapp.access_token', null);
+        Config::set('services.waha.base_url', 'http://localhost:3000');
+        Config::set('services.waha.api_key', 'e8928adf08ec4cfd8b30dea033ee38bc');
+        Config::set('services.waha.session', 'default');
+        Config::set('services.waha.admin_number', '6285784694910');
+
+        Http::fake([
+            'http://localhost:3000/api/sendText' => Http::response([
+                'id' => 'true_6285784694910@c.us_3EB012345678',
+                'timestamp' => 1727780000,
+            ], 200),
+        ]);
+
+        $service = new WhatsAppNotificationService;
+        $result = $service->sendNewTicketNotification($this->ticket);
+
+        $this->assertTrue($result);
+
+        Http::assertSent(function ($request) {
+            return $request->url() === 'http://localhost:3000/api/sendText'
+                && $request->hasHeader('X-Api-Key', 'e8928adf08ec4cfd8b30dea033ee38bc')
+                && $request['chatId'] === '6285784694910@c.us'
+                && str_contains($request['text'], '🚨 *TIKET BARU MASUK!* 🚨')
+                && str_contains($request['text'], 'Komputer Mati Mendadak');
         });
     }
 }
