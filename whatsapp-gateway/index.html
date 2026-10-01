@@ -139,8 +139,8 @@
             background: transparent;
             border: none;
             color: var(--text-secondary);
-            padding: 8px 12px;
-            font-size: 12px;
+            padding: 10px 12px;
+            font-size: 13px;
             font-weight: 600;
             border-radius: 8px;
             cursor: pointer;
@@ -158,14 +158,43 @@
             background: white;
             padding: 12px;
             border-radius: 12px;
-            width: fit-content;
+            width: 244px;
+            height: 244px;
             margin: 12px auto;
             box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
         }
         .qr-wrapper img {
             width: 220px;
             height: 220px;
             display: block;
+        }
+        .qr-loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            color: #1f2c34;
+            font-size: 13px;
+            font-weight: 600;
+            text-align: center;
+            padding: 10px;
+        }
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border: 4px solid #e2e8f0;
+            border-top: 4px solid var(--wa-teal);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         /* Pairing Code View */
@@ -206,11 +235,12 @@
         }
         .code-display {
             font-family: monospace;
-            font-size: 28px;
+            font-size: 32px;
             color: var(--wa-green);
             font-weight: 800;
-            letter-spacing: 5px;
-            margin: 6px 0;
+            letter-spacing: 6px;
+            margin: 8px 0;
+            user-select: all;
         }
 
         /* Buttons */
@@ -234,8 +264,12 @@
         .btn-restart {
             background: #d97706;
             color: white;
-            padding: 8px 14px;
+            padding: 6px 12px;
             font-size: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            border: none;
+            font-weight: 600;
         }
         .btn-restart:hover { background: #b45309; }
 
@@ -357,38 +391,43 @@
             <div class="card">
                 <div class="card-header">
                     <div class="card-title">📱 1. Koneksi WhatsApp</div>
-                    <button class="btn btn-restart" id="btn-refresh" onclick="restartSession()">🔄 Buat Sesi Baru</button>
+                    <button class="btn-restart" id="btn-refresh" onclick="forceCleanReset()">🔄 Generate QR Baru</button>
                 </div>
 
                 <!-- UNPAIRED STATE (SCAN / CODE) -->
                 <div id="unpaired-view">
                     <div class="tabs">
-                        <button class="tab-btn active" onclick="switchTab('qr')">Metode 1: Scan QR</button>
-                        <button class="tab-btn" onclick="switchTab('code')">Metode 2: Kode Tautan (No Kamera)</button>
+                        <button class="tab-btn active" id="tab-btn-qr" onclick="switchTab('qr')">Metode 1: Scan QR</button>
+                        <button class="tab-btn" id="tab-btn-code" onclick="switchTab('code')">Metode 2: Kode Tautan (No Kamera)</button>
                     </div>
 
                     <!-- TAB 1: QR CODE -->
                     <div id="tab-qr" class="tab-pane active">
                         <div class="qr-wrapper">
-                            <img id="qr-image" src="" alt="Memuat QR Code...">
+                            <div class="qr-loading" id="qr-loading-box">
+                                <div class="spinner"></div>
+                                <span>Membuat QR Code Baru...</span>
+                            </div>
+                            <img id="qr-image" src="" alt="QR Code" style="display: none;" onload="onQrLoaded()" onerror="onQrError()">
                         </div>
                         <p style="font-size: 11px; color: var(--text-secondary); text-align: center;">
-                            Buka WhatsApp di HP &gt; <b>Perangkat tertaut</b> &gt; <b>Tautkan perangkat</b> &gt; Arahkan kamera ke QR di atas.
+                            Buka WhatsApp di HP &gt; <b>Perangkat tertaut</b> &gt; <b>Tautkan perangkat</b> &gt; Arahkan kamera ke QR di atas.<br>
+                            <span style="color: #60a5fa; cursor: pointer;" onclick="forceCleanReset()">Klik di sini jika ingin refresh QR</span>
                         </p>
                     </div>
 
                     <!-- TAB 2: PAIRING CODE -->
                     <div id="tab-code" class="tab-pane">
                         <div class="input-group">
-                            <label>Nomor WhatsApp HP Anda (Format 62xxx atau 08xxx):</label>
+                            <label>Nomor WhatsApp HP Anda (Format 08xxx atau 62xxx):</label>
                             <input type="text" id="phone-pairing" placeholder="Contoh: 08123456789 atau 6281234567890">
                             <button class="btn" id="btn-get-code" onclick="requestPairingCode()" style="margin-top: 6px;">Dapatkan Kode Pairing (8 Digit)</button>
                         </div>
                         <div class="code-box" id="pairing-code-box">
-                            <div style="font-size: 11px; color: var(--text-secondary);">MASUKKAN KODE INI DI WHATSAPP HP:</div>
+                            <div style="font-size: 11px; color: var(--text-secondary);">MASUKKAN KODE INI DI WHATSAPP HP ANDA:</div>
                             <div class="code-display" id="pairing-code-text">----</div>
-                            <div style="font-size: 11px; color: #cbd5e1; margin-top: 4px;">
-                                HP &gt; <b>Perangkat tertaut</b> &gt; <b>Tautkan perangkat</b> &gt; Ketuk tulisan biru <b>"Tautkan dengan nomor telepon saja"</b> di bawah scanner kamera.
+                            <div style="font-size: 11px; color: #cbd5e1; margin-top: 6px; line-height: 1.5;">
+                                Di HP: Buka WhatsApp &gt; <b>Perangkat tertaut</b> &gt; <b>Tautkan perangkat</b> &gt; Ketuk tulisan biru <b>"Tautkan dengan nomor telepon saja"</b> di bawah scanner kamera.
                             </div>
                         </div>
                     </div>
@@ -398,11 +437,11 @@
                 <div id="paired-view" class="connected-box">
                     <div class="connected-icon">&#10004;</div>
                     <h3 style="color: var(--wa-green); margin-bottom: 4px;">WhatsApp Terhubung!</h3>
-                    <p style="font-size: 12px; color: var(--text-secondary);" id="connected-account-info">Nomor: +62xxx</p>
+                    <p style="font-size: 13px; color: var(--text-secondary);" id="connected-account-info">Nomor: +62xxx</p>
                     <p style="font-size: 12px; color: #cbd5e1; margin-top: 10px;">
                         Gateway siap mengirim notifikasi tiket secara real-time ke nomor karyawan atau staf IT.
                     </p>
-                    <button class="btn btn-restart" onclick="restartSession()" style="margin-top: 16px;">Ganti Nomor / Putuskan Koneksi</button>
+                    <button class="btn-restart" onclick="forceCleanReset()" style="margin-top: 16px;">Ganti Nomor / Putuskan Koneksi</button>
                 </div>
             </div>
 
@@ -437,7 +476,7 @@
                     <div class="preview-box">
                         <div class="chat-bubble">
                             <span id="preview-content">...</span>
-                            <div class="chat-time" id="preview-time">11:15 &#10003;&#10003;</div>
+                            <div class="chat-time" id="preview-time">11:22 &#10003;&#10003;</div>
                         </div>
                     </div>
                 </div>
@@ -481,6 +520,7 @@
     <script>
         const apiKey = 'e8928adf08ec4cfd8b30dea033ee38bc';
         let isConnected = false;
+        let isResetting = false;
 
         const templates = {
             new_ticket: `🚨 *TIKET BARU MASUK!* 🚨\n━━━━━━━━━━━━━━━━━━━━\n👤 *Pengirim:* Budi Santoso\n🏢 *Divisi:* Human Resources\n⚡ *Prioritas:* HIGH\n📝 *Masalah:* Komputer Mati Mendadak - CPU mati saat proses payroll.\n🕒 *Waktu:* ${new Date().toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'})}, ${new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'})} WIB\n━━━━━━━━━━━━━━━━━━━━\nSegera proses tiket ini dengan klik link berikut:\n👉 https://ticketing-kappa-jet.vercel.app`,
@@ -492,10 +532,11 @@
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
             if (mode === 'qr') {
-                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+                document.getElementById('tab-btn-qr').classList.add('active');
                 document.getElementById('tab-qr').classList.add('active');
+                loadQrCode();
             } else {
-                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+                document.getElementById('tab-btn-code').classList.add('active');
                 document.getElementById('tab-code').classList.add('active');
             }
         }
@@ -513,20 +554,56 @@
             document.getElementById('preview-time').innerHTML = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) + ' &#10003;&#10003;';
         }
 
-        async function ensureCleanScanState() {
+        function onQrLoaded() {
+            document.getElementById('qr-loading-box').style.display = 'none';
+            document.getElementById('qr-image').style.display = 'block';
+        }
+
+        function onQrError() {
+            document.getElementById('qr-loading-box').style.display = 'flex';
+            document.getElementById('qr-image').style.display = 'none';
+        }
+
+        async function loadQrCode() {
+            if (isConnected || isResetting) return;
             try {
-                const statusRes = await fetch('http://localhost:3000/api/sessions/default', {
+                const qrRes = await fetch('http://localhost:3000/api/default/auth/qr?t=' + Date.now(), {
                     headers: { 'X-Api-Key': apiKey }
                 });
-                if (statusRes.ok) {
-                    const session = await statusRes.json();
-                    if (session.status === 'SCAN_QR_CODE' && !session.me) {
-                        return true;
-                    }
+                if (qrRes.ok) {
+                    const blob = await qrRes.blob();
+                    document.getElementById('qr-image').src = URL.createObjectURL(blob);
+                } else if (qrRes.status === 422) {
+                    // Session expired, auto-heal
+                    autoHealSession();
                 }
             } catch (e) {}
+        }
 
-            document.getElementById('status-text').innerText = 'Menyiapkan sesi gateway baru...';
+        async function autoHealSession() {
+            if (isResetting) return;
+            isResetting = true;
+            document.getElementById('status-text').innerText = 'Memperbarui QR Code baru...';
+            document.getElementById('qr-loading-box').style.display = 'flex';
+            document.getElementById('qr-image').style.display = 'none';
+            await forceCleanResetInternal();
+            isResetting = false;
+            loadQrCode();
+        }
+
+        async function forceCleanReset() {
+            if (isResetting) return;
+            isResetting = true;
+            document.getElementById('status-text').innerText = 'Mereset sesi gateway...';
+            document.getElementById('qr-loading-box').style.display = 'flex';
+            document.getElementById('qr-image').style.display = 'none';
+            await forceCleanResetInternal();
+            isResetting = false;
+            await updateStatus();
+            loadQrCode();
+        }
+
+        async function forceCleanResetInternal() {
             try {
                 await fetch('http://localhost:3000/api/sessions/default', {
                     method: 'DELETE',
@@ -562,24 +639,23 @@
         }
 
         async function updateStatus() {
+            if (isResetting) return;
             try {
                 const res = await fetch('http://localhost:3000/api/sessions/default', {
                     headers: { 'X-Api-Key': apiKey }
                 });
                 if (!res.ok) {
-                    showOffline('Gateway Belum Siap (Mempersiapkan Sesi...)');
+                    showOffline('Gateway Belum Siap (Restarting...)');
                     return;
                 }
                 const data = await res.json();
                 const dot = document.getElementById('status-dot');
                 const text = document.getElementById('status-text');
-                const btnRefresh = document.getElementById('btn-refresh');
 
                 if (data.status === 'WORKING') {
                     isConnected = true;
                     dot.className = 'dot online';
                     text.innerText = 'Online & Terhubung';
-                    btnRefresh.style.display = 'none';
 
                     document.getElementById('unpaired-view').style.display = 'none';
                     document.getElementById('paired-view').style.display = 'block';
@@ -598,23 +674,12 @@
                 if (data.status === 'SCAN_QR_CODE') {
                     dot.className = 'dot pending';
                     text.innerText = 'Menunggu Scan / Kode Pairing...';
-                    btnRefresh.style.display = 'none';
-
-                    const qrRes = await fetch('http://localhost:3000/api/default/auth/qr', {
-                        headers: { 'X-Api-Key': apiKey }
-                    });
-                    if (qrRes.ok) {
-                        const blob = await qrRes.blob();
-                        document.getElementById('qr-image').src = URL.createObjectURL(blob);
-                    }
+                    loadQrCode();
                 } else if (data.status === 'STARTING') {
                     dot.className = 'dot pending';
                     text.innerText = 'Menyiapkan Mesin Gateway...';
-                    btnRefresh.style.display = 'none';
                 } else if (data.status === 'FAILED' || data.status === 'STOPPED') {
-                    dot.className = 'dot';
-                    text.innerText = 'Sesi Siap Direset (Klik tombol di atas)';
-                    btnRefresh.style.display = 'inline-flex';
+                    autoHealSession();
                 }
             } catch (err) {
                 showOffline('Gateway Offline (Pastikan Docker waha aktif)');
@@ -624,13 +689,6 @@
         function showOffline(msg) {
             document.getElementById('status-dot').className = 'dot';
             document.getElementById('status-text').innerText = msg;
-            document.getElementById('btn-refresh').style.display = 'inline-flex';
-        }
-
-        async function restartSession() {
-            document.getElementById('status-text').innerText = 'Mereset sesi gateway...';
-            await ensureCleanScanState();
-            await updateStatus();
         }
 
         async function requestPairingCode() {
@@ -651,8 +709,7 @@
             document.getElementById('status-text').innerText = 'Memvalidasi sesi gateway...';
 
             try {
-                // Ensure session is cleanly in SCAN_QR_CODE state
-                await ensureCleanScanState();
+                await forceCleanResetInternal();
 
                 document.getElementById('status-text').innerText = 'Meminta kode dari server WhatsApp...';
                 const res = await fetch('http://localhost:3000/api/default/auth/request-code', {
@@ -744,7 +801,7 @@
         // Initialize
         applyTemplate();
         updateStatus();
-        setInterval(updateStatus, 3500);
+        setInterval(updateStatus, 3000);
     </script>
 </body>
 </html>
