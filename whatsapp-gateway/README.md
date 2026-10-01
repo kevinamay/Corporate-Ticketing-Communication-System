@@ -1,115 +1,63 @@
-# WhatsApp Notification Gateway (WAHA) untuk Corporate Ticketing System
+# WhatsApp Notification & Chat Gateway - PT. Asia Plastik
 
-Folder ini berisi seluruh komponen, konfigurasi Docker, dan helper service untuk mengintegrasikan notifikasi WhatsApp otomatis ke dalam sistem **Corporate Ticketing Communication System** tanpa mengganggu arsitektur program yang sudah berjalan.
-
----
-
-## 📁 Struktur Modul
-
-* **`docker-compose.yml`** : Konfigurasi Docker Compose untuk menjalankan WAHA container di port 3000 dengan persistent session storage.
-* **`start-gateway.bat`** : Skrip 1-klik untuk menyalakan container WAHA di lingkungan Windows.
-* **`scan_wa.html`** : Halaman pemindai QR Code interaktif dengan fitur auto-refresh real-time agar QR tidak kedaluwarsa saat di-scan.
-* **`WhatsAppService.php`** : Service class Laravel siap pakai (*plug-and-play*) untuk mengirim notifikasi tiket baru dan update status tiket ke WhatsApp karyawan atau grup IT.
+Modul ini adalah sistem mandiri (*standalone module*) untuk mengirimkan pesan WhatsApp dan notifikasi tiket otomatis langsung ke HP karyawan, staf, atau IT Support tanpa mengganggu atau merusak aplikasi web Ticketing yang sudah dideploy di Vercel (`https://ticketing-kappa-jet.vercel.app`).
 
 ---
 
-## 🚀 Cara Menjalankan WhatsApp Gateway
+## 📁 Isi File Modul `whatsapp-gateway/`
 
-### 1. Jalankan Container WAHA
-Pastikan Docker Desktop sudah menyala di laptop / server Anda, lalu jalankan perintah berikut di PowerShell atau Command Prompt:
-```bash
-docker run -d --name waha -p 3000:3000 -v waha_sessions:/app/.sessions --restart unless-stopped devlikeapro/waha
-```
-*Atau cukup klik dua kali file `start-gateway.bat`.*
-
-### 2. Tautkan WhatsApp (Scan QR Code)
-1. Buka file **`scan_wa.html`** langsung di browser (klik dua kali filenya).
-2. Di HP Anda, buka **WhatsApp** > **Perangkat Tertaut (Linked Devices)** > **Tautkan Perangkat**.
-3. Arahkan kamera HP ke QR Code yang tampil di browser.
-4. Begitu terhubung, tampilan halaman otomatis berubah menjadi **"WhatsApp Terhubung!"**.
+| File | Fungsi |
+| :--- | :--- |
+| **`index.html`** / **`WhatsApp_Chat_Gateway.html`** | **Dashboard & Tester Interaktif**: Layar untuk menghubungkan WhatsApp (QR / Pairing Code) dan langsung mencoba kirim notifikasi tiket ke HP secara real-time. |
+| **`start-gateway.bat`** | Skrip 1-klik untuk menyalakan container WhatsApp Gateway (Docker WAHA). |
+| **`docker-compose.yml`** | Konfigurasi Docker Compose resmi dengan mesin `NOWEB` yang stabil dan hemat memori. |
+| **`WhatsAppService.php`** | Class helper siap pakai untuk pengiriman pesan dari aplikasi PHP / Laravel. |
 
 ---
 
-## 🛠️ Konfigurasi Laravel (`.env`)
+## 🚀 Panduan Step-by-Step Cara Menjalankan & Mencoba Program
 
-Tambahkan variabel berikut ke dalam file `.env` proyek Laravel Anda:
+### Langkah 1: Pastikan Docker Desktop Menyala
+Pastikan Docker Desktop di Windows Anda sudah berjalan (*Engine running* warna hijau).
 
-```env
-WAHA_BASE_URL=http://localhost:3000
-WAHA_API_KEY=e8928adf08ec4cfd8b30dea033ee38bc
-WAHA_SESSION=default
-WHATSAPP_IT_ADMIN_NUMBER=081234567890
-```
+### Langkah 2: Nyalakan WhatsApp Gateway
+Klik dua kali file **`start-gateway.bat`** di dalam folder `whatsapp-gateway/` (atau container `waha` sudah otomatis menyala di port `3000`).
 
----
+### Langkah 3: Buka Layar WhatsApp Gateway
+Klik dua kali file **`WhatsApp_Chat_Gateway.html`** di Desktop Anda (atau buka `whatsapp-gateway/index.html` di browser).
 
-## 💻 Cara Integrasi ke Controller Laravel
+### Langkah 4: Hubungkan Nomor WhatsApp (Hanya 1 Kali)
+Di panel kiri layar:
+* **Metode Rekomendasi (Kode Tautan 8 Digit - Bebas Masalah Kamera):**
+  1. Klik tab **"Metode 2: Kode Tautan"**.
+  2. Ketik nomor WhatsApp Anda (awalan `62`, contoh: `6281234567890`) lalu klik **Dapatkan Kode Pairing**.
+  3. Di HP Anda, buka WhatsApp > **Perangkat tertaut** > **Tautkan perangkat** > klik tautan biru **"Tautkan dengan nomor telepon saja"**.
+  4. Masukkan kode 8 digit yang muncul di layar laptop. WhatsApp langsung terhubung!
+* **Metode Scan QR:**
+  Buka WhatsApp di HP > **Perangkat tertaut** > **Tautkan perangkat** > Arahkan kamera ke QR Code di layar.
 
-Pindahkan atau panggil `WhatsAppService.php` pada folder `app/Services/` di aplikasi Laravel.
-
-### Contoh 1: Notifikasi Saat Karyawan Membuat Tiket Baru
-Tambahkan pemanggilan service ini di fungsi `store` pada `TicketController.php`:
-
-```php
-use App\Services\WhatsAppService;
-
-public function store(Request $request, WhatsAppService $wa)
-{
-    // 1. Simpan tiket seperti biasa (logic asli tetap aman)
-    $ticket = Ticket::create([
-        'title'       => $request->title,
-        'category'    => $request->category,
-        'priority'    => $request->priority,
-        'description' => $request->description,
-        'user_id'     => auth()->id(),
-    ]);
-
-    // 2. Kirim notifikasi WA ke Tim IT / Admin (tanpa menghentikan proses jika WA offline)
-    try {
-        $adminPhone = env('WHATSAPP_IT_ADMIN_NUMBER', '081234567890');
-        $wa->sendTicketCreatedNotification([
-            'ticket_id'     => $ticket->id,
-            'title'         => $ticket->title,
-            'category'      => $ticket->category,
-            'priority'      => $ticket->priority,
-            'reporter_name' => auth()->user()->name,
-            'description'   => $ticket->description,
-        ], $adminPhone);
-    } catch (\Exception $e) {
-        // Log error jika ada kendala jaringan tanpa menggagalkan pembuatan tiket
-        \Log::error('WA Notification Error: ' . $e->getMessage());
-    }
-
-    return redirect()->route('tickets.index')->with('success', 'Tiket berhasil dibuat dan notifikasi WA terkirim ke Tim IT!');
-}
-```
-
-### Contoh 2: Notifikasi Saat Status Tiket Diperbarui oleh Teknisi IT
-```php
-public function updateStatus(Request $request, $id, WhatsAppService $wa)
-{
-    $ticket = Ticket::findOrFail($id);
-    $ticket->status = $request->status;
-    $ticket->save();
-
-    // Kirim update ke WA pelapor tiket
-    if ($ticket->user && $ticket->user->phone_number) {
-        $wa->sendTicketStatusUpdatedNotification(
-            ['id' => $ticket->id, 'title' => $ticket->title],
-            $ticket->user->phone_number,
-            $ticket->status,
-            $request->note ?? null
-        );
-    }
-
-    return back()->with('success', 'Status tiket diperbarui!');
-}
-```
+### Langkah 5: Uji Coba Kirim Chat & Notifikasi Tiket Langsung
+Di panel kanan layar:
+1. Masukkan nomor WhatsApp tujuan (misal nomor HP Anda sendiri: `08xxxxxxxxxx`).
+2. Pilih format pesan (contoh: *🔔 Notifikasi Tiket Baru* atau ketik pesan kustom).
+3. Klik tombol hijau **"🚀 KIRIM KE WHATSAPP SEKARANG"**.
+4. **Buka HP Anda**: Pesan notifikasi tiket resmi PT. Asia Plastik langsung masuk ke WhatsApp Anda dengan tautan langsung menuju web portal Vercel: `https://ticketing-kappa-jet.vercel.app`!
 
 ---
 
-## 🔑 Kredensial Default WAHA Dashboard
-* **Dashboard URL** : `http://localhost:3000/dashboard`
-* **Username** : `admin`
-* **Password** : `ea7ef3f15cce4d88ac7629c4d9f162e9`
-* **API Key** : `e8928adf08ec4cfd8b30dea033ee38bc`
+## 🌐 Integrasi API (HTTP POST)
+
+Jika Anda ingin mengirim pesan WhatsApp dari sistem lain atau curl, cukup panggil API lokal:
+
+* **Endpoint:** `POST http://localhost:3000/api/sendText`
+* **Headers:**
+  - `Content-Type: application/json`
+  - `X-Api-Key: e8928adf08ec4cfd8b30dea033ee38bc`
+* **JSON Payload:**
+  ```json
+  {
+    "chatId": "6281234567890@c.us",
+    "text": "🚨 *TIKET BARU MASUK!*\nSegera cek di https://ticketing-kappa-jet.vercel.app",
+    "session": "default"
+  }
+  ```

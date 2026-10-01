@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Gateway & Chat Tester - PT. Asia Plastik</title>
+    <style>
+        :root {
+            --bg-dark: #0c1317;
+            --card-bg: #1f2c34;
+            --card-inner: #111b21;
+            --wa-green: #25d366;
+            --wa-teal: #00a884;
+            --wa-blue: #3b82f6;
+            --border-color: #2a3942;
+            --text-primary: #e9edef;
+            --text-secondary: #8696a0;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 24px 16px;
+            display: flex;
+            justify-content: center;
+        }
+        .wrapper {
+            max-width: 960px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        /* Header */
+        .header {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .logo-box {
+            width: 44px;
+            height: 44px;
+            background: #2563eb;
+            color: white;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(37,99,235,0.3);
+        }
+        .brand-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #f1f2f4;
+        }
+        .brand-sub {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 600;
+            background: var(--card-inner);
+            border: 1px solid var(--border-color);
+        }
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #ef4444;
+        }
+        .dot.online { background: var(--wa-green); box-shadow: 0 0 10px var(--wa-green); }
+        .dot.pending { background: #f59e0b; box-shadow: 0 0 10px #f59e0b; }
+
+        /* Grid Layout */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.3fr;
+            gap: 20px;
+        }
+        @media (max-width: 820px) {
+            .main-grid { grid-template-columns: 1fr; }
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+        }
+        .card-title {
+            font-size: 16px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            background: var(--card-inner);
+            padding: 4px;
+            border-radius: 10px;
+            gap: 4px;
+        }
+        .tab-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            padding: 8px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tab-btn.active {
+            background: var(--wa-green);
+            color: #111b21;
+        }
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
+
+        /* QR View */
+        .qr-wrapper {
+            background: white;
+            padding: 12px;
+            border-radius: 12px;
+            width: fit-content;
+            margin: 12px auto;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+        }
+        .qr-wrapper img {
+            width: 220px;
+            height: 220px;
+            display: block;
+        }
+
+        /* Pairing Code View */
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-top: 10px;
+        }
+        label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+        input, select, textarea {
+            background: var(--card-inner);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px 14px;
+            color: var(--text-primary);
+            font-size: 14px;
+            outline: none;
+            font-family: inherit;
+            transition: border-color 0.2s;
+            width: 100%;
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--wa-green);
+        }
+        .code-box {
+            display: none;
+            background: var(--card-inner);
+            border: 2px dashed var(--wa-green);
+            border-radius: 10px;
+            padding: 14px;
+            text-align: center;
+            margin-top: 12px;
+        }
+        .code-display {
+            font-family: monospace;
+            font-size: 26px;
+            color: var(--wa-green);
+            font-weight: 800;
+            letter-spacing: 4px;
+            margin: 4px 0;
+        }
+
+        /* Buttons */
+        .btn {
+            background: var(--wa-teal);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 18px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn:hover { background: #029474; }
+        .btn:active { transform: scale(0.98); }
+        .btn-restart {
+            background: #d97706;
+            color: white;
+            padding: 8px 14px;
+            font-size: 12px;
+        }
+        .btn-restart:hover { background: #b45309; }
+
+        /* Connected View */
+        .connected-box {
+            display: none;
+            text-align: center;
+            padding: 24px 12px;
+        }
+        .connected-icon {
+            font-size: 48px;
+            color: var(--wa-green);
+            margin-bottom: 8px;
+        }
+
+        /* Chat Balloon Preview */
+        .preview-box {
+            background: #0b141a;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 14px;
+            position: relative;
+            background-image: radial-gradient(#1f2c34 1px, transparent 1px);
+            background-size: 16px 16px;
+        }
+        .chat-bubble {
+            background: #005c4b;
+            color: #e9edef;
+            padding: 10px 14px;
+            border-radius: 10px 0 10px 10px;
+            font-size: 13px;
+            line-height: 1.5;
+            white-space: pre-line;
+            max-width: 90%;
+            margin-left: auto;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+        }
+        .chat-time {
+            text-align: right;
+            font-size: 10px;
+            color: rgba(255,255,255,0.6);
+            margin-top: 4px;
+        }
+
+        /* Alert / Response */
+        .alert {
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            display: none;
+        }
+        .alert-success { background: rgba(37,211,102,0.15); color: #25d366; border: 1px solid #25d366; }
+        .alert-error { background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid #ef4444; }
+
+        /* Steps Guide */
+        .guide-box {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px 24px;
+        }
+        .guide-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #f1f2f4;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 14px;
+        }
+        .step-item {
+            background: var(--card-inner);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 14px;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+        .step-num {
+            display: inline-block;
+            width: 22px;
+            height: 22px;
+            background: var(--wa-teal);
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 22px;
+            font-weight: bold;
+            font-size: 11px;
+            margin-bottom: 6px;
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <!-- HEADER -->
+        <header class="header">
+            <div class="brand">
+                <div class="logo-box">AP</div>
+                <div>
+                    <div class="brand-title">WhatsApp Notification &amp; Chat Gateway</div>
+                    <div class="brand-sub">PT. Asia Plastik System Portal &bull; Ticketing Integration</div>
+                </div>
+            </div>
+            <div class="status-badge" id="status-container">
+                <div class="dot pending" id="status-dot"></div>
+                <span id="status-text">Memeriksa Gateway...</span>
+            </div>
+        </header>
+
+        <!-- MAIN GRID -->
+        <div class="main-grid">
+            <!-- LEFT PANEL: DEVICE PAIRING -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">📱 1. Koneksi WhatsApp</div>
+                    <button class="btn btn-restart" id="btn-refresh" onclick="restartSession()" style="display: none;">🔄 Buat Sesi Baru</button>
+                </div>
+
+                <!-- UNPAIRED STATE (SCAN / CODE) -->
+                <div id="unpaired-view">
+                    <div class="tabs">
+                        <button class="tab-btn active" onclick="switchTab('qr')">Metode 1: Scan QR</button>
+                        <button class="tab-btn" onclick="switchTab('code')">Metode 2: Kode Tautan (No Kamera)</button>
+                    </div>
+
+                    <!-- TAB 1: QR CODE -->
+                    <div id="tab-qr" class="tab-pane active">
+                        <div class="qr-wrapper">
+                            <img id="qr-image" src="" alt="Memuat QR Code...">
+                        </div>
+                        <p style="font-size: 11px; color: var(--text-secondary); text-align: center;">
+                            Buka WhatsApp di HP &gt; <b>Perangkat tertaut</b> &gt; <b>Tautkan perangkat</b> &gt; Arahkan kamera ke QR di atas.
+                        </p>
+                    </div>
+
+                    <!-- TAB 2: PAIRING CODE -->
+                    <div id="tab-code" class="tab-pane">
+                        <div class="input-group">
+                            <label>Nomor WhatsApp HP Anda (Format 62xxx):</label>
+                            <input type="text" id="phone-pairing" placeholder="Contoh: 6281234567890">
+                            <button class="btn" onclick="requestPairingCode()" style="margin-top: 6px;">Dapatkan Kode Pairing (8 Digit)</button>
+                        </div>
+                        <div class="code-box" id="pairing-code-box">
+                            <div style="font-size: 11px; color: var(--text-secondary);">MASUKKAN KODE INI DI WHATSAPP:</div>
+                            <div class="code-display" id="pairing-code-text">----</div>
+                            <div style="font-size: 11px; color: var(--text-secondary);">Buka WA &gt; Tautkan perangkat &gt; Tautkan dengan nomor telepon saja</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PAIRED STATE -->
+                <div id="paired-view" class="connected-box">
+                    <div class="connected-icon">&#10004;</div>
+                    <h3 style="color: var(--wa-green); margin-bottom: 4px;">WhatsApp Terhubung!</h3>
+                    <p style="font-size: 12px; color: var(--text-secondary);" id="connected-account-info">Nomor: +62xxx</p>
+                    <p style="font-size: 12px; color: #cbd5e1; margin-top: 10px;">
+                        Gateway siap mengirim notifikasi tiket secara real-time ke nomor karyawan atau pelanggan.
+                    </p>
+                    <button class="btn btn-restart" onclick="restartSession()" style="margin-top: 16px;">Ganti Nomor / Putuskan Koneksi</button>
+                </div>
+            </div>
+
+            <!-- RIGHT PANEL: LIVE CHAT & NOTIFICATION TESTER -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">💬 2. Uji Coba Kirim Notifikasi WhatsApp</div>
+                </div>
+
+                <div class="input-group">
+                    <label>Nomor WhatsApp Tujuan (Karyawan / No Anda Sendiri):</label>
+                    <input type="text" id="target-phone" placeholder="Contoh: 081234567890 atau 6281234567890" value="">
+                </div>
+
+                <div class="input-group">
+                    <label>Pilih Template Pesan Notifikasi:</label>
+                    <select id="template-select" onchange="applyTemplate()">
+                        <option value="new_ticket">🔔 Notifikasi Tiket Baru (IT Helpdesk)</option>
+                        <option value="status_update">📢 Update Status Tiket (Diproses / Selesai)</option>
+                        <option value="custom">✏️ Pesan Bebas (Kustom Chat)</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label>Isi Pesan WhatsApp yang Akan Dikirim:</label>
+                    <textarea id="message-text" rows="7" oninput="updatePreview()"></textarea>
+                </div>
+
+                <!-- PREVIEW -->
+                <div>
+                    <label style="margin-bottom: 6px; display: block;">Pratinjau Tampilan Pesan di WhatsApp:</label>
+                    <div class="preview-box">
+                        <div class="chat-bubble">
+                            <span id="preview-content">...</span>
+                            <div class="chat-time" id="preview-time">10:50 &#10003;&#10003;</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="send-alert" class="alert"></div>
+
+                <button class="btn" id="btn-send" onclick="sendWhatsAppMessage()" style="font-size: 15px; padding: 14px;">
+                    <span>🚀 KIRIM KE WHATSAPP SEKARANG</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- STEP BY STEP GUIDE -->
+        <div class="guide-box">
+            <div class="guide-title">📋 Panduan Step-by-Step Cara Menjalankan &amp; Mencoba Program Chat</div>
+            <div class="steps">
+                <div class="step-item">
+                    <span class="step-num">1</span>
+                    <b>Hubungkan Nomor WhatsApp</b><br>
+                    Tautkan nomor WhatsApp Anda di panel kiri (bisa scan QR atau pakai Kode Tautan 8 digit). Cukup lakukan satu kali.
+                </div>
+                <div class="step-item">
+                    <span class="step-num">2</span>
+                    <b>Masukkan Nomor Tujuan</b><br>
+                    Di panel kanan, ketik nomor WhatsApp HP Anda sendiri (contoh: <code>0857...</code>) untuk menerima pesan uji coba.
+                </div>
+                <div class="step-item">
+                    <span class="step-num">3</span>
+                    <b>Pilih Template &amp; Kirim</b><br>
+                    Pilih format notifikasi tiket atau ketik pesan Anda, lalu klik tombol <b>"KIRIM KE WHATSAPP SEKARANG"</b>.
+                </div>
+                <div class="step-item">
+                    <span class="step-num">4</span>
+                    <b>Cek HP Anda</b><br>
+                    Pesan notifikasi tiket resmi akan langsung masuk ke WhatsApp HP Anda dengan link menuju aplikasi Vercel: <code>https://ticketing-kappa-jet.vercel.app</code>.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const apiKey = 'e8928adf08ec4cfd8b30dea033ee38bc';
+        let isConnected = false;
+
+        const templates = {
+            new_ticket: `🚨 *TIKET BARU MASUK!* 🚨\n━━━━━━━━━━━━━━━━━━━━\n👤 *Pengirim:* Budi Santoso\n🏢 *Divisi:* Human Resources\n⚡ *Prioritas:* HIGH\n📝 *Masalah:* Komputer Mati Mendadak - CPU mati saat proses payroll.\n🕒 *Waktu:* ${new Date().toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'})}, ${new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'})} WIB\n━━━━━━━━━━━━━━━━━━━━\nSegera proses tiket ini dengan klik link berikut:\n👉 https://ticketing-kappa-jet.vercel.app`,
+            status_update: `📢 *UPDATE STATUS TIKET HELPDESK* 📢\n━━━━━━━━━━━━━━━━━━━━\n🆔 *Nomor Tiket:* #TK-102\n📝 *Judul:* Kendala Jaringan Lantai 2\n🔄 *Status Baru:* *SEDANG DITANGANI (IN PROGRESS)*\n💬 *Catatan IT:* Teknisi IT Support sedang melakukan pengecekan switch hub.\n━━━━━━━━━━━━━━━━━━━━\nPantau status tiket melalui portal kami:\n👉 https://ticketing-kappa-jet.vercel.app`,
+            custom: `Halo! Ini adalah pesan notifikasi otomatis dari sistem Helpdesk PT. Asia Plastik.`
+        };
+
+        function switchTab(mode) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+            if (mode === 'qr') {
+                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+                document.getElementById('tab-qr').classList.add('active');
+            } else {
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+                document.getElementById('tab-code').classList.add('active');
+            }
+        }
+
+        function applyTemplate() {
+            const selected = document.getElementById('template-select').value;
+            document.getElementById('message-text').value = templates[selected];
+            updatePreview();
+        }
+
+        function updatePreview() {
+            const text = document.getElementById('message-text').value;
+            document.getElementById('preview-content').innerText = text;
+            const now = new Date();
+            document.getElementById('preview-time').innerHTML = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) + ' &#10003;&#10003;';
+        }
+
+        async function updateStatus() {
+            try {
+                const res = await fetch('http://localhost:3000/api/sessions/default', {
+                    headers: { 'X-Api-Key': apiKey }
+                });
+                if (!res.ok) {
+                    showOffline('Gateway Tidak Merespon (404/Offline)');
+                    return;
+                }
+                const data = await res.json();
+                const dot = document.getElementById('status-dot');
+                const text = document.getElementById('status-text');
+                const btnRefresh = document.getElementById('btn-refresh');
+
+                if (data.status === 'WORKING') {
+                    isConnected = true;
+                    dot.className = 'dot online';
+                    text.innerText = 'Online & Terhubung';
+                    btnRefresh.style.display = 'none';
+
+                    document.getElementById('unpaired-view').style.display = 'none';
+                    document.getElementById('paired-view').style.display = 'block';
+
+                    if (data.me && data.me.id) {
+                        const cleanPhone = data.me.id.split('@')[0];
+                        document.getElementById('connected-account-info').innerText = 'Nomor WhatsApp Terhubung: +' + cleanPhone;
+                    }
+                    return;
+                }
+
+                isConnected = false;
+                document.getElementById('paired-view').style.display = 'none';
+                document.getElementById('unpaired-view').style.display = 'block';
+
+                if (data.status === 'SCAN_QR_CODE') {
+                    dot.className = 'dot pending';
+                    text.innerText = 'Menunggu Scan / Kode Pairing...';
+                    btnRefresh.style.display = 'none';
+
+                    const qrRes = await fetch('http://localhost:3000/api/default/auth/qr', {
+                        headers: { 'X-Api-Key': apiKey }
+                    });
+                    if (qrRes.ok) {
+                        const blob = await qrRes.blob();
+                        document.getElementById('qr-image').src = URL.createObjectURL(blob);
+                    }
+                } else if (data.status === 'STARTING') {
+                    dot.className = 'dot pending';
+                    text.innerText = 'Menyiapkan Mesin Gateway...';
+                    btnRefresh.style.display = 'none';
+                } else if (data.status === 'FAILED' || data.status === 'STOPPED') {
+                    dot.className = 'dot';
+                    text.innerText = 'QR Kedaluwarsa - Klik Buat Sesi Baru';
+                    btnRefresh.style.display = 'inline-flex';
+                }
+            } catch (err) {
+                showOffline('Gateway Offline (Pastikan Docker waha aktif)');
+            }
+        }
+
+        function showOffline(msg) {
+            document.getElementById('status-dot').className = 'dot';
+            document.getElementById('status-text').innerText = msg;
+            document.getElementById('btn-refresh').style.display = 'inline-flex';
+        }
+
+        async function restartSession() {
+            document.getElementById('status-text').innerText = 'Memulai ulang sesi gateway...';
+            try {
+                await fetch('http://localhost:3000/api/sessions/default/restart', {
+                    method: 'POST',
+                    headers: { 'X-Api-Key': apiKey }
+                });
+                setTimeout(updateStatus, 1500);
+            } catch (err) {
+                alert('Gagal restart: ' + err.message);
+            }
+        }
+
+        async function requestPairingCode() {
+            const phoneInput = document.getElementById('phone-pairing').value.trim();
+            if (!phoneInput) {
+                alert('Silakan masukkan nomor telepon terlebih dahulu (contoh: 6281234567890)');
+                return;
+            }
+
+            const cleanPhone = phoneInput.replace(/[^0-9]/g, '');
+            document.getElementById('status-text').innerText = 'Meminta kode tautan dari WhatsApp...';
+            
+            try {
+                const res = await fetch('http://localhost:3000/api/default/auth/request-code', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Api-Key': apiKey
+                    },
+                    body: JSON.stringify({ phoneNumber: cleanPhone })
+                });
+
+                if (!res.ok) {
+                    const errJson = await res.json();
+                    alert('Gagal mendapatkan kode: ' + (errJson.message || 'Coba periksa format nomor'));
+                    return;
+                }
+
+                const data = await res.json();
+                if (data.code) {
+                    document.getElementById('pairing-code-box').style.display = 'block';
+                    document.getElementById('pairing-code-text').innerText = data.code;
+                    document.getElementById('status-text').innerText = 'Kode siap! Masukkan di WhatsApp HP Anda.';
+                }
+            } catch (err) {
+                alert('Terjadi kesalahan saat memanggil API: ' + err.message);
+            }
+        }
+
+        async function sendWhatsAppMessage() {
+            const phone = document.getElementById('target-phone').value.trim();
+            const message = document.getElementById('message-text').value.trim();
+            const alertBox = document.getElementById('send-alert');
+            const btnSend = document.getElementById('btn-send');
+
+            if (!phone) {
+                showAlert('Harap isi Nomor WhatsApp Tujuan terlebih dahulu!', 'error');
+                return;
+            }
+            if (!message) {
+                showAlert('Pesan tidak boleh kosong!', 'error');
+                return;
+            }
+
+            // Format number to international JID (e.g. 08123... -> 628123...@c.us)
+            let cleanNumber = phone.replace(/[^0-9]/g, '');
+            if (cleanNumber.startsWith('0')) {
+                cleanNumber = '62' + cleanNumber.substring(1);
+            }
+            const chatId = cleanNumber + '@c.us';
+
+            btnSend.disabled = true;
+            btnSend.innerHTML = '<span>⏳ Mengirim ke WhatsApp...</span>';
+            alertBox.style.display = 'none';
+
+            try {
+                const res = await fetch('http://localhost:3000/api/sendText', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Api-Key': apiKey
+                    },
+                    body: JSON.stringify({
+                        chatId: chatId,
+                        text: message,
+                        session: 'default'
+                    })
+                });
+
+                const resData = await res.json();
+
+                if (res.ok) {
+                    showAlert(`✅ Pesan Berhasil Terkirim ke WhatsApp (+${cleanNumber})! Pesan sudah masuk ke HP tujuan.`, 'success');
+                } else {
+                    showAlert(`❌ Gagal Mengirim: ${resData.message || JSON.stringify(resData)}`, 'error');
+                }
+            } catch (err) {
+                showAlert(`❌ Terjadi Kesalahan: ${err.message}`, 'error');
+            } finally {
+                btnSend.disabled = false;
+                btnSend.innerHTML = '<span>🚀 KIRIM KE WHATSAPP SEKARANG</span>';
+            }
+        }
+
+        function showAlert(msg, type) {
+            const alertBox = document.getElementById('send-alert');
+            alertBox.innerText = msg;
+            alertBox.className = 'alert ' + (type === 'success' ? 'alert-success' : 'alert-error');
+            alertBox.style.display = 'block';
+        }
+
+        // Initialize
+        applyTemplate();
+        updateStatus();
+        setInterval(updateStatus, 3500);
+    </script>
+</body>
+</html>
