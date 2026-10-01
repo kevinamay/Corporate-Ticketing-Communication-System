@@ -289,13 +289,15 @@ class WhatsAppNotificationService
         // 5. Absolute URL to admin ticket detail
         $directUrl = route('dashboard', ['ticket' => $ticket->id], true);
 
-        return "🚨 *TIKET BARU MASUK!* 🚨\n"
-            ."👤 *Pengirim:* {$employeeName}\n"
-            ."🏢 *Divisi:* {$departmentName}\n"
-            ."📝 *Masalah:* {$issueText}\n"
-            ."🕒 *Waktu:* {$createdAt}\n\n"
+        return "*TIKET BARU MASUK*\n"
+            ."━━━━━━━━━━━━━━━━━━━━\n"
+            ."*Pengirim:* {$employeeName}\n"
+            ."*Divisi:* {$departmentName}\n"
+            ."*Masalah:* {$issueText}\n"
+            ."*Waktu:* {$createdAt}\n"
+            ."━━━━━━━━━━━━━━━━━━━━\n"
             ."Segera proses tiket ini dengan klik link berikut:\n"
-            ."👉 {$directUrl}";
+            ."{$directUrl}";
     }
 
     /**

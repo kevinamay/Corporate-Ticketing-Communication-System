@@ -532,9 +532,9 @@
         let isResetting = false;
 
         const templates = {
-            new_ticket: `🚨 *TIKET BARU MASUK!* 🚨\n━━━━━━━━━━━━━━━━━━━━\n👤 *Pengirim:* Budi Santoso\n🏢 *Divisi:* Human Resources\n⚡ *Prioritas:* HIGH\n📝 *Masalah:* Komputer Mati Mendadak - CPU mati saat proses payroll.\n🕒 *Waktu:* ${new Date().toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'})}, ${new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'})} WIB\n━━━━━━━━━━━━━━━━━━━━\nSegera proses tiket ini dengan klik link berikut:\n👉 https://ticketing-kappa-jet.vercel.app`,
-            status_update: `📢 *UPDATE STATUS TIKET HELPDESK* 📢\n━━━━━━━━━━━━━━━━━━━━\n🆔 *Nomor Tiket:* #TK-102\n📝 *Judul:* Kendala Jaringan Lantai 2\n🔄 *Status Baru:* *SEDANG DITANGANI (IN PROGRESS)*\n💬 *Catatan IT:* Teknisi IT Support sedang melakukan pengecekan switch hub.\n━━━━━━━━━━━━━━━━━━━━\nPantau status tiket melalui portal kami:\n👉 https://ticketing-kappa-jet.vercel.app`,
-            custom: `Halo! Ini adalah pesan notifikasi otomatis dari sistem Helpdesk PT. Asia Plastik.`
+            new_ticket: `*TIKET BARU MASUK*\n━━━━━━━━━━━━━━━━━━━━\n*Pengirim:* Budi Santoso\n*Divisi:* Human Resources\n*Prioritas:* HIGH\n*Masalah:* Komputer Mati Mendadak - CPU mati saat proses payroll.\n*Waktu:* ${new Date().toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'})}, ${new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'})} WIB\n━━━━━━━━━━━━━━━━━━━━\nSegera proses tiket ini dengan klik link berikut:\nhttps://ticketing-kappa-jet.vercel.app`,
+            status_update: `*UPDATE STATUS TIKET HELPDESK*\n━━━━━━━━━━━━━━━━━━━━\n*Nomor Tiket:* #TK-102\n*Judul:* Kendala Jaringan Lantai 2\n*Status Baru:* *SEDANG DITANGANI (IN PROGRESS)*\n*Catatan IT:* Teknisi IT Support sedang melakukan pengecekan switch hub.\n━━━━━━━━━━━━━━━━━━━━\nPantau status tiket melalui portal kami:\nhttps://ticketing-kappa-jet.vercel.app`,
+            custom: `Halo, ini adalah pesan notifikasi otomatis dari sistem Helpdesk PT. Asia Plastik.`
         };
 
         function switchTab(mode) {

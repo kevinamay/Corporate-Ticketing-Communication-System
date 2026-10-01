@@ -77,16 +77,16 @@ class WhatsAppService
         $reporter = $ticket['reporter_name'] ?? $ticket['user_name'] ?? 'Karyawan';
         $description = $ticket['description'] ?? '-';
 
-        $text = "🔔 *TIKET HELPDESK BARU TELAH MASUK*\n"
+        $text = "*TIKET HELPDESK BARU TELAH MASUK*\n"
               ."━━━━━━━━━━━━━━━━━━━━\n"
-              ."🆔 *Nomor Tiket :* #{$ticketId}\n"
-              ."👤 *Pelapor     :* {$reporter}\n"
-              ."📂 *Kategori    :* {$category}\n"
-              ."⚡ *Prioritas   :* {$priority}\n"
-              ."📝 *Judul       :* {$title}\n\n"
-              ."💬 *Deskripsi   :*\n{$description}\n"
+              ."*Nomor Tiket :* #{$ticketId}\n"
+              ."*Pelapor     :* {$reporter}\n"
+              ."*Kategori    :* {$category}\n"
+              ."*Prioritas   :* {$priority}\n"
+              ."*Judul       :* {$title}\n\n"
+              ."*Deskripsi   :*\n{$description}\n"
               ."━━━━━━━━━━━━━━━━━━━━\n"
-              .'⚠️ _Mohon Tim IT untuk segera menindaklanjuti tiket ini di sistem._';
+              .'_Mohon Tim IT untuk segera menindaklanjuti tiket ini di sistem._';
 
         return $this->sendMessage($targetPhone, $text);
     }
@@ -104,18 +104,18 @@ class WhatsAppService
         $ticketId = $ticket['ticket_id'] ?? $ticket['id'] ?? '-';
         $title = $ticket['title'] ?? $ticket['subject'] ?? 'Tiket';
 
-        $text = "📢 *UPDATE STATUS TIKET HELPDESK*\n"
+        $text = "*UPDATE STATUS TIKET HELPDESK*\n"
               ."━━━━━━━━━━━━━━━━━━━━\n"
-              ."🆔 *Nomor Tiket :* #{$ticketId}\n"
-              ."📝 *Judul       :* {$title}\n"
-              ."🔄 *Status Baru :* *{$newStatus}*\n";
+              ."*Nomor Tiket :* #{$ticketId}\n"
+              ."*Judul       :* {$title}\n"
+              ."*Status Baru :* *{$newStatus}*\n";
 
         if (! empty($note)) {
-            $text .= "💬 *Catatan IT   :* {$note}\n";
+            $text .= "*Catatan IT   :* {$note}\n";
         }
 
         $text .= "━━━━━━━━━━━━━━━━━━━━\n"
-              .'ℹ️ _Terima kasih atas laporan Anda. Pantau perkembangan tiket melalui aplikasi helpdesk._';
+              .'_Terima kasih atas laporan Anda. Pantau perkembangan tiket melalui aplikasi helpdesk._';
 
         return $this->sendMessage($reporterPhone, $text);
     }

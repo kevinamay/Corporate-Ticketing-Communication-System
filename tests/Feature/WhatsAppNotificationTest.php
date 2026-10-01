@@ -75,14 +75,14 @@ class WhatsAppNotificationTest extends TestCase
 
         $expectedUrl = route('dashboard', ['ticket' => $this->ticket->id], true);
 
-        $this->assertStringContainsString('🚨 *TIKET BARU MASUK!* 🚨', $message);
-        $this->assertStringContainsString('👤 *Pengirim:* Budi Santoso', $message);
-        $this->assertStringContainsString('🏢 *Divisi:* Human Resources', $message);
-        $this->assertStringContainsString('📝 *Masalah:* Komputer Mati Mendadak', $message);
-        $this->assertStringContainsString('🕒 *Waktu:*', $message);
+        $this->assertStringContainsString('*TIKET BARU MASUK*', $message);
+        $this->assertStringContainsString('*Pengirim:* Budi Santoso', $message);
+        $this->assertStringContainsString('*Divisi:* Human Resources', $message);
+        $this->assertStringContainsString('*Masalah:* Komputer Mati Mendadak', $message);
+        $this->assertStringContainsString('*Waktu:*', $message);
         $this->assertStringContainsString('WIB', $message);
         $this->assertStringContainsString('Segera proses tiket ini dengan klik link berikut:', $message);
-        $this->assertStringContainsString('👉 '.$expectedUrl, $message);
+        $this->assertStringContainsString($expectedUrl, $message);
     }
 
     public function test_notification_sent_successfully_via_meta_cloud_api(): void
@@ -114,7 +114,7 @@ class WhatsAppNotificationTest extends TestCase
                 && $request['recipient_type'] === 'individual'
                 && $request['to'] === '6281234567890'
                 && $request['type'] === 'text'
-                && str_contains($request['text']['body'], '🚨 *TIKET BARU MASUK!* 🚨')
+                && str_contains($request['text']['body'], '*TIKET BARU MASUK*')
                 && str_contains($request['text']['body'], 'Komputer Mati Mendadak');
         });
     }
@@ -257,7 +257,7 @@ class WhatsAppNotificationTest extends TestCase
             return $request->url() === 'http://localhost:3000/api/sendText'
                 && $request->hasHeader('X-Api-Key', 'e8928adf08ec4cfd8b30dea033ee38bc')
                 && $request['chatId'] === '6285784694910@c.us'
-                && str_contains($request['text'], '🚨 *TIKET BARU MASUK!* 🚨')
+                && str_contains($request['text'], '*TIKET BARU MASUK*')
                 && str_contains($request['text'], 'Komputer Mati Mendadak');
         });
     }

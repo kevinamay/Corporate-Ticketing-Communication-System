@@ -952,7 +952,7 @@
             const dateStr = now.toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'});
             const timeStr = now.toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'});
 
-            const message = `🚨 *TIKET BARU MASUK!* 🚨\n━━━━━━━━━━━━━━━━━━━━\n👤 *Pengirim:* ${sender}\n🏢 *Divisi:* ${department}\n📂 *Kategori:* ${category}\n⚡ *Prioritas:* ${priority}\n📝 *Masalah:* ${title}\n🕒 *Waktu:* ${dateStr}, ${timeStr} WIB\n━━━━━━━━━━━━━━━━━━━━\nSegera proses tiket ini dengan klik link berikut:\n👉 https://ticketing-kappa-jet.vercel.app/dashboard?ticket=${ticketId}`;
+            const message = `*TIKET BARU MASUK*\n━━━━━━━━━━━━━━━━━━━━\n*Pengirim:* ${sender}\n*Divisi:* ${department}\n*Kategori:* ${category}\n*Prioritas:* ${priority}\n*Masalah:* ${title}\n*Waktu:* ${dateStr}, ${timeStr} WIB\n━━━━━━━━━━━━━━━━━━━━\nSegera proses tiket ini dengan klik link berikut:\nhttps://ticketing-kappa-jet.vercel.app/dashboard?ticket=${ticketId}`;
 
             const adminPhone = (data.adminPhone || '6285784694910').replace(/[^0-9]/g, '').replace(/^0/, '62');
 
