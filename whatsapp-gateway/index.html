@@ -206,11 +206,11 @@
         }
         .code-display {
             font-family: monospace;
-            font-size: 26px;
+            font-size: 28px;
             color: var(--wa-green);
             font-weight: 800;
-            letter-spacing: 4px;
-            margin: 4px 0;
+            letter-spacing: 5px;
+            margin: 6px 0;
         }
 
         /* Buttons */
@@ -357,7 +357,7 @@
             <div class="card">
                 <div class="card-header">
                     <div class="card-title">📱 1. Koneksi WhatsApp</div>
-                    <button class="btn btn-restart" id="btn-refresh" onclick="restartSession()" style="display: none;">🔄 Buat Sesi Baru</button>
+                    <button class="btn btn-restart" id="btn-refresh" onclick="restartSession()">🔄 Buat Sesi Baru</button>
                 </div>
 
                 <!-- UNPAIRED STATE (SCAN / CODE) -->
@@ -380,14 +380,16 @@
                     <!-- TAB 2: PAIRING CODE -->
                     <div id="tab-code" class="tab-pane">
                         <div class="input-group">
-                            <label>Nomor WhatsApp HP Anda (Format 62xxx):</label>
-                            <input type="text" id="phone-pairing" placeholder="Contoh: 6281234567890">
-                            <button class="btn" onclick="requestPairingCode()" style="margin-top: 6px;">Dapatkan Kode Pairing (8 Digit)</button>
+                            <label>Nomor WhatsApp HP Anda (Format 62xxx atau 08xxx):</label>
+                            <input type="text" id="phone-pairing" placeholder="Contoh: 08123456789 atau 6281234567890">
+                            <button class="btn" id="btn-get-code" onclick="requestPairingCode()" style="margin-top: 6px;">Dapatkan Kode Pairing (8 Digit)</button>
                         </div>
                         <div class="code-box" id="pairing-code-box">
-                            <div style="font-size: 11px; color: var(--text-secondary);">MASUKKAN KODE INI DI WHATSAPP:</div>
+                            <div style="font-size: 11px; color: var(--text-secondary);">MASUKKAN KODE INI DI WHATSAPP HP:</div>
                             <div class="code-display" id="pairing-code-text">----</div>
-                            <div style="font-size: 11px; color: var(--text-secondary);">Buka WA &gt; Tautkan perangkat &gt; Tautkan dengan nomor telepon saja</div>
+                            <div style="font-size: 11px; color: #cbd5e1; margin-top: 4px;">
+                                HP &gt; <b>Perangkat tertaut</b> &gt; <b>Tautkan perangkat</b> &gt; Ketuk tulisan biru <b>"Tautkan dengan nomor telepon saja"</b> di bawah scanner kamera.
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -398,7 +400,7 @@
                     <h3 style="color: var(--wa-green); margin-bottom: 4px;">WhatsApp Terhubung!</h3>
                     <p style="font-size: 12px; color: var(--text-secondary);" id="connected-account-info">Nomor: +62xxx</p>
                     <p style="font-size: 12px; color: #cbd5e1; margin-top: 10px;">
-                        Gateway siap mengirim notifikasi tiket secara real-time ke nomor karyawan atau pelanggan.
+                        Gateway siap mengirim notifikasi tiket secara real-time ke nomor karyawan atau staf IT.
                     </p>
                     <button class="btn btn-restart" onclick="restartSession()" style="margin-top: 16px;">Ganti Nomor / Putuskan Koneksi</button>
                 </div>
@@ -435,7 +437,7 @@
                     <div class="preview-box">
                         <div class="chat-bubble">
                             <span id="preview-content">...</span>
-                            <div class="chat-time" id="preview-time">10:50 &#10003;&#10003;</div>
+                            <div class="chat-time" id="preview-time">11:15 &#10003;&#10003;</div>
                         </div>
                     </div>
                 </div>
@@ -511,13 +513,61 @@
             document.getElementById('preview-time').innerHTML = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) + ' &#10003;&#10003;';
         }
 
+        async function ensureCleanScanState() {
+            try {
+                const statusRes = await fetch('http://localhost:3000/api/sessions/default', {
+                    headers: { 'X-Api-Key': apiKey }
+                });
+                if (statusRes.ok) {
+                    const session = await statusRes.json();
+                    if (session.status === 'SCAN_QR_CODE' && !session.me) {
+                        return true;
+                    }
+                }
+            } catch (e) {}
+
+            document.getElementById('status-text').innerText = 'Menyiapkan sesi gateway baru...';
+            try {
+                await fetch('http://localhost:3000/api/sessions/default', {
+                    method: 'DELETE',
+                    headers: { 'X-Api-Key': apiKey }
+                });
+            } catch (e) {}
+
+            try {
+                await fetch('http://localhost:3000/api/sessions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-Api-Key': apiKey },
+                    body: JSON.stringify({ name: 'default' })
+                });
+                await fetch('http://localhost:3000/api/sessions/default/start', {
+                    method: 'POST',
+                    headers: { 'X-Api-Key': apiKey }
+                });
+            } catch (e) {}
+
+            for (let i = 0; i < 10; i++) {
+                await new Promise(r => setTimeout(r, 600));
+                try {
+                    const check = await fetch('http://localhost:3000/api/sessions/default', {
+                        headers: { 'X-Api-Key': apiKey }
+                    });
+                    if (check.ok) {
+                        const d = await check.json();
+                        if (d.status === 'SCAN_QR_CODE') return true;
+                    }
+                } catch (e) {}
+            }
+            return false;
+        }
+
         async function updateStatus() {
             try {
                 const res = await fetch('http://localhost:3000/api/sessions/default', {
                     headers: { 'X-Api-Key': apiKey }
                 });
                 if (!res.ok) {
-                    showOffline('Gateway Tidak Merespon (404/Offline)');
+                    showOffline('Gateway Belum Siap (Mempersiapkan Sesi...)');
                     return;
                 }
                 const data = await res.json();
@@ -563,7 +613,7 @@
                     btnRefresh.style.display = 'none';
                 } else if (data.status === 'FAILED' || data.status === 'STOPPED') {
                     dot.className = 'dot';
-                    text.innerText = 'QR Kedaluwarsa - Klik Buat Sesi Baru';
+                    text.innerText = 'Sesi Siap Direset (Klik tombol di atas)';
                     btnRefresh.style.display = 'inline-flex';
                 }
             } catch (err) {
@@ -578,29 +628,33 @@
         }
 
         async function restartSession() {
-            document.getElementById('status-text').innerText = 'Memulai ulang sesi gateway...';
-            try {
-                await fetch('http://localhost:3000/api/sessions/default/restart', {
-                    method: 'POST',
-                    headers: { 'X-Api-Key': apiKey }
-                });
-                setTimeout(updateStatus, 1500);
-            } catch (err) {
-                alert('Gagal restart: ' + err.message);
-            }
+            document.getElementById('status-text').innerText = 'Mereset sesi gateway...';
+            await ensureCleanScanState();
+            await updateStatus();
         }
 
         async function requestPairingCode() {
             const phoneInput = document.getElementById('phone-pairing').value.trim();
             if (!phoneInput) {
-                alert('Silakan masukkan nomor telepon terlebih dahulu (contoh: 6281234567890)');
+                alert('Silakan masukkan nomor telepon terlebih dahulu (contoh: 08123456789 atau 6281234567890)');
                 return;
             }
 
-            const cleanPhone = phoneInput.replace(/[^0-9]/g, '');
-            document.getElementById('status-text').innerText = 'Meminta kode tautan dari WhatsApp...';
-            
+            let cleanPhone = phoneInput.replace(/[^0-9]/g, '');
+            if (cleanPhone.startsWith('0')) {
+                cleanPhone = '62' + cleanPhone.substring(1);
+            }
+
+            const btn = document.getElementById('btn-get-code');
+            btn.disabled = true;
+            btn.innerText = 'Menyiapkan Sesi & Meminta Kode...';
+            document.getElementById('status-text').innerText = 'Memvalidasi sesi gateway...';
+
             try {
+                // Ensure session is cleanly in SCAN_QR_CODE state
+                await ensureCleanScanState();
+
+                document.getElementById('status-text').innerText = 'Meminta kode dari server WhatsApp...';
                 const res = await fetch('http://localhost:3000/api/default/auth/request-code', {
                     method: 'POST',
                     headers: {
@@ -610,20 +664,19 @@
                     body: JSON.stringify({ phoneNumber: cleanPhone })
                 });
 
-                if (!res.ok) {
-                    const errJson = await res.json();
-                    alert('Gagal mendapatkan kode: ' + (errJson.message || 'Coba periksa format nomor'));
-                    return;
-                }
-
                 const data = await res.json();
-                if (data.code) {
+                if (res.ok && data.code) {
                     document.getElementById('pairing-code-box').style.display = 'block';
                     document.getElementById('pairing-code-text').innerText = data.code;
-                    document.getElementById('status-text').innerText = 'Kode siap! Masukkan di WhatsApp HP Anda.';
+                    document.getElementById('status-text').innerText = 'Kode ' + data.code + ' siap! Masukkan di WhatsApp HP Anda.';
+                } else {
+                    alert('Gagal mendapatkan kode: ' + (data.message || JSON.stringify(data)));
                 }
             } catch (err) {
-                alert('Terjadi kesalahan saat memanggil API: ' + err.message);
+                alert('Terjadi kesalahan: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'Dapatkan Kode Pairing (8 Digit)';
             }
         }
 
@@ -642,7 +695,6 @@
                 return;
             }
 
-            // Format number to international JID (e.g. 08123... -> 628123...@c.us)
             let cleanNumber = phone.replace(/[^0-9]/g, '');
             if (cleanNumber.startsWith('0')) {
                 cleanNumber = '62' + cleanNumber.substring(1);
