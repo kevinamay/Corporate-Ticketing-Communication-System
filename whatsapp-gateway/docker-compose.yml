@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  waha:
+    image: devlikeapro/waha:latest
+    container_name: waha
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - WAHA_API_KEY=e8928adf08ec4cfd8b30dea033ee38bc
+      - WAHA_DASHBOARD_USERNAME=admin
+      - WAHA_DASHBOARD_PASSWORD=ea7ef3f15cce4d88ac7629c4d9f162e9
+      - WHATSAPP_DEFAULT_ENGINE=WEBJS
+    volumes:
+      - waha_sessions:/app/.sessions
+
+volumes:
+  waha_sessions:
+    name: waha_sessions

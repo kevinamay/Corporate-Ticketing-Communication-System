@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scan WhatsApp QR Code - WAHA Gateway</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #111b21;
+            color: #e9edef;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: #202c33;
+            padding: 32px;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            max-width: 420px;
+            width: 100%;
+        }
+        h2 {
+            color: #25d366;
+            margin-top: 0;
+            margin-bottom: 8px;
+        }
+        p {
+            color: #8696a0;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        .qr-box {
+            background: white;
+            padding: 16px;
+            border-radius: 12px;
+            display: inline-block;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            min-height: 280px;
+            min-width: 280px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        img {
+            width: 280px;
+            height: 280px;
+            display: block;
+        }
+        .status {
+            margin-top: 18px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #00a884;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .pulse {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #25d366;
+            animation: pulse-animation 1.5s infinite;
+        }
+        @keyframes pulse-animation {
+            0% { transform: scale(0.9); opacity: 0.7; }
+            50% { transform: scale(1.3); opacity: 1; }
+            100% { transform: scale(0.9); opacity: 0.7; }
+        }
+        .success-box {
+            display: none;
+            padding: 20px;
+        }
+        .success-icon {
+            font-size: 64px;
+            color: #25d366;
+            margin-bottom: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="scan-view">
+            <h2>Scan WhatsApp Gateway</h2>
+            <p>Buka WA di HP &gt; Perangkat Tertaut &gt; Tautkan Perangkat</p>
+            <div class="qr-box">
+                <img id="qr-img" src="" alt="Memuat QR Code...">
+            </div>
+            <div class="status">
+                <div class="pulse"></div>
+                <span id="status-text">QR aktif &amp; auto-refresh real-time</span>
+            </div>
+        </div>
+        <div id="success-view" class="success-box">
+            <div class="success-icon">&#10004;</div>
+            <h2 style="color: #25d366;">WhatsApp Terhubung!</h2>
+            <p style="color: #e9edef;">Gateway WhatsApp WAHA sudah aktif dan siap menerima panggilan API dari aplikasi Helpdesk Laravel.</p>
+        </div>
+    </div>
+
+    <script>
+        const apiKey = 'e8928adf08ec4cfd8b30dea033ee38bc';
+        let isConnected = false;
+
+        async function updateQR() {
+            if (isConnected) return;
+            try {
+                const statusRes = await fetch('http://localhost:3000/api/sessions/default', {
+                    headers: { 'X-Api-Key': apiKey }
+                });
+                const sessionData = await statusRes.json();
+                
+                if (sessionData.status === 'WORKING') {
+                    isConnected = true;
+                    document.getElementById('scan-view').style.display = 'none';
+                    document.getElementById('success-view').style.display = 'block';
+                    return;
+                }
+
+                const qrRes = await fetch('http://localhost:3000/api/default/auth/qr', {
+                    headers: { 'X-Api-Key': apiKey }
+                });
+                if (qrRes.ok) {
+                    const blob = await qrRes.blob();
+                    document.getElementById('qr-img').src = URL.createObjectURL(blob);
+                }
+            } catch (err) {
+                console.error('Error fetching QR:', err);
+            }
+        }
+
+        updateQR();
+        setInterval(updateQR, 3000);
+    </script>
+</body>
+</html>
