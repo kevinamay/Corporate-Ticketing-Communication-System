@@ -3,104 +3,269 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scan WhatsApp QR Code - WAHA Gateway</title>
+    <title>Tautkan WhatsApp Gateway - Corporate Ticketing</title>
     <style>
+        * {
+            box-sizing: border-box;
+        }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #111b21;
+            background: #0c1317;
             color: #e9edef;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
+            padding: 20px;
         }
         .container {
-            background-color: #202c33;
-            padding: 32px;
+            background-color: #1f2c34;
+            padding: 28px;
             border-radius: 16px;
             text-align: center;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-            max-width: 420px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            max-width: 480px;
             width: 100%;
+            border: 1px solid #2a3942;
+        }
+        .badge {
+            display: inline-block;
+            background: rgba(37, 211, 102, 0.15);
+            color: #25d366;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 4px 12px;
+            border-radius: 20px;
+            margin-bottom: 12px;
+            letter-spacing: 0.5px;
         }
         h2 {
-            color: #25d366;
-            margin-top: 0;
-            margin-bottom: 8px;
+            color: #f1f2f4;
+            margin: 0 0 8px 0;
+            font-size: 22px;
         }
-        p {
+        .desc {
             color: #8696a0;
-            font-size: 14px;
+            font-size: 13px;
+            line-height: 1.5;
             margin-bottom: 20px;
+        }
+        .tabs {
+            display: flex;
+            background: #111b21;
+            padding: 4px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            gap: 4px;
+        }
+        .tab-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #8696a0;
+            padding: 10px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .tab-btn.active {
+            background: #25d366;
+            color: #111b21;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
         }
         .qr-box {
             background: white;
-            padding: 16px;
+            padding: 14px;
             border-radius: 12px;
             display: inline-block;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-            min-height: 280px;
-            min-width: 280px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            min-height: 260px;
+            min-width: 260px;
             display: flex;
             align-items: center;
             justify-content: center;
         }
-        img {
-            width: 280px;
-            height: 280px;
+        img#qr-img {
+            width: 250px;
+            height: 250px;
             display: block;
         }
-        .status {
-            margin-top: 18px;
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 15px 0;
+            text-align: left;
+        }
+        label {
+            font-size: 13px;
+            color: #8696a0;
+            font-weight: 500;
+        }
+        input[type="text"] {
+            background: #111b21;
+            border: 1px solid #2a3942;
+            border-radius: 8px;
+            padding: 12px 14px;
+            color: #e9edef;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        input[type="text"]:focus {
+            border-color: #25d366;
+        }
+        .btn-action {
+            background: #00a884;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px;
             font-size: 14px;
             font-weight: 600;
-            color: #00a884;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 5px;
+        }
+        .btn-action:hover {
+            background: #029474;
+        }
+        .code-display {
+            display: none;
+            background: #111b21;
+            border: 2px dashed #25d366;
+            border-radius: 12px;
+            padding: 18px;
+            margin-top: 15px;
+        }
+        .code-number {
+            font-family: monospace;
+            font-size: 28px;
+            letter-spacing: 6px;
+            color: #25d366;
+            font-weight: bold;
+            margin: 6px 0;
+        }
+        .status-bar {
+            margin-top: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #8696a0;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
+            padding: 8px;
+            border-radius: 8px;
+            background: #111b21;
         }
         .pulse {
-            width: 10px;
-            height: 10px;
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
             background-color: #25d366;
             animation: pulse-animation 1.5s infinite;
         }
         @keyframes pulse-animation {
             0% { transform: scale(0.9); opacity: 0.7; }
-            50% { transform: scale(1.3); opacity: 1; }
+            50% { transform: scale(1.4); opacity: 1; }
             100% { transform: scale(0.9); opacity: 0.7; }
         }
         .success-box {
             display: none;
-            padding: 20px;
+            padding: 20px 0;
         }
         .success-icon {
-            font-size: 64px;
+            font-size: 56px;
             color: #25d366;
             margin-bottom: 12px;
+        }
+        .instructions {
+            background: #111b21;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: left;
+            margin-top: 14px;
+            font-size: 12px;
+            color: #8696a0;
+            line-height: 1.6;
+        }
+        .instructions ol {
+            margin: 0;
+            padding-left: 18px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div id="scan-view">
-            <h2>Scan WhatsApp Gateway</h2>
-            <p>Buka WA di HP &gt; Perangkat Tertaut &gt; Tautkan Perangkat</p>
-            <div class="qr-box">
-                <img id="qr-img" src="" alt="Memuat QR Code...">
+        <div class="badge">WHATSAPP GATEWAY</div>
+
+        <div id="main-view">
+            <h2>Hubungkan WhatsApp</h2>
+            <p class="desc">Tautkan nomor WhatsApp Anda agar sistem tiket Helpdesk dapat mengirimkan notifikasi otomatis ke pelanggan & teknisi.</p>
+
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('qr')">Metode 1: Scan QR</button>
+                <button class="tab-btn" onclick="switchTab('code')">Metode 2: Kode Tautan (No Kamera)</button>
             </div>
-            <div class="status">
+
+            <!-- TAB 1: QR CODE -->
+            <div id="tab-qr" class="tab-content active">
+                <div class="qr-box">
+                    <img id="qr-img" src="" alt="Memuat QR Code...">
+                </div>
+                <div class="instructions">
+                    <ol>
+                        <li>Buka aplikasi WhatsApp di HP Anda.</li>
+                        <li>Ketuk <b>Menu (⋮)</b> atau <b>Pengaturan</b> &gt; <b>Perangkat tertaut</b>.</li>
+                        <li>Ketuk <b>Tautkan perangkat</b> dan arahkan kamera ke kode di atas.</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- TAB 2: PAIRING CODE -->
+            <div id="tab-code" class="tab-content">
+                <div class="input-group">
+                    <label for="phone-number">Nomor WhatsApp HP Anda (Format 62xxx):</label>
+                    <input type="text" id="phone-number" placeholder="Contoh: 6281234567890">
+                    <button class="btn-action" onclick="requestPairingCode()">Dapatkan Kode Pairing (8 Digit)</button>
+                </div>
+
+                <div id="pairing-result" class="code-display">
+                    <div style="font-size: 12px; color: #8696a0;">MASUKKAN KODE INI DI WHATSAPP:</div>
+                    <div class="code-number" id="display-code">----</div>
+                    <div style="font-size: 12px; color: #8696a0;">Kode berlaku selama ~60 detik</div>
+                </div>
+
+                <div class="instructions">
+                    <ol>
+                        <li>Buka WhatsApp di HP &gt; <b>Perangkat tertaut</b> &gt; <b>Tautkan perangkat</b>.</li>
+                        <li>Di bawah scanner kamera, klik <b>"Tautkan dengan nomor telepon saja"</b>.</li>
+                        <li>Masukkan nomor telepon Anda di HP, lalu ketik kode 8 digit yang muncul di atas.</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="status-bar">
                 <div class="pulse"></div>
-                <span id="status-text">QR aktif &amp; auto-refresh real-time</span>
+                <span id="status-label">Status Gateway: Menunggu Penautan...</span>
             </div>
         </div>
+
+        <!-- SUCCESS VIEW -->
         <div id="success-view" class="success-box">
             <div class="success-icon">&#10004;</div>
-            <h2 style="color: #25d366;">WhatsApp Terhubung!</h2>
-            <p style="color: #e9edef;">Gateway WhatsApp WAHA sudah aktif dan siap menerima panggilan API dari aplikasi Helpdesk Laravel.</p>
+            <h2 style="color: #25d366;">WhatsApp Berhasil Terhubung!</h2>
+            <p style="color: #8696a0; font-size: 14px;">Nomor WhatsApp Anda telah tertaut dengan Gateway WAHA.<br>Sistem Helpdesk Laravel sekarang siap mengirimkan notifikasi tiket secara otomatis.</p>
+            <div id="connected-phone" style="margin-top: 15px; font-weight: bold; color: #f1f2f4; background: #111b21; padding: 10px; border-radius: 8px; font-size: 14px;"></div>
         </div>
     </div>
 
@@ -108,35 +273,95 @@
         const apiKey = 'e8928adf08ec4cfd8b30dea033ee38bc';
         let isConnected = false;
 
-        async function updateQR() {
+        function switchTab(mode) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            if (mode === 'qr') {
+                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+                document.getElementById('tab-qr').classList.add('active');
+            } else {
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+                document.getElementById('tab-code').classList.add('active');
+            }
+        }
+
+        async function updateStatus() {
             if (isConnected) return;
             try {
                 const statusRes = await fetch('http://localhost:3000/api/sessions/default', {
                     headers: { 'X-Api-Key': apiKey }
                 });
+                if (!statusRes.ok) return;
                 const sessionData = await statusRes.json();
-                
+
                 if (sessionData.status === 'WORKING') {
                     isConnected = true;
-                    document.getElementById('scan-view').style.display = 'none';
+                    document.getElementById('main-view').style.display = 'none';
                     document.getElementById('success-view').style.display = 'block';
+                    if (sessionData.me && sessionData.me.id) {
+                        const cleanId = sessionData.me.id.split('@')[0];
+                        document.getElementById('connected-phone').innerText = 'Nomor Terhubung: +' + cleanId;
+                    }
                     return;
                 }
 
-                const qrRes = await fetch('http://localhost:3000/api/default/auth/qr', {
-                    headers: { 'X-Api-Key': apiKey }
-                });
-                if (qrRes.ok) {
-                    const blob = await qrRes.blob();
-                    document.getElementById('qr-img').src = URL.createObjectURL(blob);
+                if (sessionData.status === 'SCAN_QR_CODE') {
+                    document.getElementById('status-label').innerText = 'Status: Menunggu Scan / Pairing Code...';
+                    const qrRes = await fetch('http://localhost:3000/api/default/auth/qr', {
+                        headers: { 'X-Api-Key': apiKey }
+                    });
+                    if (qrRes.ok) {
+                        const blob = await qrRes.blob();
+                        document.getElementById('qr-img').src = URL.createObjectURL(blob);
+                    }
+                } else if (sessionData.status === 'STARTING') {
+                    document.getElementById('status-label').innerText = 'Status: Menyiapkan Mesin Gateway...';
                 }
             } catch (err) {
-                console.error('Error fetching QR:', err);
+                console.error('Error fetching session:', err);
+                document.getElementById('status-label').innerText = 'Status: Gateway sedang offline / restart...';
             }
         }
 
-        updateQR();
-        setInterval(updateQR, 3000);
+        async function requestPairingCode() {
+            const phoneInput = document.getElementById('phone-number').value.trim();
+            if (!phoneInput) {
+                alert('Silakan masukkan nomor telepon terlebih dahulu (contoh: 6281234567890)');
+                return;
+            }
+
+            const cleanPhone = phoneInput.replace(/[^0-9]/g, '');
+            document.getElementById('status-label').innerText = 'Meminta kode tautan dari WhatsApp...';
+            
+            try {
+                const res = await fetch('http://localhost:3000/api/default/auth/request-code', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Api-Key': apiKey
+                    },
+                    body: JSON.stringify({ phoneNumber: cleanPhone })
+                });
+
+                if (!res.ok) {
+                    const errJson = await res.json();
+                    alert('Gagal mendapatkan kode: ' + (errJson.message || 'Coba periksa format nomor'));
+                    return;
+                }
+
+                const data = await res.json();
+                if (data.code) {
+                    document.getElementById('pairing-result').style.display = 'block';
+                    document.getElementById('display-code').innerText = data.code;
+                    document.getElementById('status-label').innerText = 'Kode siap! Masukkan di WhatsApp HP Anda.';
+                }
+            } catch (err) {
+                alert('Terjadi kesalahan saat memanggil API: ' + err.message);
+            }
+        }
+
+        updateStatus();
+        setInterval(updateStatus, 3000);
     </script>
 </body>
 </html>

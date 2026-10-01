@@ -11,7 +11,7 @@ services:
       - WAHA_API_KEY=e8928adf08ec4cfd8b30dea033ee38bc
       - WAHA_DASHBOARD_USERNAME=admin
       - WAHA_DASHBOARD_PASSWORD=ea7ef3f15cce4d88ac7629c4d9f162e9
-      - WHATSAPP_DEFAULT_ENGINE=WEBJS
+      - WHATSAPP_DEFAULT_ENGINE=NOWEB
     volumes:
       - waha_sessions:/app/.sessions
 
