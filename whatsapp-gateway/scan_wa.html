@@ -92,6 +92,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            position: relative;
         }
         img#qr-img {
             width: 250px;
@@ -138,6 +139,23 @@
         .btn-action:hover {
             background: #029474;
         }
+        .btn-restart {
+            background: #d97706;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 16px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-restart:hover {
+            background: #b45309;
+        }
         .code-display {
             display: none;
             background: #111b21;
@@ -160,12 +178,18 @@
             font-weight: 500;
             color: #8696a0;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            padding: 8px;
+            gap: 6px;
+            padding: 12px;
             border-radius: 8px;
             background: #111b21;
+        }
+        .status-line {
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         .pulse {
             width: 8px;
@@ -173,6 +197,12 @@
             border-radius: 50%;
             background-color: #25d366;
             animation: pulse-animation 1.5s infinite;
+        }
+        .pulse-yellow {
+            background-color: #f59e0b;
+        }
+        .pulse-red {
+            background-color: #ef4444;
         }
         @keyframes pulse-animation {
             0% { transform: scale(0.9); opacity: 0.7; }
@@ -210,7 +240,7 @@
 
         <div id="main-view">
             <h2>Hubungkan WhatsApp</h2>
-            <p class="desc">Tautkan nomor WhatsApp Anda agar sistem tiket Helpdesk dapat mengirimkan notifikasi otomatis ke pelanggan & teknisi.</p>
+            <p class="desc">Tautkan nomor WhatsApp Anda agar sistem tiket Helpdesk dapat mengirimkan notifikasi otomatis ke pelanggan & staf.</p>
 
             <div class="tabs">
                 <button class="tab-btn active" onclick="switchTab('qr')">Metode 1: Scan QR</button>
@@ -255,8 +285,13 @@
             </div>
 
             <div class="status-bar">
-                <div class="pulse"></div>
-                <span id="status-label">Status Gateway: Menunggu Penautan...</span>
+                <div class="status-line">
+                    <div class="pulse" id="pulse-indicator"></div>
+                    <span id="status-label">Status Gateway: Memeriksa Sesi...</span>
+                </div>
+                <div id="restart-container" style="display: none;">
+                    <button class="btn-restart" onclick="restartSession()">🔄 Generate QR Baru</button>
+                </div>
             </div>
         </div>
 
@@ -294,6 +329,10 @@
                 if (!statusRes.ok) return;
                 const sessionData = await statusRes.json();
 
+                const pulse = document.getElementById('pulse-indicator');
+                const label = document.getElementById('status-label');
+                const restartBtn = document.getElementById('restart-container');
+
                 if (sessionData.status === 'WORKING') {
                     isConnected = true;
                     document.getElementById('main-view').style.display = 'none';
@@ -306,7 +345,10 @@
                 }
 
                 if (sessionData.status === 'SCAN_QR_CODE') {
-                    document.getElementById('status-label').innerText = 'Status: Menunggu Scan / Pairing Code...';
+                    pulse.className = 'pulse';
+                    label.innerText = 'Status: Menunggu Scan / Pairing Code...';
+                    restartBtn.style.display = 'none';
+
                     const qrRes = await fetch('http://localhost:3000/api/default/auth/qr', {
                         headers: { 'X-Api-Key': apiKey }
                     });
@@ -315,11 +357,31 @@
                         document.getElementById('qr-img').src = URL.createObjectURL(blob);
                     }
                 } else if (sessionData.status === 'STARTING') {
-                    document.getElementById('status-label').innerText = 'Status: Menyiapkan Mesin Gateway...';
+                    pulse.className = 'pulse pulse-yellow';
+                    label.innerText = 'Status: Mempersiapkan Mesin Gateway...';
+                    restartBtn.style.display = 'none';
+                } else if (sessionData.status === 'FAILED' || sessionData.status === 'STOPPED') {
+                    pulse.className = 'pulse pulse-red';
+                    label.innerText = 'Status: QR Kedaluwarsa (Klik tombol di bawah)';
+                    restartBtn.style.display = 'block';
                 }
             } catch (err) {
                 console.error('Error fetching session:', err);
                 document.getElementById('status-label').innerText = 'Status: Gateway sedang offline / restart...';
+            }
+        }
+
+        async function restartSession() {
+            const label = document.getElementById('status-label');
+            label.innerText = 'Memulai ulang sesi gateway...';
+            try {
+                await fetch('http://localhost:3000/api/sessions/default/restart', {
+                    method: 'POST',
+                    headers: { 'X-Api-Key': apiKey }
+                });
+                setTimeout(updateStatus, 1500);
+            } catch (err) {
+                alert('Gagal restart: ' + err.message);
             }
         }
 
