@@ -169,7 +169,19 @@ class TicketForm extends Component
         $this->category = $this->availableCategories[0] ?? 'Other';
         $this->isSuccess = true;
 
-        $this->dispatch('ticketCreated', ticketId: $ticket->id);
+        $senderName = auth()->user()?->name ?? 'Karyawan';
+        $departmentName = auth()->user()?->department?->name ?? 'Staff';
+        $adminPhone = config('services.waha.admin_number', '6285784694910');
+
+        $this->dispatch('ticketCreated', ticketId: $ticket->id, ticketData: [
+            'id' => $ticket->id,
+            'title' => $ticket->title,
+            'category' => $ticket->category,
+            'priority' => $ticket->priority,
+            'sender' => $senderName,
+            'department' => $departmentName,
+            'adminPhone' => $adminPhone,
+        ]);
     }
 
     public function render()

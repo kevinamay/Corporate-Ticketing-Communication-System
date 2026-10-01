@@ -934,4 +934,58 @@
             }
         };
     }
+
+    // Automated WhatsApp Bot Dispatcher (Sistem PATEN)
+    function triggerWahaWhatsAppNotification(detail) {
+        try {
+            const data = (detail && detail.ticketData) ? detail.ticketData : (detail || {});
+            if (!data || !data.id) return;
+
+            const sender = data.sender || 'Karyawan';
+            const department = data.department || 'Staff';
+            const category = data.category || 'Umum';
+            const priority = (data.priority || 'Normal').toUpperCase();
+            const title = data.title || '-';
+            const ticketId = data.id;
+
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'});
+            const timeStr = now.toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'});
+
+            const message = `🚨 *TIKET BARU MASUK!* 🚨\n━━━━━━━━━━━━━━━━━━━━\n👤 *Pengirim:* ${sender}\n🏢 *Divisi:* ${department}\n📂 *Kategori:* ${category}\n⚡ *Prioritas:* ${priority}\n📝 *Masalah:* ${title}\n🕒 *Waktu:* ${dateStr}, ${timeStr} WIB\n━━━━━━━━━━━━━━━━━━━━\nSegera proses tiket ini dengan klik link berikut:\n👉 https://ticketing-kappa-jet.vercel.app/dashboard?ticket=${ticketId}`;
+
+            const adminPhone = (data.adminPhone || '6285784694910').replace(/[^0-9]/g, '').replace(/^0/, '62');
+
+            fetch('http://localhost:3000/api/sendText', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Api-Key': 'e8928adf08ec4cfd8b30dea033ee38bc'
+                },
+                body: JSON.stringify({
+                    chatId: adminPhone + '@c.us',
+                    text: message,
+                    session: 'default'
+                })
+            }).then(r => {
+                if (r.ok) {
+                    console.log('✅ WAHA Bot: Notifikasi tiket #' + ticketId + ' otomatis terkirim ke WhatsApp Admin IT (' + adminPhone + ')');
+                }
+            }).catch(() => {
+                // Fail silently if local gateway is offline
+            });
+        } catch (err) {}
+    }
+
+    window.addEventListener('ticketCreated', (e) => {
+        triggerWahaWhatsAppNotification(e.detail);
+    });
+
+    document.addEventListener('livewire:init', () => {
+        if (window.Livewire) {
+            Livewire.on('ticketCreated', (data) => {
+                triggerWahaWhatsAppNotification(Array.isArray(data) ? data[0] : data);
+            });
+        }
+    });
 </script>
