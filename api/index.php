@@ -119,9 +119,13 @@ $_ENV['APP_URL'] = $dynAppUrl;
 $_SERVER['APP_URL'] = $dynAppUrl;
 
 // Ensure Database connection works seamlessly on Vercel
+$dbUrl = getenv('DB_URL') ?: ($_ENV['DB_URL'] ?? '');
 $dbHost = getenv('DB_HOST') ?: ($_ENV['DB_HOST'] ?? '');
-$dbConn = getenv('DB_CONNECTION') ?: ($_ENV['DB_CONNECTION'] ?? 'sqlite');
-if (empty($dbConn) || $dbConn === 'sqlite' || $dbHost === '127.0.0.1' || $dbHost === 'localhost' || empty($dbHost)) {
+$dbConn = getenv('DB_CONNECTION') ?: ($_ENV['DB_CONNECTION'] ?? '');
+
+$hasExternalDb = (! empty($dbUrl)) || (! empty($dbHost) && $dbHost !== '127.0.0.1' && $dbHost !== 'localhost');
+
+if (! $hasExternalDb) {
     putenv('DB_CONNECTION=sqlite');
     $_ENV['DB_CONNECTION'] = 'sqlite';
     $_SERVER['DB_CONNECTION'] = 'sqlite';
