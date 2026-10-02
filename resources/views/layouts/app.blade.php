@@ -162,13 +162,23 @@
                             <span>{{ __('Tangani Tiket Masuk') }}</span>
                             <span class="px-1.5 py-0.2 rounded-full text-[10px] bg-blue-600 text-white font-bold">{{ \App\Models\Ticket::where('status', '!=', 'Resolved')->count() }}</span>
                         </a>
+                        <a href="{{ request()->is('/') ? '#admin-resolved-history' : url('/#admin-resolved-history') }}" class="px-3 py-1.5 rounded-lg text-slate-200 hover:text-white hover:bg-slate-800 transition flex items-center gap-1.5">
+                            <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <span>{{ __('Riwayat Tiket Selesai') }}</span>
+                            <span class="px-1.5 py-0.2 rounded-full text-[10px] bg-emerald-600 text-white font-bold">{{ \App\Models\Ticket::where('status', 'Resolved')->count() }}</span>
+                        </a>
                     @else
                         <a href="{{ request()->is('/') ? '#new-ticket' : url('/#new-ticket') }}" class="px-3 py-1.5 rounded-lg text-slate-200 hover:text-white hover:bg-slate-800 transition">
                             {{ __('Buat Tiket') }}
                         </a>
                         <a href="{{ request()->is('/') ? '#queue' : url('/#queue') }}" class="px-3 py-1.5 rounded-lg text-slate-200 hover:text-white hover:bg-slate-800 transition flex items-center gap-1.5">
                             <span>{{ __('Antrean Tiket') }}</span>
-                            <span class="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-700 text-slate-200 font-bold">{{ \App\Models\Ticket::count() }}</span>
+                            <span class="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-700 text-slate-200 font-bold">{{ \App\Models\Ticket::where('status', '!=', 'Resolved')->count() }}</span>
+                        </a>
+                        <a href="{{ request()->is('/') ? '#resolved-history' : url('/#resolved-history') }}" class="px-3 py-1.5 rounded-lg text-slate-200 hover:text-white hover:bg-slate-800 transition flex items-center gap-1.5">
+                            <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <span>{{ __('Riwayat Tiket') }}</span>
+                            <span class="px-1.5 py-0.2 rounded-full text-[10px] bg-emerald-600 text-white font-bold">{{ \App\Models\Ticket::where('status', 'Resolved')->count() }}</span>
                         </a>
                     @endif
                 </nav>
@@ -214,12 +224,18 @@
                     <a href="{{ request()->is('/') ? '#global-tickets' : url('/#global-tickets') }}" @click="mobileMenuOpen = false" class="col-span-2 p-2.5 rounded-lg bg-slate-800 text-white font-bold text-center hover:bg-blue-600 transition">
                         {{ __('Tangani Tiket Masuk') }}
                     </a>
+                    <a href="{{ request()->is('/') ? '#admin-resolved-history' : url('/#admin-resolved-history') }}" @click="mobileMenuOpen = false" class="col-span-2 p-2.5 rounded-lg bg-slate-800 text-emerald-300 font-bold text-center hover:bg-emerald-600 hover:text-white transition">
+                        {{ __('Riwayat Tiket Selesai') }} ({{ \App\Models\Ticket::where('status', 'Resolved')->count() }})
+                    </a>
                 @else
                     <a href="{{ request()->is('/') ? '#new-ticket' : url('/#new-ticket') }}" @click="mobileMenuOpen = false" class="p-2.5 rounded-lg bg-slate-800 text-blue-200 font-bold text-center hover:bg-blue-600 hover:text-white transition">
                         {{ __('Buat Tiket') }}
                     </a>
                     <a href="{{ request()->is('/') ? '#queue' : url('/#queue') }}" @click="mobileMenuOpen = false" class="p-2.5 rounded-lg bg-slate-800 text-blue-200 font-bold text-center hover:bg-blue-600 hover:text-white transition">
                         {{ __('Antrean Tiket') }}
+                    </a>
+                    <a href="{{ request()->is('/') ? '#resolved-history' : url('/#resolved-history') }}" @click="mobileMenuOpen = false" class="col-span-2 p-2.5 rounded-lg bg-slate-800 text-emerald-300 font-bold text-center hover:bg-emerald-600 hover:text-white transition">
+                        {{ __('Riwayat Tiket Selesai') }} ({{ \App\Models\Ticket::where('status', 'Resolved')->count() }})
                     </a>
                 @endif
 

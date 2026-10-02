@@ -44,6 +44,11 @@
             <livewire:global-tickets />
         </div>
 
+        <!-- 4. RIWAYAT TIKET SELESAI & ARSIP SOLUSI (Global Resolved Tickets History) -->
+        <div id="admin-resolved-history" class="scroll-mt-24 mt-8">
+            <livewire:resolved-ticket-history viewMode="admin" />
+        </div>
+
     @else
         <!-- ==================================================================== -->
         <!-- HALAMAN KARYAWAN: HALAMAN TICKETING (SUBMIT REQUEST & ANTREAN TIKET) -->
@@ -75,6 +80,10 @@
                 <a href="#queue" class="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition border border-white/20">
                     {{ __('Daftar Tiket') }}
                 </a>
+                <a href="#resolved-history" class="px-3.5 py-2 rounded-xl bg-emerald-600/80 hover:bg-emerald-600 text-white font-bold text-xs transition border border-emerald-400/30 flex items-center gap-1.5 shadow-sm">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span>{{ __('Riwayat Tiket Selesai') }}</span>
+                </a>
             </div>
         </div>
 
@@ -90,6 +99,11 @@
         <!-- 2. Antrean Tiket & Status Pengerjaan (TicketList Component) -->
         <div id="queue" class="scroll-mt-24 mt-8">
             <livewire:ticket-list />
+        </div>
+
+        <!-- 3. Riwayat Tiket yang Sudah Terselesaikan (Employee Resolved Tickets History) -->
+        <div id="resolved-history" class="scroll-mt-24 mt-8">
+            <livewire:resolved-ticket-history viewMode="employee" />
         </div>
     @endif
 
