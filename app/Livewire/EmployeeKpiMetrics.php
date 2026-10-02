@@ -6,7 +6,7 @@ use App\Models\Ticket;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
-class AdminKpiMetrics extends Component
+class EmployeeKpiMetrics extends Component
 {
     #[On('ticketCreated')]
     #[On('ticketStatusUpdated')]
@@ -19,7 +19,7 @@ class AdminKpiMetrics extends Component
 
     public function render()
     {
-        return view('livewire.admin-kpi-metrics', [
+        return view('livewire.employee-kpi-metrics', [
             'activeCount' => Ticket::where('status', '!=', 'Resolved')->count(),
             'pendingCount' => Ticket::whereIn('status', ['Pending', 'Open'])->count(),
             'inProgressCount' => Ticket::where('status', 'In Progress')->count(),

@@ -91,6 +91,12 @@ class TicketList extends Component
         // Re-renders view and keeps selected ticket
     }
 
+    #[On('ticketStatusUpdated')]
+    public function onTicketStatusUpdated(int $ticketId): void
+    {
+        // Re-renders instantly when admin updates status
+    }
+
     /**
      * READ: Open Ticket Detail Modal
      */
