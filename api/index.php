@@ -56,6 +56,38 @@ if (! file_exists($tmpDb) || filesize($tmpDb) === 0) {
 // 4. Ensure essential environment variables have valid non-empty defaults
 $resendSecret = getenv('RESEND_API_KEY') ?: base64_decode('cmVfaGdhWXNGbzVfNXBINEdIQnRBRjVCUnhIcEhRQkJtQTh5');
 
+// Pre-check and normalize external Database connection (e.g. Supabase, Neon)
+$dbUrl = getenv('DATABASE_URL') ?: getenv('DB_URL') ?: ($_ENV['DATABASE_URL'] ?? ($_ENV['DB_URL'] ?? ''));
+$dbHost = getenv('DB_HOST') ?: ($_ENV['DB_HOST'] ?? '');
+$hasExternalDb = (! empty($dbUrl)) || (! empty($dbHost) && $dbHost !== '127.0.0.1' && $dbHost !== 'localhost');
+
+// If Supabase direct connection is provided, convert it to IPv4 pooler connection!
+// AWS Lambda / Vercel does not support IPv6, which causes "could not translate host name" error.
+if (! empty($dbUrl)) {
+    if (preg_match('/postgres(?:ql)?:\/\/([^:]+):([^@]+)@db\.([a-z0-9]+)\.supabase\.co(?::\d+)?\/(.+)/i', $dbUrl, $m)) {
+        $dbUser = $m[1];
+        $dbPass = $m[2];
+        $dbProject = $m[3];
+        $dbName = explode('?', $m[4])[0];
+        $poolerUser = ($dbUser === 'postgres') ? "postgres.{$dbProject}" : $dbUser;
+        // Supabase IPv4 Pooler host for Southeast Asia (Singapore)
+        $dbUrl = "postgresql://{$poolerUser}:{$dbPass}@aws-0-ap-southeast-1.pooler.supabase.com:6543/{$dbName}?sslmode=require";
+    }
+}
+
+$defaultDbConn = 'sqlite';
+if ($hasExternalDb) {
+    if (! empty($dbUrl)) {
+        if (str_starts_with($dbUrl, 'postgres://') || str_starts_with($dbUrl, 'postgresql://')) {
+            $defaultDbConn = 'pgsql';
+        } elseif (str_starts_with($dbUrl, 'mysql://')) {
+            $defaultDbConn = 'mysql';
+        }
+    } else {
+        $defaultDbConn = getenv('DB_CONNECTION') ?: 'mysql';
+    }
+}
+
 $envDefaults = [
     'APP_NAME' => 'Corporate Ticketing',
     'APP_KEY' => 'base64:QX6Shj9IM6P1zsqviSaEOOomvYB9raucqTLGNJYCDnA=',
@@ -72,7 +104,7 @@ $envDefaults = [
     'SESSION_DOMAIN' => '',
     'CACHE_STORE' => 'database',
     'QUEUE_CONNECTION' => 'sync',
-    'DB_CONNECTION' => 'sqlite',
+    'DB_CONNECTION' => $defaultDbConn,
     'RESEND_API_KEY' => $resendSecret,
     'MAIL_MAILER' => 'smtp',
     'MAIL_HOST' => 'smtp.resend.com',
@@ -106,13 +138,7 @@ putenv("APP_URL={$dynAppUrl}");
 $_ENV['APP_URL'] = $dynAppUrl;
 $_SERVER['APP_URL'] = $dynAppUrl;
 
-// Ensure Database connection works seamlessly on Vercel
-$dbUrl = getenv('DATABASE_URL') ?: getenv('DB_URL') ?: ($_ENV['DATABASE_URL'] ?? ($_ENV['DB_URL'] ?? ''));
-$dbHost = getenv('DB_HOST') ?: ($_ENV['DB_HOST'] ?? '');
-$dbConn = getenv('DB_CONNECTION') ?: ($_ENV['DB_CONNECTION'] ?? '');
-
-$hasExternalDb = (! empty($dbUrl)) || (! empty($dbHost) && $dbHost !== '127.0.0.1' && $dbHost !== 'localhost');
-
+// Apply normalized database parameters
 if ($hasExternalDb) {
     if (! empty($dbUrl)) {
         putenv("DATABASE_URL={$dbUrl}");
@@ -122,15 +148,9 @@ if ($hasExternalDb) {
         $_SERVER['DATABASE_URL'] = $dbUrl;
         $_SERVER['DB_URL'] = $dbUrl;
 
-        if (str_starts_with($dbUrl, 'postgres://') || str_starts_with($dbUrl, 'postgresql://')) {
-            putenv('DB_CONNECTION=pgsql');
-            $_ENV['DB_CONNECTION'] = 'pgsql';
-            $_SERVER['DB_CONNECTION'] = 'pgsql';
-        } elseif (str_starts_with($dbUrl, 'mysql://')) {
-            putenv('DB_CONNECTION=mysql');
-            $_ENV['DB_CONNECTION'] = 'mysql';
-            $_SERVER['DB_CONNECTION'] = 'mysql';
-        }
+        putenv("DB_CONNECTION={$defaultDbConn}");
+        $_ENV['DB_CONNECTION'] = $defaultDbConn;
+        $_SERVER['DB_CONNECTION'] = $defaultDbConn;
     }
 } else {
     putenv('DB_CONNECTION=sqlite');

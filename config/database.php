@@ -17,7 +17,11 @@ return [
     |
     */
 
-    'default' => env('DB_CONNECTION') ?: 'sqlite',
+    'default' => env('DB_CONNECTION') ?: (
+        (str_starts_with(env('DATABASE_URL', ''), 'postgres') || str_starts_with(env('DB_URL', ''), 'postgres')) ? 'pgsql' : (
+            (str_starts_with(env('DATABASE_URL', ''), 'mysql') || str_starts_with(env('DB_URL', ''), 'mysql')) ? 'mysql' : 'sqlite'
+        )
+    ),
 
     /*
     |--------------------------------------------------------------------------
@@ -34,7 +38,7 @@ return [
 
         'sqlite' => [
             'driver' => 'sqlite',
-            'url' => env('DB_URL') ?: env('DATABASE_URL'),
+            'url' => (str_starts_with(env('DATABASE_URL', ''), 'sqlite') || str_starts_with(env('DB_URL', ''), 'sqlite')) ? (env('DB_URL') ?: env('DATABASE_URL')) : null,
             'database' => (env('DB_DATABASE') === ':memory:' || str_ends_with(env('DB_DATABASE', ''), '.sqlite') || str_starts_with(env('DB_DATABASE', ''), '/tmp')) ? env('DB_DATABASE') : database_path('database.sqlite'),
             'prefix' => '',
             'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
@@ -46,7 +50,7 @@ return [
 
         'mysql' => [
             'driver' => 'mysql',
-            'url' => env('DB_URL') ?: env('DATABASE_URL'),
+            'url' => (str_starts_with(env('DATABASE_URL', ''), 'mysql') || str_starts_with(env('DB_URL', ''), 'mysql')) ? (env('DB_URL') ?: env('DATABASE_URL')) : null,
             'host' => env('DB_HOST', '127.0.0.1'),
             'port' => env('DB_PORT', '3306'),
             'database' => env('DB_DATABASE', 'laravel'),
@@ -66,7 +70,7 @@ return [
 
         'mariadb' => [
             'driver' => 'mariadb',
-            'url' => env('DB_URL') ?: env('DATABASE_URL'),
+            'url' => (str_starts_with(env('DATABASE_URL', ''), 'mysql') || str_starts_with(env('DB_URL', ''), 'mysql')) ? (env('DB_URL') ?: env('DATABASE_URL')) : null,
             'host' => env('DB_HOST', '127.0.0.1'),
             'port' => env('DB_PORT', '3306'),
             'database' => env('DB_DATABASE', 'laravel'),
@@ -86,7 +90,7 @@ return [
 
         'pgsql' => [
             'driver' => 'pgsql',
-            'url' => env('DB_URL') ?: env('DATABASE_URL'),
+            'url' => (str_starts_with(env('DATABASE_URL', ''), 'postgres') || str_starts_with(env('DB_URL', ''), 'postgres')) ? (env('DB_URL') ?: env('DATABASE_URL')) : null,
             'host' => env('DB_HOST', '127.0.0.1'),
             'port' => env('DB_PORT', '5432'),
             'database' => env('DB_DATABASE', 'laravel'),
@@ -96,7 +100,10 @@ return [
             'prefix' => '',
             'prefix_indexes' => true,
             'search_path' => 'public',
-            'sslmode' => env('DB_SSLMODE', 'prefer'),
+            'sslmode' => env('DB_SSLMODE', 'require'),
+            'options' => extension_loaded('pdo_pgsql') ? [
+                PDO::ATTR_EMULATE_PREPARES => true,
+            ] : [],
         ],
 
         'sqlsrv' => [
