@@ -43,19 +43,33 @@ $app->booting(function () use ($app, $isVercel) {
         $app['config']->set('app.maintenance.driver', 'file');
     }
     if ($isVercel) {
-        $app['config']->set('database.default', 'sqlite');
-        $app['config']->set('database.connections.sqlite.database', '/tmp/database.sqlite');
-        $app['config']->set('database.connections.sqlite.busy_timeout', 5000);
-        $app['config']->set('database.connections.sqlite.journal_mode', 'MEMORY');
-        $app['config']->set('database.connections.sqlite.synchronous', 'OFF');
-        $app['config']->set('database.connections.sqlite.transaction_mode', 'IMMEDIATE');
-        $app['config']->set('session.driver', 'file');
-        $app['config']->set('session.files', '/tmp/storage/framework/sessions');
+        $dbUrl = env('DATABASE_URL') ?: env('DB_URL') ?: config('database.connections.pgsql.url');
+        $hasExternal = ! empty($dbUrl) || (env('DB_HOST') && env('DB_HOST') !== '127.0.0.1' && env('DB_HOST') !== 'localhost');
+
+        if ($hasExternal) {
+            $dbConn = (str_starts_with((string) $dbUrl, 'postgres') || env('DB_CONNECTION') === 'pgsql') ? 'pgsql' : 'mysql';
+            $app['config']->set('database.default', $dbConn);
+            if ($dbConn === 'pgsql' && ! empty($dbUrl)) {
+                $app['config']->set('database.connections.pgsql.url', $dbUrl);
+                $app['config']->set('database.connections.pgsql.sslmode', 'require');
+                $app['config']->set('database.connections.pgsql.options', [
+                    PDO::ATTR_EMULATE_PREPARES => true,
+                ]);
+            }
+        } else {
+            $app['config']->set('database.default', 'sqlite');
+            $app['config']->set('database.connections.sqlite.database', '/tmp/database.sqlite');
+            $app['config']->set('database.connections.sqlite.busy_timeout', 15000);
+            $app['config']->set('database.connections.sqlite.journal_mode', 'WAL');
+            $app['config']->set('database.connections.sqlite.synchronous', 'NORMAL');
+            $app['config']->set('database.connections.sqlite.transaction_mode', 'IMMEDIATE');
+        }
+
+        $app['config']->set('session.driver', 'cookie');
         $app['config']->set('session.cookie', 'corporate_ticketing_session');
         $app['config']->set('session.lifetime', 120);
         $app['config']->set('session.expire_on_close', false);
-        $app['config']->set('session.domain', null);
-        $app['config']->set('session.path', '/');
+        $app['config']->set('session.encrypt', true);
         $app['config']->set('livewire.temporary_file_upload.disk', 'local');
         $app['config']->set('livewire.temporary_file_upload.directory', 'livewire-tmp');
     } elseif (empty($app['config']['session.driver'])) {

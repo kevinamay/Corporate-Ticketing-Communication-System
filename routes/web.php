@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\EnsureHrDepartment;
 use App\Http\Middleware\SetLocale;
+use App\Models\Ticket;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -23,10 +24,10 @@ Route::get('/api-diagnostic', function () {
     try {
         $data['connection_name'] = DB::connection()->getName();
         $data['database_name'] = DB::connection()->getDatabaseName();
-        $data['ticket_count'] = \App\Models\Ticket::count();
-        $data['user_count'] = \App\Models\User::count();
+        $data['ticket_count'] = Ticket::count();
+        $data['user_count'] = User::count();
         $data['status'] = 'CONNECTED';
-    } catch (\Throwable $e) {
+    } catch (Throwable $e) {
         $data['status'] = 'ERROR';
         $data['error_message'] = $e->getMessage();
     }
