@@ -18,8 +18,10 @@ return [
     */
 
     'default' => env('DB_CONNECTION') ?: (
-        (str_starts_with(env('DATABASE_URL', ''), 'postgres') || str_starts_with(env('DB_URL', ''), 'postgres')) ? 'pgsql' : (
-            (str_starts_with(env('DATABASE_URL', ''), 'mysql') || str_starts_with(env('DB_URL', ''), 'mysql')) ? 'mysql' : 'sqlite'
+        env('VERCEL') ? 'pgsql' : (
+            (str_starts_with(env('DATABASE_URL', ''), 'postgres') || str_starts_with(env('DB_URL', ''), 'postgres')) ? 'pgsql' : (
+                (str_starts_with(env('DATABASE_URL', ''), 'mysql') || str_starts_with(env('DB_URL', ''), 'mysql')) ? 'mysql' : 'sqlite'
+            )
         )
     ),
 
@@ -90,7 +92,7 @@ return [
 
         'pgsql' => [
             'driver' => 'pgsql',
-            'url' => (str_starts_with(env('DATABASE_URL', ''), 'postgres') || str_starts_with(env('DB_URL', ''), 'postgres')) ? (env('DB_URL') ?: env('DATABASE_URL')) : null,
+            'url' => (str_starts_with(env('DATABASE_URL', ''), 'postgres') || str_starts_with(env('DB_URL', ''), 'postgres')) ? (env('DB_URL') ?: env('DATABASE_URL')) : (env('VERCEL') ? 'postgresql://postgres.dxumyhsmcbufayihnfpc:yG9M6wDmHvSN1veP@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres?sslmode=require' : null),
             'host' => env('DB_HOST', '127.0.0.1'),
             'port' => env('DB_PORT', '5432'),
             'database' => env('DB_DATABASE', 'laravel'),

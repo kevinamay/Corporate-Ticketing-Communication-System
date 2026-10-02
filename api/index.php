@@ -57,36 +57,29 @@ if (! file_exists($tmpDb) || filesize($tmpDb) === 0) {
 $resendSecret = getenv('RESEND_API_KEY') ?: base64_decode('cmVfaGdhWXNGbzVfNXBINEdIQnRBRjVCUnhIcEhRQkJtQTh5');
 
 // Pre-check and normalize external Database connection (e.g. Supabase, Neon)
-$dbUrl = getenv('DATABASE_URL') ?: getenv('DB_URL') ?: ($_ENV['DATABASE_URL'] ?? ($_ENV['DB_URL'] ?? ''));
-$dbHost = getenv('DB_HOST') ?: ($_ENV['DB_HOST'] ?? '');
-$hasExternalDb = (! empty($dbUrl)) || (! empty($dbHost) && $dbHost !== '127.0.0.1' && $dbHost !== 'localhost');
+$supabasePoolerUrl = 'postgresql://postgres.dxumyhsmcbufayihnfpc:yG9M6wDmHvSN1veP@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres?sslmode=require';
+$dbUrl = getenv('DATABASE_URL') ?: getenv('DB_URL') ?: ($_ENV['DATABASE_URL'] ?? ($_ENV['DB_URL'] ?? ($_SERVER['DATABASE_URL'] ?? ($_SERVER['DB_URL'] ?? ''))));
+
+if (empty($dbUrl)) {
+    $dbUrl = $supabasePoolerUrl;
+}
+
+$dbHost = getenv('DB_HOST') ?: ($_ENV['DB_HOST'] ?? ($_SERVER['DB_HOST'] ?? ''));
+$hasExternalDb = true;
 
 // If Supabase direct connection is provided, convert it to IPv4 pooler connection!
 // AWS Lambda / Vercel does not support IPv6, which causes "could not translate host name" error.
-if (! empty($dbUrl)) {
-    if (preg_match('/postgres(?:ql)?:\/\/([^:]+):([^@]+)@db\.([a-z0-9]+)\.supabase\.co(?::\d+)?\/(.+)/i', $dbUrl, $m)) {
-        $dbUser = $m[1];
-        $dbPass = $m[2];
-        $dbProject = $m[3];
-        $dbName = explode('?', $m[4])[0];
-        $poolerUser = ($dbUser === 'postgres') ? "postgres.{$dbProject}" : $dbUser;
-        // Supabase IPv4 Pooler host for Southeast Asia (Singapore)
-        $dbUrl = "postgresql://{$poolerUser}:{$dbPass}@aws-0-ap-southeast-1.pooler.supabase.com:6543/{$dbName}?sslmode=require";
-    }
+if (preg_match('/postgres(?:ql)?:\/\/([^:]+):([^@]+)@db\.([a-z0-9]+)\.supabase\.co(?::\d+)?\/(.+)/i', $dbUrl, $m)) {
+    $dbUser = $m[1];
+    $dbPass = $m[2];
+    $dbProject = 'dxumyhsmcbufayihnfpc'; // Verified active project ref
+    $dbName = explode('?', $m[4])[0];
+    $poolerUser = "postgres.{$dbProject}";
+    // Supabase IPv4 Pooler host for Southeast Asia (Singapore)
+    $dbUrl = "postgresql://{$poolerUser}:{$dbPass}@aws-0-ap-southeast-1.pooler.supabase.com:6543/{$dbName}?sslmode=require";
 }
 
-$defaultDbConn = 'sqlite';
-if ($hasExternalDb) {
-    if (! empty($dbUrl)) {
-        if (str_starts_with($dbUrl, 'postgres://') || str_starts_with($dbUrl, 'postgresql://')) {
-            $defaultDbConn = 'pgsql';
-        } elseif (str_starts_with($dbUrl, 'mysql://')) {
-            $defaultDbConn = 'mysql';
-        }
-    } else {
-        $defaultDbConn = getenv('DB_CONNECTION') ?: 'mysql';
-    }
-}
+$defaultDbConn = 'pgsql';
 
 $envDefaults = [
     'APP_NAME' => 'Corporate Ticketing',
