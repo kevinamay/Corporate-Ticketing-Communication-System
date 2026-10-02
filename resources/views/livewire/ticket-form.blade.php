@@ -37,17 +37,35 @@
     @endguest
 
     @if ($isSuccess)
-        <div class="mb-6 p-4 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 flex items-center justify-between text-emerald-900 dark:text-emerald-200 transition-all duration-300">
-            <div class="flex items-center gap-3">
-                <svg class="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                <div>
-                    <p class="text-xs font-bold">{{ __('Request Dispatched Successfully') }}</p>
-                    <p class="text-xs text-emerald-700 dark:text-emerald-300">{{ __('Your ticket is active and linked to the communication desk on the right.') }}</p>
+        <div class="mb-6 p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-emerald-900 dark:text-emerald-200 transition-all duration-300 shadow-xs">
+            <div class="flex items-start justify-between gap-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-xs font-bold">{{ __('Request Dispatched Successfully') }} {{ $createdTicketId ? '#'.$createdTicketId : '' }}</p>
+                        <p class="text-xs text-emerald-700 dark:text-emerald-300">{{ __('Your ticket is active and linked to the communication desk on the right.') }}</p>
+                    </div>
                 </div>
+                <button wire:click="$set('isSuccess', false)" class="text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:text-emerald-900 dark:hover:text-emerald-200 cursor-pointer">{{ __('Dismiss') }}</button>
             </div>
-            <button wire:click="$set('isSuccess', false)" class="text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:text-emerald-900 dark:hover:text-emerald-200 cursor-pointer">{{ __('Dismiss') }}</button>
+
+            @if ($createdTicketWhatsappUrl)
+                <div class="mt-3 pt-3 border-t border-emerald-200/70 dark:border-emerald-800/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                    <div class="flex items-center gap-2 text-[11px] text-emerald-800 dark:text-emerald-300 font-medium">
+                        <span class="inline-flex w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span>{{ __('Notifikasi WhatsApp otomatis dikirimkan ke Admin IT') }} (085784694910)</span>
+                    </div>
+                    <a href="{{ $createdTicketWhatsappUrl }}" target="_blank" rel="noopener noreferrer" 
+                       class="inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 active:scale-95 transition shadow-xs">
+                        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+                        <span>{{ __('Kirim / Buka WhatsApp') }}</span>
+                    </a>
+                </div>
+            @endif
         </div>
     @endif
 
@@ -1004,15 +1022,18 @@
 
     function triggerWahaWhatsAppNotification(detail) {
         try {
-            const data = (detail && detail.ticketData) ? detail.ticketData : (detail || {});
-            if (!data || !data.id) return;
+            // Robust parsing: handles plain object, array wrapping, or nested event structure
+            const payload = Array.isArray(detail) ? detail[0] : detail;
+            const data = (payload && payload.ticketData) ? payload.ticketData : (payload || {});
+            const ticketId = data.id || (payload && payload.ticketId);
+            if (!ticketId) return;
 
-            // Anti-Double Prevention: Prevent sending the same ticket more than once
+            // Anti-Double Prevention: Prevent sending the same ticket more than once within 5 seconds
             const now = Date.now();
-            if (lastDispatchedTicketId === data.id && (now - lastDispatchedTime) < 5000) {
+            if (lastDispatchedTicketId === ticketId && (now - lastDispatchedTime) < 5000) {
                 return;
             }
-            lastDispatchedTicketId = data.id;
+            lastDispatchedTicketId = ticketId;
             lastDispatchedTime = now;
 
             const sender = data.sender || 'Karyawan';
@@ -1020,7 +1041,6 @@
             const category = data.category || 'Umum';
             const priority = (data.priority || 'Normal').toUpperCase();
             const title = data.title || '-';
-            const ticketId = data.id;
 
             const dateStr = new Date().toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'});
             const timeStr = new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'});
@@ -1029,6 +1049,7 @@
 
             const adminPhone = (data.adminPhone || '6285784694910').replace(/[^0-9]/g, '').replace(/^0/, '62');
 
+            // Dispatch to local WAHA Gateway (port 3000)
             fetch('http://localhost:3000/api/sendText', {
                 method: 'POST',
                 headers: {
@@ -1042,16 +1063,28 @@
                 })
             }).then(r => {
                 if (r.ok) {
-                    console.log('✅ WAHA Bot: Notifikasi tiket #' + ticketId + ' berhasil terkirim 1 kali ke Admin IT (' + adminPhone + ')');
+                    console.log('✅ WAHA Bot: Notifikasi tiket #' + ticketId + ' berhasil terkirim ke WhatsApp Admin IT (' + adminPhone + ')');
+                } else {
+                    console.warn('⚠️ WAHA Bot response error: ' + r.status);
                 }
             }).catch(() => {
-                // Fail silently if local gateway is offline
+                console.info('ℹ️ WAHA Gateway port 3000 offline (Docker belum aktif). Pengguna dapat menggunakan tombol WhatsApp di layar.');
             });
-        } catch (err) {}
+        } catch (err) {
+            console.error('Trigger WhatsApp Error:', err);
+        }
     }
 
-    // Single Event Listener (No Duplicate)
+    // Dual-Hook: Register both window and Livewire listeners with dedup protection
     window.addEventListener('ticketCreated', (e) => {
         triggerWahaWhatsAppNotification(e.detail);
+    });
+
+    document.addEventListener('livewire:init', () => {
+        if (window.Livewire) {
+            Livewire.on('ticketCreated', (eventData) => {
+                triggerWahaWhatsAppNotification(eventData);
+            });
+        }
     });
 </script>

@@ -33,6 +33,10 @@ class TicketForm extends Component
 
     public bool $isSuccess = false;
 
+    public ?int $createdTicketId = null;
+
+    public ?string $createdTicketWhatsappUrl = null;
+
     /**
      * Exact department to categories mapping.
      */
@@ -172,6 +176,14 @@ class TicketForm extends Component
         $senderName = auth()->user()?->name ?? 'Karyawan';
         $departmentName = auth()->user()?->department?->name ?? 'Staff';
         $adminPhone = config('services.waha.admin_number', '6285784694910');
+
+        $this->createdTicketId = $ticket->id;
+        $cleanAdminPhone = preg_replace('/[^0-9]/', '', $adminPhone);
+        if (str_starts_with($cleanAdminPhone, '0')) {
+            $cleanAdminPhone = '62'.substr($cleanAdminPhone, 1);
+        }
+        $rawMessage = $whatsAppService->buildNewTicketMessage($ticket);
+        $this->createdTicketWhatsappUrl = 'https://api.whatsapp.com/send?phone='.$cleanAdminPhone.'&text='.urlencode($rawMessage);
 
         $this->dispatch('ticketCreated', ticketId: $ticket->id, ticketData: [
             'id' => $ticket->id,
