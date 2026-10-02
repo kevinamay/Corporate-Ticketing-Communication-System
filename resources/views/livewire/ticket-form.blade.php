@@ -802,30 +802,30 @@
                 const lang = this.getLocale();
                 if (lang === 'zh') {
                     return {
-                        pc: "### 🖥️ 电脑 / PC / 笔记本故障\n- **资产编号 / 主机名**: \n- **故障表现**: \n- **错误提示**: \n- **已尝试操作**: 重启电脑\n- **位置与联系方式**: ",
-                        network: "### 🌐 网络与互联网连接故障\n- **连接类型**: Wi-Fi / 有线局域网\n- **发生位置 / 楼层**: \n- **业务影响**: 无法访问 ERP / 互联网\n- **错误提示**: 页面连接超时 / Disconnected\n- **发生时间**: ",
-                        printer: "### 🖨️ 打印机 / 扫描仪故障\n- **打印机型号 / 名称**: \n- **设备放置位置**: \n- **指示灯状态**: \n- **故障现象**: 卡纸 / 缺墨 / 无法识别设备",
-                        account: "### 🔑 账户访问与密码重置\n- **系统名称**: ERP / 企业邮箱 / 员工门户\n- **用户名 / 员工工号**: \n- **问题描述**: 忘记密码 / 账号已被锁定\n- **所属部门**: ",
-                        maintenance: "### ❄️ 设施维护与环境维修\n- **房间位置 / 楼层**: \n- **关联设施**: 空调 / 照明 / 门锁 / 电气设施\n- **损坏详情**: \n- **紧迫程度**: ",
-                        general: "### 📋 故障与问题报告\n- **事件描述**: \n- **运营影响**: \n- **自行尝试操作**: \n- **其他备注**: "
+                        pc: "电脑 / PC / 笔记本故障\n- 资产编号 / 主机名: \n- 故障表现: \n- 错误提示: \n- 已尝试操作: 重启电脑\n- 位置与联系方式: ",
+                        network: "网络与互联网连接故障\n- 连接类型: Wi-Fi / 有线局域网\n- 发生位置 / 楼层: \n- 业务影响: 无法访问 ERP / 互联网\n- 错误提示: 页面连接超时 / Disconnected\n- 发生时间: ",
+                        printer: "打印机 / 扫描仪故障\n- 打印机型号 / 名称: \n- 设备放置位置: \n- 指示灯状态: \n- 故障现象: 卡纸 / 缺墨 / 无法识别设备",
+                        account: "账户访问与密码重置\n- 系统名称: ERP / 企业邮箱 / 员工门户\n- 用户名 / 员工工号: \n- 问题描述: 忘记密码 / 账号已被锁定\n- 所属部门: ",
+                        maintenance: "设施维护与环境维修\n- 房间位置 / 楼层: \n- 关联设施: 空调 / 照明 / 门锁 / 电气设施\n- 损坏详情: \n- 紧迫程度: ",
+                        general: "故障与问题报告\n- 事件描述: \n- 运营影响: \n- 自行尝试操作: \n- 其他备注: "
                     };
                 } else if (lang === 'en') {
                     return {
-                        pc: "### 🖥️ Computer / PC / Laptop Issue\n- **Asset Number / Hostname**: \n- **Symptoms / Malfunction**: \n- **Error Message**: \n- **Attempted Steps**: Restarted PC\n- **Location & Contact**: ",
-                        network: "### 🌐 Network & Internet Connectivity Issue\n- **Connection Type**: Wi-Fi / Wired LAN\n- **Location / Floor**: \n- **Impact**: Unable to access ERP / Internet\n- **Error Message**: Page timeout / Disconnected\n- **Time Incident Started**: ",
-                        printer: "### 🖨️ Printer / Scanner Issue\n- **Printer Name / Model**: \n- **Printer Location**: \n- **Indicator Light Status**: \n- **Issue**: Paper jam / Low ink / Device not detected",
-                        account: "### 🔑 Account Access & Password Reset\n- **System Name**: ERP / Office Email / Employee Portal\n- **Username / Employee ID**: \n- **Issue**: Forgotten password / Account locked\n- **Department**: ",
-                        maintenance: "### ❄️ Facility & Room Maintenance\n- **Room Location / Floor**: \n- **Related Facility**: Air Conditioner / Lighting / Door / Electrical\n- **Issue Breakdown**: \n- **Urgency Level**: ",
-                        general: "### 📋 Incident / Issue Report\n- **Incident Description**: \n- **Operational Impact**: \n- **Troubleshooting Attempted**: \n- **Additional Notes**: "
+                        pc: "Computer / PC / Laptop Issue\n- Asset Number / Hostname: \n- Symptoms / Malfunction: \n- Error Message: \n- Attempted Steps: Restarted PC\n- Location & Contact: ",
+                        network: "Network & Internet Connectivity Issue\n- Connection Type: Wi-Fi / Wired LAN\n- Location / Floor: \n- Impact: Unable to access ERP / Internet\n- Error Message: Page timeout / Disconnected\n- Time Incident Started: ",
+                        printer: "Printer / Scanner Issue\n- Printer Name / Model: \n- Printer Location: \n- Indicator Light Status: \n- Issue: Paper jam / Low ink / Device not detected",
+                        account: "Account Access & Password Reset\n- System Name: ERP / Office Email / Employee Portal\n- Username / Employee ID: \n- Issue: Forgotten password / Account locked\n- Department: ",
+                        maintenance: "Facility & Room Maintenance\n- Room Location / Floor: \n- Related Facility: Air Conditioner / Lighting / Door / Electrical\n- Issue Breakdown: \n- Urgency Level: ",
+                        general: "Incident / Issue Report\n- Incident Description: \n- Operational Impact: \n- Troubleshooting Attempted: \n- Additional Notes: "
                     };
                 } else {
                     return {
-                        pc: "### 🖥️ Gangguan Komputer / PC / Laptop\n- **Nomor Aset / Hostname**: \n- **Gejala Kerusakan**: \n- **Pesan Error**: \n- **Langkah yang Sudah Dicoba**: Restart PC\n- **Lokasi & Kontak**: ",
-                        network: "### 🌐 Gangguan Jaringan & Internet\n- **Jenis Koneksi**: Wi-Fi / LAN Kabel\n- **Lokasi / Lantai**: \n- **Dampak**: Tidak bisa akses ERP / Internet\n- **Pesan Kesalahan**: Halaman timeout / Disconnected\n- **Waktu Mulai Terjadi**: ",
-                        printer: "### 🖨️ Kendala Printer / Scanner\n- **Nama / Model Printer**: \n- **Lokasi Printer**: \n- **Status Lampu Indikator**: \n- **Kendala**: Kertas tersangkut / Tinta habis / Tidak terdeteksi",
-                        account: "### 🔑 Akses Akun & Reset Kata Sandi\n- **Nama Sistem**: ERP / Email Kantor / Portal Karyawan\n- **Username / NIK**: \n- **Permasalahan**: Lupa password / Akun terblokir\n- **Departemen**: ",
-                        maintenance: "### ❄️ Pemeliharaan Fasilitas & Ruangan\n- **Lokasi Ruangan / Lantai**: \n- **Fasilitas Terkait**: AC / Lampu / Pintu / Kelistrikan\n- **Uraian Kerusakan**: \n- **Tingkat Urgensi**: ",
-                        general: "### 📋 Laporan Masalah / Kendala\n- **Deskripsi Kejadian**: \n- **Dampak Operasional**: \n- **Tindakan Mandiri**: \n- **Catatan Tambahan**: "
+                        pc: "Gangguan Komputer / PC / Laptop\n- Nomor Aset / Hostname: \n- Gejala Kerusakan: \n- Pesan Error: \n- Langkah yang Sudah Dicoba: Restart PC\n- Lokasi & Kontak: ",
+                        network: "Gangguan Jaringan & Internet\n- Jenis Koneksi: Wi-Fi / LAN Kabel\n- Lokasi / Lantai: \n- Dampak: Tidak bisa akses ERP / Internet\n- Pesan Kesalahan: Halaman timeout / Disconnected\n- Waktu Mulai Terjadi: ",
+                        printer: "Kendala Printer / Scanner\n- Nama / Model Printer: \n- Lokasi Printer: \n- Status Lampu Indikator: \n- Kendala: Kertas tersangkut / Tinta habis / Tidak terdeteksi",
+                        account: "Akses Akun & Reset Kata Sandi\n- Nama Sistem: ERP / Email Kantor / Portal Karyawan\n- Username / NIK: \n- Permasalahan: Lupa password / Akun terblokir\n- Departemen: ",
+                        maintenance: "Pemeliharaan Fasilitas & Ruangan\n- Lokasi Ruangan / Lantai: \n- Fasilitas Terkait: AC / Lampu / Pintu / Kelistrikan\n- Uraian Kerusakan: \n- Tingkat Urgensi: ",
+                        general: "Laporan Masalah / Kendala\n- Deskripsi Kejadian: \n- Dampak Operasional: \n- Tindakan Mandiri: \n- Catatan Tambahan: "
                     };
                 }
             },
@@ -833,11 +833,11 @@
             getSmartPolishText(current) {
                 const lang = this.getLocale();
                 if (lang === 'zh') {
-                    return "### 📌 问题摘要\n" + current + "\n\n### 🔍 现场情况与故障症状\n- 在执行日常业务操作过程中出现异常\n- 错误代码 / 提示信息: [如有请在此注明]\n\n### 🛠️ 已尝试的解决步骤\n- [ ] 刷新网页或重新启动相关应用\n- [ ] 检查设备连接与网络状态\n\n### ⚠️ 对生产与工作的影响\n- 需技术人员尽快处理以恢复正常运作";
+                    return "问题摘要:\n" + current + "\n\n现场情况与故障症状:\n- 在执行日常业务操作过程中出现异常\n- 错误代码 / 提示信息: [如有请在此注明]\n\n已尝试的解决步骤:\n- 刷新网页或重新启动相关应用\n- 检查设备连接与网络状态\n\n对生产与工作的影响:\n- 需技术人员尽快处理以恢复正常运作";
                 } else if (lang === 'en') {
-                    return "### 📌 Issue Summary\n" + current + "\n\n### 🔍 Situation & Symptoms Details\n- The issue occurred during normal work operations\n- Error Message: [Please specify if any]\n\n### 🛠️ Steps Already Attempted\n- [ ] Refreshed the page or restarted the application\n- [ ] Checked device network / cable connection\n\n### ⚠️ Impact on Work Operations\n- Requires prompt assistance to restore smooth operations";
+                    return "Issue Summary:\n" + current + "\n\nSituation & Symptoms Details:\n- The issue occurred during normal work operations\n- Error Message: [Please specify if any]\n\nSteps Already Attempted:\n- Refreshed the page or restarted the application\n- Checked device network / cable connection\n\nImpact on Work Operations:\n- Requires prompt assistance to restore smooth operations";
                 } else {
-                    return "### 📌 Ringkasan Masalah\n" + current + "\n\n### 🔍 Rincian Situasi & Gejala\n- Kendala muncul saat menjalankan proses pekerjaan\n- Pesan Kesalahan / Error: [Sebutkan jika ada]\n\n### 🛠️ Langkah yang Sudah Dicoba\n- [ ] Memuat ulang (refresh) halaman atau restart aplikasi\n- [ ] Memeriksa koneksi perangkat\n\n### ⚠️ Dampak Terhadap Pekerjaan\n- Memerlukan penanganan segera agar operasional kembali lancar";
+                    return "Ringkasan Masalah:\n" + current + "\n\nRincian Situasi & Gejala:\n- Kendala muncul saat menjalankan proses pekerjaan\n- Pesan Kesalahan / Error: [Sebutkan jika ada]\n\nLangkah yang Sudah Dicoba:\n- Memuat ulang (refresh) halaman atau restart aplikasi\n- Memeriksa koneksi perangkat\n\nDampak Terhadap Pekerjaan:\n- Memerlukan penanganan segera agar operasional kembali lancar";
                 }
             },
 
