@@ -2,38 +2,12 @@
 
 use App\Http\Middleware\EnsureHrDepartment;
 use App\Http\Middleware\SetLocale;
-use App\Models\Ticket;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Validation\ValidationException;
-
-Route::get('/api-diagnostic', function () {
-    $data = [
-        'default_connection' => config('database.default'),
-        'db_connection_env' => env('DB_CONNECTION'),
-        'has_database_url' => ! empty(env('DATABASE_URL')),
-        'database_url_host' => parse_url(env('DATABASE_URL') ?: '', PHP_URL_HOST),
-        'database_url_port' => parse_url(env('DATABASE_URL') ?: '', PHP_URL_PORT),
-        'pdo_pgsql_loaded' => extension_loaded('pdo_pgsql'),
-        'pdo_drivers' => PDO::getAvailableDrivers(),
-    ];
-
-    try {
-        $data['connection_name'] = DB::connection()->getName();
-        $data['database_name'] = DB::connection()->getDatabaseName();
-        $data['ticket_count'] = Ticket::count();
-        $data['user_count'] = User::count();
-        $data['status'] = 'CONNECTED';
-    } catch (Throwable $e) {
-        $data['status'] = 'ERROR';
-        $data['error_message'] = $e->getMessage();
-    }
-
-    return response()->json($data);
-});
 
 Route::get('/', function () {
     $activeUser = Auth::user();
