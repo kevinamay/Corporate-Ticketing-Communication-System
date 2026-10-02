@@ -717,42 +717,42 @@
                                                     <span>🖥️</span>
                                                     <div>
                                                         <div class="font-semibold">{{ __('Solusi Perbaikan PC / Hardware') }}</div>
-                                                        <div class="text-[10px] text-slate-400">Pembersihan, restart service, hardware siap</div>
+                                                        <div class="text-[10px] text-slate-400">{{ __('Pembersihan, restart service, hardware siap') }}</div>
                                                     </div>
                                                 </button>
                                                 <button type="button" @click="insertTemplate('network_fix')" class="w-full text-left px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2 cursor-pointer">
                                                     <span>🌐</span>
                                                     <div>
                                                         <div class="font-semibold">{{ __('Solusi Jaringan & Wi-Fi') }}</div>
-                                                        <div class="text-[10px] text-slate-400">Reset IP, flush DNS, kabel LAN terverifikasi</div>
+                                                        <div class="text-[10px] text-slate-400">{{ __('Reset IP, flush DNS, kabel LAN terverifikasi') }}</div>
                                                     </div>
                                                 </button>
                                                 <button type="button" @click="insertTemplate('printer_fix')" class="w-full text-left px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2 cursor-pointer">
                                                     <span>🖨️</span>
                                                     <div>
                                                         <div class="font-semibold">{{ __('Solusi Printer & Scanner') }}</div>
-                                                        <div class="text-[10px] text-slate-400">Paper jam diatasi, toner baru, cetak normal</div>
+                                                        <div class="text-[10px] text-slate-400">{{ __('Paper jam diatasi, toner baru, cetak normal') }}</div>
                                                     </div>
                                                 </button>
                                                 <button type="button" @click="insertTemplate('account_reset')" class="w-full text-left px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2 cursor-pointer">
                                                     <span>🔑</span>
                                                     <div>
                                                         <div class="font-semibold">{{ __('Reset Akun & Akses') }}</div>
-                                                        <div class="text-[10px] text-slate-400">Kata sandi sementara, instruksi aktivasi</div>
+                                                        <div class="text-[10px] text-slate-400">{{ __('Kata sandi sementara, instruksi aktivasi') }}</div>
                                                     </div>
                                                 </button>
                                                 <button type="button" @click="insertTemplate('sparepart_wait')" class="w-full text-left px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2 cursor-pointer">
                                                     <span>📦</span>
                                                     <div>
                                                         <div class="font-semibold">{{ __('Status Pengadaan Sparepart') }}</div>
-                                                        <div class="text-[10px] text-slate-400">Menunggu suku cadang, estimasi kedatangan</div>
+                                                        <div class="text-[10px] text-slate-400">{{ __('Menunggu suku cadang, estimasi kedatangan') }}</div>
                                                     </div>
                                                 </button>
                                                 <button type="button" @click="insertTemplate('resolved_confirm')" class="w-full text-left px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2 cursor-pointer">
                                                     <span>✅</span>
                                                     <div>
                                                         <div class="font-semibold">{{ __('Konfirmasi Penyelesaian Masalah') }}</div>
-                                                        <div class="text-[10px] text-slate-400">Kendala tuntas diperbaiki, siap dicoba</div>
+                                                        <div class="text-[10px] text-slate-400">{{ __('Kendala tuntas diperbaiki, siap dicoba') }}</div>
                                                     </div>
                                                 </button>
                                             </div>
@@ -1128,32 +1128,80 @@
                 this.closeMenus();
             },
 
+            getLocale() {
+                const docLang = (document.documentElement.lang || '').substring(0, 2).toLowerCase();
+                if (docLang === 'zh' || docLang === 'en' || docLang === 'id') {
+                    return docLang;
+                }
+                return '{{ app()->getLocale() }}' || 'id';
+            },
+
+            getTemplates() {
+                const lang = this.getLocale();
+                if (lang === 'zh') {
+                    return {
+                        pc_fix: "### 🖥️ 电脑与硬件故障解决说明\n- **处理措施**: 清洁设备、重启系统相关服务并验证驱动程序。\n- **检测结果**: 各硬件组件运行正常稳定。\n- **使用建议**: 用户可继续正常开展日常业务工作。",
+                        network_fix: "### 🌐 网络与互联网故障处理说明\n- **技术操作**: 重置 IP 地址配置、清理 DNS 缓存并优化局域网/无线网络连接。\n- **连通状态**: 互联网连接与本地服务器访问已恢复正常。\n- **测试结果**: 传输速度与 Ping 延迟稳定良好。",
+                        printer_fix: "### 🖨️ 打印机与扫描仪故障处理说明\n- **处理措施**: 排除卡纸问题、清洁进纸胶轮并更换墨盒/碳粉。\n- **打印测试**: 打印效果清晰整洁，打印机队列无阻塞滞留。\n- **设备状态**: 打印设备已可正常投入使用。",
+                        account_reset: "### 🔑 账号重置与权限更新说明\n- **处理措施**: 账号密码已重置为系统临时密码。\n- **用户指引**: 请使用临时密码登录系统，并在首次登录后立即修改新密码。\n- **访问权限**: 相关功能模块权限已核对并处于正常激活状态。",
+                        sparepart_wait: "### 📦 备件与零配件采购进度说明\n- **部件状态**: 需更换硬件配件，目前已提交采购订单并处于配货调拨中。\n- **预计时间**: 预计在 1-3 个工作日内送达。\n- **应急方案**: 已部署临时替代方案以确保日常生产工作不受影响。",
+                        resolved_confirm: "### ✅ 故障排除与处理完成确认\n- **解决说明**: 所反馈的技术故障已全数排查修复并经过现场测试。\n- **工单状态**: 此工单标记为已解决（Resolved）。\n- **补充说明**: 如后续仍有相关异常，请随时联系技术支持团队。"
+                    };
+                } else if (lang === 'en') {
+                    return {
+                        pc_fix: "### 🖥️ PC & Hardware Repair Solution\n- **Action Taken**: Device cleaning, system service restart, and driver verification.\n- **Inspection Results**: Components functioning normally and stably.\n- **Recommendation**: User may resume normal work operations.",
+                        network_fix: "### 🌐 Network & Internet Resolution\n- **Technical Action**: Reset IP configuration, flush DNS cache, and optimized LAN/Wi-Fi connection.\n- **Connectivity Status**: Internet connection and local server access restored.\n- **Testing**: Speed and ping latency verified stable.",
+                        printer_fix: "### 🖨️ Printer & Scanner Resolution\n- **Action Taken**: Paper jam cleared, roller cleaned, and toner/ink replaced.\n- **Test Print**: Printout sharp, clean, and no spooler queue stuck.\n- **Status**: Printer device ready for operational use.",
+                        account_reset: "### 🔑 Account Reset & Access Renewal\n- **Action Taken**: Password has been reset to a temporary password.\n- **User Instructions**: Please sign in using the temporary password and update it immediately upon first login.\n- **Permissions**: Module access privileges verified and active.",
+                        sparepart_wait: "### 📦 Spare Part Procurement Status\n- **Component Status**: Requires replacement part currently in procurement/ordering process.\n- **Estimated Time**: Expected to arrive within 1-3 business days.\n- **Temporary Action**: Temporary workaround implemented to avoid workflow disruption.",
+                        resolved_confirm: "### ✅ Issue Resolution Confirmation\n- **Solution**: All reported technical issues have been resolved and tested.\n- **Ticket Status**: Issue marked as RESOLVED.\n- **Note**: If you encounter related issues, please contact technical support again."
+                    };
+                } else {
+                    return {
+                        pc_fix: "### 🖥️ Solusi Perbaikan PC & Hardware\n- **Tindakan Penanganan**: Pembersihan perangkat, restart service sistem, dan verifikasi driver.\n- **Hasil Pemeriksaan**: Komponen berfungsi normal dan stabil.\n- **Rekomendasi**: Pengguna dapat melanjutkan operasional pekerjaan.",
+                        network_fix: "### 🌐 Penanganan Kendala Jaringan & Internet\n- **Tindakan Teknis**: Reset konfigurasi IP, flush DNS cache, dan optimasi koneksi LAN/Wi-Fi.\n- **Status Konektivitas**: Koneksi internet dan akses server lokal kembali normal.\n- **Pengujian**: Kecepatan dan stabilitas ping terverifikasi baik.",
+                        printer_fix: "### 🖨️ Penanganan Printer & Scanner\n- **Tindakan**: Paper jam diatasi, pembersihan roller, dan penggantian toner/tinta.\n- **Uji Cetak (Test Print)**: Hasil cetak tajam, bersih, dan tidak ada antrean dokumen tertahan.\n- **Status**: Perangkat printer siap digunakan kembali.",
+                        account_reset: "### 🔑 Reset Akun & Pembaharuan Akses\n- **Tindakan**: Kata sandi telah direset ke kata sandi sementara.\n- **Instruksi Pengguna**: Silakan login dengan kata sandi sementara dan segera ubah kata sandi saat pertama kali masuk.\n- **Hak Akses**: Izin akses modul telah diverifikasi dan aktif.",
+                        sparepart_wait: "### 📦 Status Pengadaan Sparepart / Suku Cadang\n- **Status Komponen**: Memerlukan penggantian suku cadang yang saat ini dalam proses pengadaan/pemesanan.\n- **Estimasi Waktu**: Diperkirakan tiba dalam 1-3 hari kerja.\n- **Tindakan Sementara**: Telah disiapkan solusi alternatif sementara untuk menjaga kelancaran kerja.",
+                        resolved_confirm: "### ✅ Konfirmasi Penyelesaian Masalah\n- **Solusi**: Seluruh kendala teknis yang dilaporkan telah dituntaskan dan diuji coba.\n- **Status Tiket**: Kendala dinyatakan SELESAI (Resolved).\n- **Catatan**: Jika masih mengalami kendala terkait, silakan hubungi tim teknis kembali."
+                    };
+                }
+            },
+
+            getSmartPolishAnswer(current) {
+                const lang = this.getLocale();
+                if (lang === 'zh') {
+                    return "### 🛠️ 技术专员处理措施\n" + current + "\n\n### 🔍 技术分析与现场测试\n- 已对报告的故障现象进行系统性检测与排查\n- 运行参数已恢复至标准规格\n\n### 🟢 处理状态与使用建议\n- 业务操作故障已妥善排除\n- 用户可重新尝试操作并确认效果";
+                } else if (lang === 'en') {
+                    return "### 🛠️ Specialist Resolution Actions\n" + current + "\n\n### 🔍 Technical Analysis & Testing\n- A systematic verification has been performed for the reported issue\n- Operating parameters restored to standard baseline\n\n### 🟢 Status & User Recommendations\n- Operational issue has been addressed\n- User may test and verify operations";
+                } else {
+                    return "### 🛠️ Tindakan Penanganan Petugas\n" + current + "\n\n### 🔍 Analisis & Pengujian Teknis\n- Telah dilakukan pengecekan sistematis terhadap kendala yang dilaporkan\n- Parameter operasional telah dikembalikan ke kondisi standar\n\n### 🟢 Status & Rekomendasi Pengguna\n- Kendala operasional telah tertangani\n- Pengguna dapat mencoba kembali dan melakukan konfirmasi";
+                }
+            },
+
             clearContent() {
-                if (confirm('Apakah Anda yakin ingin mengosongkan teks tanggapan?')) {
+                const lang = this.getLocale();
+                const msg = lang === 'zh'
+                    ? '您确定要清空处理答复内容吗？'
+                    : (lang === 'en' ? 'Are you sure you want to clear the response text?' : 'Apakah Anda yakin ingin mengosongkan teks tanggapan?');
+                if (confirm(msg)) {
                     this.setText('');
                 }
                 this.closeMenus();
             },
 
             insertTemplate(type) {
-                let tpl = '';
-                if (type === 'pc_fix') {
-                    tpl = "### 🖥️ Solusi Perbaikan PC & Hardware\n- **Tindakan Penanganan**: Pembersihan perangkat, restart service sistem, dan verifikasi driver.\n- **Hasil Pemeriksaan**: Komponen berfungsi normal dan stabil.\n- **Rekomendasi**: Pengguna dapat melanjutkan operasional pekerjaan.";
-                } else if (type === 'network_fix') {
-                    tpl = "### 🌐 Penanganan Kendala Jaringan & Internet\n- **Tindakan Teknis**: Reset konfigurasi IP, flush DNS cache, dan optimasi koneksi LAN/Wi-Fi.\n- **Status Konektivitas**: Koneksi internet dan akses server lokal kembali normal.\n- **Pengujian**: Kecepatan dan stabilitas ping terverifikasi baik.";
-                } else if (type === 'printer_fix') {
-                    tpl = "### 🖨️ Penanganan Printer & Scanner\n- **Tindakan**: Paper jam diatasi, pembersihan roller, dan penggantian toner/tinta.\n- **Uji Cetak (Test Print)**: Hasil cetak tajam, bersih, dan tidak ada antrean dokumen tertahan.\n- **Status**: Perangkat printer siap digunakan kembali.";
-                } else if (type === 'account_reset') {
-                    tpl = "### 🔑 Reset Akun & Pembaharuan Akses\n- **Tindakan**: Kata sandi telah direset ke kata sandi sementara.\n- **Instruksi Pengguna**: Silakan login dengan kata sandi sementara dan segera ubah kata sandi saat pertama kali masuk.\n- **Hak Akses**: Izin akses modul telah diverifikasi dan aktif.";
-                } else if (type === 'sparepart_wait') {
-                    tpl = "### 📦 Status Pengadaan Sparepart / Suku Cadang\n- **Status Komponen**: Memerlukan penggantian suku cadang yang saat ini dalam proses pengadaan/pemesanan.\n- **Estimasi Waktu**: Diperkirakan tiba dalam 1-3 hari kerja.\n- **Tindakan Sementara**: Telah disiapkan solusi alternatif sementara untuk menjaga kelancaran kerja.";
-                } else if (type === 'resolved_confirm') {
-                    tpl = "### ✅ Konfirmasi Penyelesaian Masalah\n- **Solusi**: Seluruh kendala teknis yang dilaporkan telah dituntaskan dan diuji coba.\n- **Status Tiket**: Kendala dinyatakan SELESAI (Resolved).\n- **Catatan**: Jika masih mengalami kendala terkait, silakan hubungi tim teknis kembali.";
-                }
+                const templates = this.getTemplates();
+                const tpl = templates[type] || templates['resolved_confirm'];
+                const lang = this.getLocale();
+                const confirmMsg = lang === 'zh'
+                    ? '是否将此处理方案模板添加到回答内容中？'
+                    : (lang === 'en' ? 'Append this solution template to the response?' : 'Tambahkan template ini ke dalam teks jawaban?');
+
                 if (tpl) {
                     const el = this.$refs.textarea;
                     if (el && el.value.trim().length > 0) {
-                        if (confirm('Tambahkan template ini ke dalam teks jawaban?')) {
+                        if (confirm(confirmMsg)) {
                             this.insertText('\n\n' + tpl);
                         }
                     } else {
@@ -1174,7 +1222,7 @@
                 }
 
                 if (action === 'smart_polish') {
-                    const formatted = "### 🛠️ Tindakan Penanganan Petugas\n" + current + "\n\n### 🔍 Analisis & Pengujian Teknis\n- Telah dilakukan pengecekan sistematis terhadap kendala yang dilaporkan\n- Parameter operasional telah dikembalikan ke kondisi standar\n\n### 🟢 Status & Rekomendasi Pengguna\n- Kendala operasional telah tertangani\n- Pengguna dapat mencoba kembali dan melakukan konfirmasi";
+                    const formatted = this.getSmartPolishAnswer(current);
                     this.setText(formatted);
                 } else if (action === 'bullets') {
                     const lines = current.split('\n').filter(l => l.trim().length > 0);

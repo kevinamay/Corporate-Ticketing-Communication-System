@@ -569,5 +569,16 @@
     "belum bisa digunakan untuk login": "cannot be used for login yet",
     "dan": "and",
     "sampai pihak Administrator IT menyetujui (meng-ACC) akun Anda.": "until the IT Administrator approves your account.",
-    "Posisi: Belum di-ACC oleh Admin &bull; Perbaiki salah ketik atau data kendala": "Status: Pending Admin Approval &bull; Edit typos or issue details"
+    "Posisi: Belum di-ACC oleh Admin &bull; Perbaiki salah ketik atau data kendala": "Status: Pending Admin Approval &bull; Edit typos or issue details",
+    "Restart, layar biru, mati total": "Restart, blue screen, no power",
+    "Wi-Fi lambat, putus, LAN": "Slow Wi-Fi, disconnected, LAN",
+    "Kertas macet, tinta, driver": "Paper jam, ink, driver error",
+    "Lupa password, email, ERP": "Forgot password, email, ERP",
+    "AC tidak dingin, lampu, pintu": "AC not cooling, lights, doors",
+    "Pembersihan, restart service, hardware siap": "Cleaning, restart service, hardware ready",
+    "Reset IP, flush DNS, kabel LAN terverifikasi": "Reset IP, flush DNS, LAN cable verified",
+    "Paper jam diatasi, toner baru, cetak normal": "Paper jam cleared, new toner, normal print",
+    "Kata sandi sementara, instruksi aktivasi": "Temporary password, activation instructions",
+    "Menunggu suku cadang, estimasi kedatangan": "Awaiting spare parts, arrival estimate",
+    "Kendala tuntas diperbaiki, siap dicoba": "Issue thoroughly resolved, ready for testing"
 }
