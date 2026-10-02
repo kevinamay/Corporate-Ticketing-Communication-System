@@ -138,14 +138,11 @@
 
             <!-- Main Navigation Bar -->
             <div class="h-16 flex items-center justify-between">
-                <!-- Left: ASIA PLASTIK Brand Logo + Internal Badge -->
+                <!-- Left: ASIA PLASTIK Brand Logo -->
                 <div class="flex items-center gap-3">
                     <a href="{{ url('/') }}" class="flex items-center group">
                         <img src="{{ asset('images/logo2.webp') }}" alt="Asia Plastik" class="h-9 sm:h-10 w-auto object-contain transition duration-200 group-hover:opacity-90">
                     </a>
-                    <span class="hidden md:inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase tracking-wider bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                        {{ __('Portal Internal') }}
-                    </span>
                 </div>
 
                 <!-- Center: Navigation Links for Desktop -->
