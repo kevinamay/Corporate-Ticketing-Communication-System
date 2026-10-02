@@ -17,7 +17,7 @@
         </span>
     </div>
 
-    @guest
+    @if (!$activeUser)
         <div class="mb-6 p-4 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-800/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-amber-900 dark:text-amber-200 shadow-xs">
             <div class="flex items-center gap-3">
                 <div class="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 flex items-center justify-center shrink-0">
@@ -34,7 +34,7 @@
                 {{ __('Masuk ke Akun') }}
             </a>
         </div>
-    @endguest
+    @endif
 
     @if ($isSuccess)
         <div class="mb-6 p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-emerald-900 dark:text-emerald-200 transition-all duration-300 shadow-xs">
@@ -602,7 +602,7 @@
         <!-- Submit Button: Solid Corporate Blue, hover effect, standard rounded corners -->
         <div class="pt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-gray-100 dark:border-slate-800">
             <span class="text-xs text-slate-500 dark:text-slate-400">{{ __('Dispatching instantly initiates the inter-department communication thread') }}</span>
-            @auth
+            @if ($activeUser)
                 <button type="submit" wire:loading.attr="disabled"
                     class="w-full sm:w-auto px-6 py-2.5 rounded-lg text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50">
                     <span wire:loading.remove wire:target="submit" class="flex items-center gap-2">
@@ -627,7 +627,7 @@
                     </svg>
                     <span>{{ __('Masuk (Login) untuk Kirim Tiket') }}</span>
                 </a>
-            @endauth
+            @endif
         </div>
     </form>
 </div>

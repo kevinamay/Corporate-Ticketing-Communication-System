@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureActiveUserSession;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -21,6 +22,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
             'locale',
         ]);
         $middleware->web(append: [
+            EnsureActiveUserSession::class,
             SetLocale::class,
         ]);
     })

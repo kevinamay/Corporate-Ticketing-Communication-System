@@ -62,6 +62,17 @@ class TicketForm extends Component
         ];
     }
 
+    public function boot(): void
+    {
+        $currentUserId = Auth::id() ?? session('active_user_id');
+        if (! Auth::check() && $currentUserId) {
+            $user = User::find($currentUserId);
+            if ($user && $user->email_verified_at !== null) {
+                Auth::login($user);
+            }
+        }
+    }
+
     public function mount(): void
     {
         $depts = Department::all();
@@ -198,6 +209,9 @@ class TicketForm extends Component
 
     public function render()
     {
+        $currentUserId = Auth::id() ?? session('active_user_id');
+        $activeUser = Auth::user() ?? ($currentUserId ? User::find($currentUserId) : null);
+
         $itDepartments = Department::where('name', 'like', 'IT%')->get();
         if ($itDepartments->isEmpty()) {
             $itDepartments = Department::take(1)->get();
@@ -206,6 +220,7 @@ class TicketForm extends Component
         return view('livewire.ticket-form', [
             'departments' => Department::all(),
             'targetDepartments' => $itDepartments,
+            'activeUser' => $activeUser,
         ]);
     }
 }
