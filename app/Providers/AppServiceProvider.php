@@ -2,7 +2,10 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
@@ -28,5 +31,16 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('access-hcm-master', function ($user) {
             return $user->email === 'user123@gmail.com';
         });
+
+        if (env('VERCEL') || app()->environment('production')) {
+            try {
+                if (! Schema::hasTable('tickets')) {
+                    Artisan::call('migrate', ['--force' => true]);
+                    Artisan::call('db:seed', ['--force' => true]);
+                }
+            } catch (\Throwable $e) {
+                Log::warning('Vercel schema init check: '.$e->getMessage());
+            }
+        }
     }
 }
