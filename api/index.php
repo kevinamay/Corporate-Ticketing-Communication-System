@@ -64,6 +64,9 @@ if (empty($dbUrl)) {
     $dbUrl = $supabasePoolerUrl;
 }
 
+// Automatically correct any typo in project ref (dxumytsmc -> dxumyhsmc)
+$dbUrl = str_replace('dxumytsmcbufayihnfpc', 'dxumyhsmcbufayihnfpc', $dbUrl);
+
 $dbHost = getenv('DB_HOST') ?: ($_ENV['DB_HOST'] ?? ($_SERVER['DB_HOST'] ?? ''));
 $hasExternalDb = true;
 

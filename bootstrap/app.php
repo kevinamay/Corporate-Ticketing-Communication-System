@@ -44,6 +44,7 @@ $app->booting(function () use ($app, $isVercel) {
     }
     if ($isVercel) {
         $dbUrl = env('DATABASE_URL') ?: env('DB_URL') ?: config('database.connections.pgsql.url');
+        $dbUrl = str_replace('dxumytsmcbufayihnfpc', 'dxumyhsmcbufayihnfpc', (string) $dbUrl);
         $hasExternal = ! empty($dbUrl) || (env('DB_HOST') && env('DB_HOST') !== '127.0.0.1' && env('DB_HOST') !== 'localhost');
 
         if ($hasExternal) {
