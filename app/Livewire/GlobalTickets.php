@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
+use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
@@ -47,6 +48,18 @@ class GlobalTickets extends Component
                 $this->viewTicketDetail($ticketId);
             }
         }
+    }
+
+    /**
+     * Realtime reactive event listener: re-renders instantly on any ticket mutation.
+     */
+    #[On('ticketCreated')]
+    #[On('ticketStatusUpdated')]
+    #[On('ticketDeleted')]
+    #[On('ticketUpdated')]
+    public function refreshTickets(): void
+    {
+        // Re-renders the component immediately upon new ticket or changes
     }
 
     /**
