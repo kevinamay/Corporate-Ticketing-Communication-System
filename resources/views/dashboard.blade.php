@@ -169,26 +169,6 @@
             </div>
         </div>
 
-        <!-- Department Quick Navigation Ribbon -->
-        <div id="departments-list" class="scroll-mt-24 bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm p-4 flex flex-col md:flex-row items-center justify-between gap-4 transition-colors">
-            <div class="flex items-center gap-2">
-                <span class="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">{{ __('Unit Operasional:') }}</span>
-                <div class="flex flex-wrap items-center gap-2">
-                    @foreach (\App\Models\Department::all() as $dept)
-                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-slate-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200">
-                            <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-                            {{ __($dept->name) }}
-                            <span class="text-[10px] text-slate-400 dark:text-slate-500">({{ $dept->tickets()->count() }})</span>
-                        </span>
-                    @endforeach
-                </div>
-            </div>
-
-            <div class="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-3">
-                <span>{{ __('SLA Standar Pabrik:') }} <strong class="text-slate-700 dark:text-slate-200">&lt; 15 Menit</strong></span>
-                <span class="text-emerald-600 dark:text-emerald-400 font-bold">&bull; {{ __('Online 24/7') }}</span>
-            </div>
-        </div>
 
         <!-- 1. Form Pengajuan Tiket Dukungan (IT Support) -->
         <div id="new-ticket" class="scroll-mt-24">
