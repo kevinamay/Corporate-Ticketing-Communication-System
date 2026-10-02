@@ -208,11 +208,11 @@
                 @if (auth()->check() && (auth()->user()->role === 'admin' || auth()->user()->email === 'user123@gmail.com'))
                     @if (auth()->user()->email === 'user123@gmail.com')
                         <a href="{{ request()->is('/') ? '#hcm-master-section' : url('/#hcm-master-section') }}" @click="mobileMenuOpen = false" class="col-span-2 p-2.5 rounded-lg bg-blue-600 text-white font-bold text-center hover:bg-blue-500 transition shadow-sm">
-                            {{ __('🛡️ Input Data Karyawan (HCM)') }}
+                            {{ __('Master Karyawan (HCM)') }}
                         </a>
                     @endif
                     <a href="{{ request()->is('/') ? '#global-tickets' : url('/#global-tickets') }}" @click="mobileMenuOpen = false" class="col-span-2 p-2.5 rounded-lg bg-slate-800 text-white font-bold text-center hover:bg-blue-600 transition">
-                        {{ __('✉️ Jawab & Tangani Tiket Masuk') }}
+                        {{ __('Tangani Tiket Masuk') }}
                     </a>
                 @else
                     <a href="{{ request()->is('/') ? '#new-ticket' : url('/#new-ticket') }}" @click="mobileMenuOpen = false" class="p-2.5 rounded-lg bg-slate-800 text-blue-200 font-bold text-center hover:bg-blue-600 hover:text-white transition">
