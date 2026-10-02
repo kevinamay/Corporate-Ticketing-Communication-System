@@ -50,6 +50,21 @@ class GlobalTickets extends Component
         }
     }
 
+    public function updatingSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingStatusFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingDepartmentFilter(): void
+    {
+        $this->resetPage();
+    }
+
     /**
      * Realtime reactive event listener: re-renders instantly on any ticket mutation.
      */

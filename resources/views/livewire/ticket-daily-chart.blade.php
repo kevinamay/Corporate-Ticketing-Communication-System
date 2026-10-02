@@ -1,4 +1,4 @@
-<div wire:poll.5s class="bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 shadow-sm p-5 sm:p-6 transition-colors"
+<div wire:poll.10s class="bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 shadow-sm p-5 sm:p-6 transition-colors"
      x-data="{
          activePoint: null,
          tooltipX: 0,

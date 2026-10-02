@@ -44,25 +44,13 @@ $_SERVER['APP_SERVICES_CACHE'] = '/tmp/services.php';
 $tmpDb = '/tmp/database.sqlite';
 $seededDb = __DIR__.'/../database/database.sqlite';
 
-if (! isset($GLOBALS['__db_ready'])) {
-    $GLOBALS['__db_ready'] = true;
-
-    $needCopy = ! file_exists($tmpDb) || filesize($tmpDb) === 0;
-    if (! $needCopy && file_exists($seededDb) && filemtime($seededDb) > filemtime($tmpDb)) {
-        $needCopy = true;
+if (! file_exists($tmpDb) || filesize($tmpDb) === 0) {
+    if (file_exists($seededDb) && filesize($seededDb) > 0) {
+        @copy($seededDb, $tmpDb);
+    } else {
+        @touch($tmpDb);
     }
-
-    if ($needCopy) {
-        @unlink($tmpDb);
-        @unlink('/tmp/database.sqlite-wal');
-        @unlink('/tmp/database.sqlite-shm');
-        if (file_exists($seededDb) && filesize($seededDb) > 0) {
-            @copy($seededDb, $tmpDb);
-        } else {
-            @touch($tmpDb);
-        }
-        @chmod($tmpDb, 0666);
-    }
+    @chmod($tmpDb, 0666);
 }
 
 // 4. Ensure essential environment variables have valid non-empty defaults
@@ -75,11 +63,11 @@ $envDefaults = [
     'APP_DEBUG' => 'true',
     'APP_LOCALE' => 'id',
     'APP_FALLBACK_LOCALE' => 'id',
-    'SESSION_DRIVER' => 'file',
+    'SESSION_DRIVER' => 'cookie',
     'SESSION_COOKIE' => 'corporate_ticketing_session',
     'SESSION_LIFETIME' => '120',
     'SESSION_EXPIRE_ON_CLOSE' => 'false',
-    'SESSION_ENCRYPT' => 'false',
+    'SESSION_ENCRYPT' => 'true',
     'SESSION_PATH' => '/',
     'SESSION_DOMAIN' => '',
     'CACHE_STORE' => 'database',
@@ -119,13 +107,32 @@ $_ENV['APP_URL'] = $dynAppUrl;
 $_SERVER['APP_URL'] = $dynAppUrl;
 
 // Ensure Database connection works seamlessly on Vercel
-$dbUrl = getenv('DB_URL') ?: ($_ENV['DB_URL'] ?? '');
+$dbUrl = getenv('DATABASE_URL') ?: getenv('DB_URL') ?: ($_ENV['DATABASE_URL'] ?? ($_ENV['DB_URL'] ?? ''));
 $dbHost = getenv('DB_HOST') ?: ($_ENV['DB_HOST'] ?? '');
 $dbConn = getenv('DB_CONNECTION') ?: ($_ENV['DB_CONNECTION'] ?? '');
 
 $hasExternalDb = (! empty($dbUrl)) || (! empty($dbHost) && $dbHost !== '127.0.0.1' && $dbHost !== 'localhost');
 
-if (! $hasExternalDb) {
+if ($hasExternalDb) {
+    if (! empty($dbUrl)) {
+        putenv("DATABASE_URL={$dbUrl}");
+        putenv("DB_URL={$dbUrl}");
+        $_ENV['DATABASE_URL'] = $dbUrl;
+        $_ENV['DB_URL'] = $dbUrl;
+        $_SERVER['DATABASE_URL'] = $dbUrl;
+        $_SERVER['DB_URL'] = $dbUrl;
+
+        if (str_starts_with($dbUrl, 'postgres://') || str_starts_with($dbUrl, 'postgresql://')) {
+            putenv('DB_CONNECTION=pgsql');
+            $_ENV['DB_CONNECTION'] = 'pgsql';
+            $_SERVER['DB_CONNECTION'] = 'pgsql';
+        } elseif (str_starts_with($dbUrl, 'mysql://')) {
+            putenv('DB_CONNECTION=mysql');
+            $_ENV['DB_CONNECTION'] = 'mysql';
+            $_SERVER['DB_CONNECTION'] = 'mysql';
+        }
+    }
+} else {
     putenv('DB_CONNECTION=sqlite');
     $_ENV['DB_CONNECTION'] = 'sqlite';
     $_SERVER['DB_CONNECTION'] = 'sqlite';

@@ -1,4 +1,4 @@
-<div @if(!$isDetailModalOpen && !$isEditModalOpen) wire:poll.2s @endif class="bg-white dark:bg-slate-900 shadow-md border border-gray-200 dark:border-slate-800 rounded-xl p-5 mb-6 transition-colors">
+<div @if(!$isDetailModalOpen && !$isEditModalOpen) wire:poll.3s @endif class="bg-white dark:bg-slate-900 shadow-md border border-gray-200 dark:border-slate-800 rounded-xl p-5 mb-6 transition-colors">
     
     <!-- Header Row -->
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">

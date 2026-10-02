@@ -1,4 +1,4 @@
-<div wire:poll.2s class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+<div wire:poll.5s class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
     <!-- 1. Tiket Aktif -->
     <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-md p-4 flex items-center justify-between transition-colors">
         <div>
