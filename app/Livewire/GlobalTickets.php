@@ -165,6 +165,17 @@ class GlobalTickets extends Component
             return;
         }
 
+        if ($this->replyPhoto) {
+            try {
+                $realPath = $this->replyPhoto->getRealPath();
+                if (! $realPath || ! file_exists($realPath)) {
+                    $this->replyPhoto = null;
+                }
+            } catch (\Throwable) {
+                $this->replyPhoto = null;
+            }
+        }
+
         $this->validate([
             'replyMessage' => 'required|string|min:2|max:2000',
             'replyPhoto' => 'nullable|image|max:10240',

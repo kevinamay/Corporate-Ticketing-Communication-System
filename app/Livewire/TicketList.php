@@ -283,6 +283,17 @@ class TicketList extends Component
             return;
         }
 
+        if ($this->editPhoto) {
+            try {
+                $realPath = $this->editPhoto->getRealPath();
+                if (! $realPath || ! file_exists($realPath)) {
+                    $this->editPhoto = null;
+                }
+            } catch (\Throwable) {
+                $this->editPhoto = null;
+            }
+        }
+
         $this->validate([
             'editTitle' => 'required|min:5|max:150',
             'editTargetDepartmentId' => 'required|exists:departments,id',

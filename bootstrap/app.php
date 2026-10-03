@@ -6,6 +6,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use League\Flysystem\UnableToRetrieveMetadata;
 
 $app = Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -30,6 +31,13 @@ $app = Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
+        $exceptions->render(function (UnableToRetrieveMetadata $e, Request $request) {
+            if ($request->is('livewire/*') || $request->hasHeader('X-Livewire')) {
+                return response()->json([
+                    'message' => 'File lampiran tidak dapat dibaca atau telah kadaluarsa pada server. Silakan pilih ulang file gambar Anda.',
+                ], 422);
+            }
+        });
     })->create();
 
 $isVercel = is_dir('/var/task') || ! is_writable($app->storagePath()) || getenv('VERCEL') || isset($_ENV['VERCEL']) || isset($_SERVER['VERCEL']);

@@ -31,6 +31,12 @@ class TicketForm extends Component
 
     public $photo = null;
 
+    public ?string $photoBase64 = null;
+
+    public ?string $photoName = null;
+
+    public ?int $photoSizeKb = null;
+
     public bool $isSuccess = false;
 
     public ?int $createdTicketId = null;
@@ -52,14 +58,31 @@ class TicketForm extends Component
      */
     protected function rules(): array
     {
-        return [
+        $rules = [
             'title' => 'required|min:5|max:150',
             'sender_department_id' => 'required|exists:departments,id',
             'target_department_id' => 'required|exists:departments,id',
             'category' => 'required|string|max:50',
             'description' => 'required|min:10',
-            'photo' => 'nullable|image|max:10240',
         ];
+
+        // Safe validation for $photo if uploaded via standard Livewire
+        if (! empty($this->photoBase64)) {
+            // Already safely in memory as Base64 data URL
+        } elseif ($this->photo) {
+            try {
+                $realPath = $this->photo->getRealPath();
+                if ($realPath && file_exists($realPath)) {
+                    $rules['photo'] = 'nullable|image|max:10240';
+                } else {
+                    $this->photo = null;
+                }
+            } catch (\Throwable) {
+                $this->photo = null;
+            }
+        }
+
+        return $rules;
     }
 
     public function boot(): void
@@ -125,6 +148,19 @@ class TicketForm extends Component
     public function removePhoto(): void
     {
         $this->photo = null;
+        $this->photoBase64 = null;
+        $this->photoName = null;
+        $this->photoSizeKb = null;
+    }
+
+    public function resetForm(): void
+    {
+        $this->reset(['title', 'description', 'photo', 'photoBase64', 'photoName', 'photoSizeKb', 'isSuccess', 'createdTicketId', 'createdTicketWhatsappUrl']);
+        $this->photo = null;
+        $this->photoBase64 = null;
+        $this->photoName = null;
+        $this->photoSizeKb = null;
+        $this->isSuccess = false;
     }
 
     public function submit(WhatsAppNotificationService $whatsAppService): void
@@ -138,10 +174,24 @@ class TicketForm extends Component
             return;
         }
 
+        // Pre-sanitize $photo before validation to prevent Flysystem crash on serverless container switch
+        if ($this->photo) {
+            try {
+                $realPath = $this->photo->getRealPath();
+                if (! $realPath || ! file_exists($realPath)) {
+                    $this->photo = null;
+                }
+            } catch (\Throwable) {
+                $this->photo = null;
+            }
+        }
+
         $this->validate();
 
         $photoPath = null;
-        if ($this->photo) {
+        if (! empty($this->photoBase64)) {
+            $photoPath = $this->photoBase64;
+        } elseif ($this->photo) {
             try {
                 $realPath = $this->photo->getRealPath();
                 $mime = $this->photo->getMimeType() ?: 'image/jpeg';
@@ -177,8 +227,11 @@ class TicketForm extends Component
         // Send WhatsApp notification immediately after ticket is inserted into Supabase
         $whatsAppService->sendNewTicketNotification($ticket);
 
-        $this->reset(['title', 'description', 'photo']);
+        $this->reset(['title', 'description', 'photo', 'photoBase64', 'photoName', 'photoSizeKb']);
         $this->photo = null;
+        $this->photoBase64 = null;
+        $this->photoName = null;
+        $this->photoSizeKb = null;
         $this->priority = 'Medium';
         $this->status = 'Pending';
         $this->category = $this->availableCategories[0] ?? 'Other';
