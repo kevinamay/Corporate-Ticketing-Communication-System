@@ -269,12 +269,9 @@
 
     <!-- Corporate Footer -->
     <footer class="mt-auto border-t border-gray-200 dark:border-slate-800/80 bg-white dark:bg-slate-900 py-8 text-xs text-slate-500 dark:text-slate-400 transition-colors duration-200">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
-            <div class="flex items-center gap-3">
-                <div class="w-7 h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-xs">AP</div>
-                <div>
-                    <span class="font-bold text-slate-800 dark:text-slate-100">PT. ASIA PLASTIK</span> &bull; {{ __('PT. ASIA PLASTIK • Sistem Manajemen Tiket & Komunikasi Internal Manufaktur') }}
-                </div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
+            <div>
+                <span class="font-bold text-slate-800 dark:text-slate-100">PT. ASIA PLASTIK</span> &bull; {{ __('PT. ASIA PLASTIK • Sistem Manajemen Tiket & Komunikasi Internal Manufaktur') }}
             </div>
             <div class="flex items-center gap-5 text-[11px] text-slate-400 dark:text-slate-500">
                 <span>{{ __('Kantor & Pabrik: Rungkut Industri, Surabaya') }}</span>
