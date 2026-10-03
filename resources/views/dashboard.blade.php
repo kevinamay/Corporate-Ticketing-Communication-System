@@ -72,15 +72,15 @@
                 </div>
             </div>
 
-            <div class="flex items-center gap-2 shrink-0">
-                <a href="#new-ticket" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition shadow-sm flex items-center gap-1.5">
+            <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                <a href="#new-ticket" class="flex-1 sm:flex-initial justify-center px-3.5 sm:px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition shadow-sm flex items-center gap-1.5 text-center">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
                     <span>{{ __('Buat Tiket Baru') }}</span>
                 </a>
-                <a href="#queue" class="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition border border-white/20">
+                <a href="#queue" class="flex-1 sm:flex-initial justify-center px-3 sm:px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition border border-white/20 text-center">
                     {{ __('Daftar Tiket') }}
                 </a>
-                <a href="#resolved-history" class="px-3.5 py-2 rounded-xl bg-emerald-600/80 hover:bg-emerald-600 text-white font-bold text-xs transition border border-emerald-400/30 flex items-center gap-1.5 shadow-sm">
+                <a href="#resolved-history" class="w-full sm:w-auto justify-center px-3.5 py-2 rounded-xl bg-emerald-600/80 hover:bg-emerald-600 text-white font-bold text-xs transition border border-emerald-400/30 flex items-center gap-1.5 shadow-sm text-center">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     <span>{{ __('Riwayat Tiket Selesai') }}</span>
                 </a>

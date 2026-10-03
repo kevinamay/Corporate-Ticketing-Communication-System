@@ -2,13 +2,13 @@
     @if ($currentUser)
         <!-- Header Button: Logged In User Avatar & Information -->
         <button @click="open = !open" type="button" 
-            class="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur-md flex items-center gap-3 cursor-pointer transition text-white">
+            class="px-2 sm:px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur-md flex items-center gap-2 sm:gap-3 cursor-pointer transition text-white">
             <div class="relative">
                 <img src="{{ $currentUser->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($currentUser->name) . '&background=0284c7&color=fff' }}" 
                      alt="{{ $currentUser->name }}" 
                      onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name={{ urlencode($currentUser->name) }}&background=0284c7&color=fff';"
-                     class="w-8 h-8 rounded-full object-cover border border-white/40 shadow-xs" />
-                <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-400 border border-white rounded-full"></span>
+                     class="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover border border-white/40 shadow-xs" />
+                <span class="absolute -bottom-0.5 -right-0.5 w-2 sm:w-2.5 h-2 sm:h-2.5 bg-emerald-400 border border-white rounded-full"></span>
             </div>
             <div class="text-left hidden sm:block">
                 <div class="flex items-center gap-1.5">
@@ -31,7 +31,7 @@
              x-transition:leave="transition ease-in duration-100"
              x-transition:leave-start="opacity-100 transform scale-100"
              x-transition:leave-end="opacity-0 transform scale-95"
-             class="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-gray-200 dark:border-slate-800 overflow-hidden z-50 text-slate-800 dark:text-slate-100"
+             class="absolute right-0 mt-2 w-[calc(100vw-2rem)] max-w-xs sm:w-80 bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-gray-200 dark:border-slate-800 overflow-hidden z-50 text-slate-800 dark:text-slate-100"
              style="display: none;">
             
             <!-- User Identity Header Banner -->
@@ -125,8 +125,8 @@
     @else
         <!-- Header Button: Guest / Unauthenticated State -->
         <button @click="open = !open" type="button" 
-            class="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur-md flex items-center gap-2.5 cursor-pointer transition text-white group">
-            <div class="w-8 h-8 rounded-full bg-slate-800/80 border border-white/30 flex items-center justify-center text-slate-300 group-hover:text-white transition shadow-xs">
+            class="px-2 sm:px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur-md flex items-center gap-2 sm:gap-2.5 cursor-pointer transition text-white group">
+            <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-800/80 border border-white/30 flex items-center justify-center text-slate-300 group-hover:text-white transition shadow-xs">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
@@ -153,7 +153,7 @@
              x-transition:leave="transition ease-in duration-100"
              x-transition:leave-start="opacity-100 transform scale-100"
              x-transition:leave-end="opacity-0 transform scale-95"
-             class="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-gray-200 dark:border-slate-800 overflow-hidden z-50 text-slate-800 dark:text-slate-100"
+             class="absolute right-0 mt-2 w-[calc(100vw-2rem)] max-w-xs sm:w-72 bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-gray-200 dark:border-slate-800 overflow-hidden z-50 text-slate-800 dark:text-slate-100"
              style="display: none;">
             
             <!-- Guest Header Banner -->

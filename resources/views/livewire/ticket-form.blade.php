@@ -1,17 +1,17 @@
-<div class="bg-white dark:bg-slate-900 shadow-lg border border-gray-200 dark:border-slate-800 rounded-xl p-6 md:p-8 transition-colors">
-    <div class="flex items-center justify-between pb-5 border-b border-gray-100 dark:border-slate-800 mb-6">
-        <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/60 flex items-center justify-center">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<div class="bg-white dark:bg-slate-900 shadow-lg border border-gray-200 dark:border-slate-800 rounded-xl p-4 sm:p-6 md:p-8 transition-colors">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 sm:pb-5 border-b border-gray-100 dark:border-slate-800 mb-5 sm:mb-6 gap-3">
+        <div class="flex items-center gap-2.5 sm:gap-3">
+            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/60 flex items-center justify-center shrink-0">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                 </svg>
             </div>
             <div>
-                <h2 class="text-lg font-bold text-slate-900 dark:text-white tracking-tight">{{ __('Submit Support Request') }}</h2>
-                <p class="text-xs text-slate-500 dark:text-slate-400">{{ __('Dispatch an official ticket to designated corporate department') }}</p>
+                <h2 class="text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-tight">{{ __('Submit Support Request') }}</h2>
+                <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">{{ __('Dispatch an official ticket to designated corporate department') }}</p>
             </div>
         </div>
-        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+        <span class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full text-[11px] sm:text-xs font-semibold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 self-start sm:self-auto">
             <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
             {{ __('Live Routing') }}
         </span>
@@ -79,7 +79,7 @@
         </div>
 
         <!-- 3 Select Dropdowns: Sender Department, Target Department, Request Category -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
             <!-- Select Dropdown: Sender Department -->
             <div>
                 <label for="sender_department_id" class="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">{{ __('Sender Department') }}</label>
@@ -200,10 +200,10 @@
                     <button type="button" @click="improveDescription('smart_polish')" 
                         class="px-2 py-1 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-950/40 text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 transition cursor-pointer flex items-center gap-1.5 text-xs font-medium border border-transparent hover:border-blue-200 dark:hover:border-blue-800"
                         title="{{ __('Improve description') }}">
-                        <svg class="w-3.5 h-3.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-3.5 h-3.5 text-blue-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
                         </svg>
-                        <span>{{ __('Improve description') }}</span>
+                        <span class="hidden xs:inline">{{ __('Improve description') }}</span>
                     </button>
 
                     <!-- Divider -->
@@ -550,23 +550,23 @@
             </div>
 
             @if ($photoBase64 || $photo)
-                <div class="p-3.5 rounded-xl border border-blue-200 dark:border-blue-800/80 bg-blue-50/60 dark:bg-blue-950/30 flex items-center justify-between gap-3 shadow-xs">
-                    <div class="flex items-center gap-3 min-w-0">
+                <div class="p-3 sm:p-3.5 rounded-xl border border-blue-200 dark:border-blue-800/80 bg-blue-50/60 dark:bg-blue-950/30 flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 shadow-xs">
+                    <div class="flex items-center gap-3 min-w-0 flex-1">
                         @if ($photoBase64)
-                            <img src="{{ $photoBase64 }}" alt="Preview Bukti Foto" class="w-14 h-14 rounded-lg object-cover border border-blue-300 dark:border-blue-700 shadow-xs shrink-0" />
+                            <img src="{{ $photoBase64 }}" alt="Preview Bukti Foto" class="w-12 h-12 sm:w-14 sm:h-14 rounded-lg object-cover border border-blue-300 dark:border-blue-700 shadow-xs shrink-0" />
                         @elseif ($photo && method_exists($photo, 'temporaryUrl'))
-                            <img src="{{ $photo->temporaryUrl() }}" alt="Preview Bukti Foto" class="w-14 h-14 rounded-lg object-cover border border-blue-300 dark:border-blue-700 shadow-xs shrink-0" />
+                            <img src="{{ $photo->temporaryUrl() }}" alt="Preview Bukti Foto" class="w-12 h-12 sm:w-14 sm:h-14 rounded-lg object-cover border border-blue-300 dark:border-blue-700 shadow-xs shrink-0" />
                         @else
-                            <div class="w-14 h-14 rounded-lg bg-blue-100 dark:bg-blue-900/60 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
+                            <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-lg bg-blue-100 dark:bg-blue-900/60 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                             </div>
                         @endif
-                        <div class="min-w-0">
+                        <div class="min-w-0 flex-1">
                             <p class="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{{ $photoName ?? ($photo ? $photo->getClientOriginalName() : 'Lampiran Foto') }}</p>
-                            <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">{{ $photoSizeKb ?? ($photo ? round(@$photo->getSize() / 1024, 1) : 0) }} KB • <span class="text-emerald-600 dark:text-emerald-400 font-semibold">{{ __('Foto Siap Diunggah') }}</span></p>
+                            <p class="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">{{ $photoSizeKb ?? ($photo ? round(@$photo->getSize() / 1024, 1) : 0) }} KB • <span class="text-emerald-600 dark:text-emerald-400 font-semibold">{{ __('Foto Siap Diunggah') }}</span></p>
                         </div>
                     </div>
-                    <button type="button" wire:click="removePhoto" class="px-3 py-1.5 rounded-lg text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-950/60 transition cursor-pointer shrink-0 flex items-center gap-1 border border-rose-200 dark:border-rose-900">
+                    <button type="button" wire:click="removePhoto" class="w-full sm:w-auto justify-center px-3 py-1.5 rounded-lg text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-950/60 transition cursor-pointer shrink-0 flex items-center gap-1 border border-rose-200 dark:border-rose-900">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                         <span>{{ __('Hapus Foto') }}</span>
                     </button>

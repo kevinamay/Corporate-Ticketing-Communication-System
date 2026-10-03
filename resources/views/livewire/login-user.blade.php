@@ -1,16 +1,16 @@
-<div class="min-h-screen relative flex items-center justify-center p-4 sm:p-6 lg:p-8 bg-slate-900 overflow-y-auto"
+<div class="min-h-screen relative flex items-center justify-center p-3 sm:p-6 lg:p-8 bg-slate-900 overflow-y-auto"
      style="background-image: url('/images/fotopt_2.webp'); background-size: cover; background-position: center;">
     
     <!-- Dark Blue Overlay -->
     <div class="absolute inset-0 bg-blue-900/80 backdrop-blur-[2px]"></div>
 
     <!-- Main Auth Card -->
-    <div class="relative z-10 w-full max-w-md bg-white dark:bg-slate-900 shadow-2xl border border-gray-100 dark:border-slate-800 rounded-xl overflow-hidden my-8 transition-colors">
+    <div class="relative z-10 w-full max-w-md bg-white dark:bg-slate-900 shadow-2xl border border-gray-100 dark:border-slate-800 rounded-xl overflow-hidden my-4 sm:my-8 transition-colors">
         
         <!-- Corporate Top Bar -->
-        <div class="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900 px-6 py-4 flex items-center justify-between text-white border-b border-blue-700/50">
+        <div class="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900 px-4 sm:px-6 py-3.5 sm:py-4 flex items-center justify-between text-white border-b border-blue-700/50">
             <a href="{{ url('/') }}" class="flex items-center group">
-                <img src="{{ asset('images/logo2.webp') }}" alt="PT. Asia Plastik" class="h-10 sm:h-11 w-auto object-contain transition duration-200 group-hover:opacity-90">
+                <img src="{{ asset('images/logo2.webp') }}" alt="PT. Asia Plastik" class="h-9 sm:h-11 w-auto object-contain transition duration-200 group-hover:opacity-90">
             </a>
             <div class="text-right hidden sm:block">
                 <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-500/30 text-blue-200 border border-blue-400/30">
@@ -20,7 +20,7 @@
         </div>
 
         <!-- Login Form Body -->
-        <div class="p-6 sm:p-8">
+        <div class="p-4 sm:p-6 md:p-8">
             <div class="mb-6 text-center">
                 <h1 class="text-2xl font-black text-slate-900 dark:text-white tracking-tight">{{ __('Selamat Datang') }}</h1>
             </div>
@@ -123,9 +123,9 @@
         </div>
 
         <!-- Footer -->
-        <div class="bg-slate-50 dark:bg-slate-800/80 px-6 py-3 border-t border-gray-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-500">
+        <div class="bg-slate-50 dark:bg-slate-800/80 px-4 sm:px-6 py-2.5 sm:py-3 border-t border-gray-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-500">
             <span>&copy; {{ date('Y') }} PT. Asia Plastik</span>
-            <span class="font-medium text-slate-400 dark:text-slate-500">{{ __('Sistem Komunikasi & Tiket Internal') }}</span>
+            <span class="font-medium text-slate-400 dark:text-slate-500 hidden sm:inline">{{ __('Sistem Komunikasi & Tiket Internal') }}</span>
         </div>
 
     </div>

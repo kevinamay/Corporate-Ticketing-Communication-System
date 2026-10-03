@@ -193,7 +193,7 @@
         <!-- ===================================================================== -->
         <!-- EMPLOYEE VIEW: CARDS GRID OF COMPLETED TICKETS                         -->
         <!-- ===================================================================== -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-3 sm:gap-4">
             @forelse ($tickets as $t)
                 @php
                     $durationText = $t->created_at && $t->updated_at 
@@ -263,7 +263,7 @@
                         </div>
 
                         <!-- Read Solution Action Button -->
-                        <div class="flex items-center justify-between pt-1 border-t border-gray-50 dark:border-slate-800 text-[11px]">
+                        <div class="flex flex-wrap sm:flex-nowrap items-center justify-between gap-1 pt-1 border-t border-gray-50 dark:border-slate-800 text-[11px]">
                             <span class="text-[10px] text-slate-400">
                                 {{ __('Selesai dlm') }} {{ $durationText }}
                             </span>

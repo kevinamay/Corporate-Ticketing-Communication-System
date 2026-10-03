@@ -9,6 +9,20 @@
 
 @theme {
     --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --breakpoint-xs: 20rem; /* 320px - Smartphone portrait min */
+    --breakpoint-sm: 30.0625rem; /* 481px - Tablet start */
+    --breakpoint-md: 48.0625rem; /* 769px - Laptop & Desktop start */
+    --breakpoint-lg: 64rem; /* 1024px - Standard Desktop */
+    --breakpoint-xl: 75.0625rem; /* 1201px - Monitor Besar / Layar Lebar */
+    --breakpoint-2xl: 90rem; /* 1440px - Ultra Wide */
+}
+
+/* Responsive Touch & Viewport Safeguards */
+html, body {
+    overflow-x: hidden;
+    width: 100%;
+    min-width: 320px;
+    -webkit-text-size-adjust: 100%;
 }
 
 /* Professional Enterprise Corporate Theme Styles */

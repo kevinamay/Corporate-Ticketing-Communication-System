@@ -16,7 +16,7 @@
      class="relative">
 
     <!-- STACKED FLOATING ACTION BUTTONS (WhatsApp on Top, AI Assistant Below) -->
-    <div class="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3 pointer-events-auto">
+    <div class="fixed bottom-4 sm:bottom-6 right-3 sm:right-6 z-50 flex flex-col items-end gap-2.5 sm:gap-3 pointer-events-auto">
 
         <!-- 1. WHATSAPP BUTTON (Connected directly to +6231 8433078 / 8439998) -->
         <a href="https://wa.me/62318433078?text=Halo%20Admin%20PT.%20Asia%20Plastik%2C%20saya%20butuh%20bantuan%20terkait%20layanan%20dan%20sistem..." 
@@ -25,7 +25,7 @@
            class="flex items-center shadow-2xl rounded-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 overflow-hidden hover:scale-105 active:scale-95 transition-all duration-200 group cursor-pointer"
            title="{{ __('Hubungi WhatsApp PT. Asia Plastik (+6231 8433078 / 8439998)') }}">
             
-            <span class="px-4 py-2.5 text-xs font-black text-slate-800 dark:text-slate-100 tracking-tight select-none flex items-center gap-1.5">
+            <span class="hidden sm:inline-flex px-4 py-2.5 text-xs font-black text-slate-800 dark:text-slate-100 tracking-tight select-none items-center gap-1.5">
                 <span>{{ __('WhatsApp') }}</span>
             </span>
 
@@ -50,7 +50,7 @@
                     class="flex items-center shadow-2xl rounded-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 overflow-hidden hover:scale-105 active:scale-95 transition-all duration-200 group cursor-pointer"
                     title="{{ __('Buka AI Assistant') }}">
                 
-                <span class="px-4 py-2.5 text-xs font-black text-slate-800 dark:text-slate-100 tracking-tight select-none flex items-center gap-1.5">
+                <span class="hidden sm:inline-flex px-4 py-2.5 text-xs font-black text-slate-800 dark:text-slate-100 tracking-tight select-none items-center gap-1.5">
                     <span x-show="!isOpen">{{ __('AI Assistant') }}</span>
                     <span x-show="isOpen" style="display: none;" class="text-blue-600 dark:text-blue-400 font-bold flex items-center gap-1">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
@@ -84,7 +84,7 @@
          x-transition:leave-start="opacity-100 translate-y-0 scale-100"
          x-transition:leave-end="opacity-0 translate-y-6 scale-95"
          @click.away="isOpen = false"
-         class="fixed bottom-36 right-4 sm:right-6 z-50 w-[350px] sm:w-[410px] max-w-[calc(100vw-2rem)] h-[540px] max-h-[75vh] bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden text-slate-800 dark:text-slate-100 transition-colors"
+         class="fixed bottom-32 sm:bottom-36 right-3 sm:right-6 z-50 w-[calc(100vw-1.5rem)] sm:w-[410px] max-w-[410px] h-[520px] max-h-[75vh] bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden text-slate-800 dark:text-slate-100 transition-colors"
          style="display: none;">
 
         <!-- Chat Header (Modern Corporate Blue & Emerald Gradient) -->
