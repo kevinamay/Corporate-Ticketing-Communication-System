@@ -76,7 +76,7 @@
                 </tr>
                 <tr>
                     <td class="info-label">Waktu Pendaftaran</td>
-                    <td class="info-value">{{ date('d M Y, H:i') }} WIB</td>
+                    <td class="info-value">{{ $registeredAt ?? \Carbon\Carbon::now('Asia/Jakarta')->format('d M Y, H:i \W\I\B') }}</td>
                 </tr>
             </table>
 

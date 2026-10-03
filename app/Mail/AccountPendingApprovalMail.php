@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
@@ -20,10 +21,12 @@ class AccountPendingApprovalMail extends Mailable
      *
      * @return array{success: bool, sandboxed: bool, message: string}
      */
-    public static function sendTo(string $toEmail, string $userName, string $userPhone = ''): array
+    public static function sendTo(string $toEmail, string $userName, string $userPhone = '', mixed $registeredAt = null): array
     {
+        $mailable = new self($userName, $toEmail, $userPhone, $registeredAt);
+
         if (app()->environment('testing')) {
-            Mail::to($toEmail)->send(new self($userName, $toEmail, $userPhone));
+            Mail::to($toEmail)->send($mailable);
 
             return [
                 'success' => true,
@@ -56,7 +59,7 @@ class AccountPendingApprovalMail extends Mailable
             ]);
             Mail::purge('smtp');
 
-            Mail::mailer('smtp')->to($toEmail)->send(new self($userName, $toEmail, $userPhone));
+            Mail::mailer('smtp')->to($toEmail)->send($mailable);
             Log::info("Pending approval notification sent successfully to {$toEmail} via Gmail SMTP.");
 
             return [
@@ -80,6 +83,7 @@ class AccountPendingApprovalMail extends Mailable
                 'userName' => $userName,
                 'userEmail' => $toEmail,
                 'userPhone' => $userPhone,
+                'registeredAt' => $mailable->registeredAtFormatted,
             ])->render();
 
             $cleanTo = strtolower(trim($toEmail));
@@ -140,11 +144,26 @@ class AccountPendingApprovalMail extends Mailable
         ];
     }
 
+    public string $registeredAtFormatted;
+
     public function __construct(
         public string $userName,
         public string $userEmail,
-        public string $userPhone = ''
-    ) {}
+        public string $userPhone = '',
+        mixed $registeredAt = null
+    ) {
+        if ($registeredAt instanceof \DateTimeInterface) {
+            $this->registeredAtFormatted = Carbon::instance($registeredAt)->setTimezone('Asia/Jakarta')->format('d M Y, H:i').' WIB';
+        } elseif (is_string($registeredAt) && ! empty($registeredAt)) {
+            try {
+                $this->registeredAtFormatted = Carbon::parse($registeredAt)->setTimezone('Asia/Jakarta')->format('d M Y, H:i').' WIB';
+            } catch (\Throwable) {
+                $this->registeredAtFormatted = str_ends_with($registeredAt, 'WIB') ? $registeredAt : $registeredAt.' WIB';
+            }
+        } else {
+            $this->registeredAtFormatted = Carbon::now('Asia/Jakarta')->format('d M Y, H:i').' WIB';
+        }
+    }
 
     public function envelope(): Envelope
     {
@@ -161,6 +180,7 @@ class AccountPendingApprovalMail extends Mailable
                 'userName' => $this->userName,
                 'userEmail' => $this->userEmail,
                 'userPhone' => $this->userPhone,
+                'registeredAt' => $this->registeredAtFormatted,
             ]
         );
     }

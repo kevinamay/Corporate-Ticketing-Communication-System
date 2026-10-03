@@ -1,6 +1,7 @@
 <?php
 
-// Explicitly set Vercel env indicators
+// Explicitly set Vercel env indicators and timezone
+date_default_timezone_set('Asia/Jakarta');
 putenv('VERCEL=1');
 $_ENV['VERCEL'] = '1';
 $_SERVER['VERCEL'] = '1';
@@ -89,6 +90,7 @@ $envDefaults = [
     'APP_KEY' => 'base64:QX6Shj9IM6P1zsqviSaEOOomvYB9raucqTLGNJYCDnA=',
     'APP_ENV' => 'production',
     'APP_DEBUG' => 'true',
+    'APP_TIMEZONE' => 'Asia/Jakarta',
     'APP_LOCALE' => 'id',
     'APP_FALLBACK_LOCALE' => 'id',
     'SESSION_DRIVER' => 'cookie',

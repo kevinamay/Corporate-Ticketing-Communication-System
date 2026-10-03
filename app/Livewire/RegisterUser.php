@@ -109,7 +109,8 @@ class RegisterUser extends Component
                 AccountPendingApprovalMail::sendTo(
                     $cleanEmail,
                     trim($this->name),
-                    trim($this->whatsapp_number)
+                    trim($this->whatsapp_number),
+                    $user->created_at ?? now()
                 );
             } catch (\Throwable $mailErr) {
                 Log::warning('Gagal mengirim email pendaftaran akun baru: '.$mailErr->getMessage());

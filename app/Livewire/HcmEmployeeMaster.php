@@ -281,14 +281,17 @@ class HcmEmployeeMaster extends Component
             session()->flash('success_message', 'Akun karyawan "'.$user->name.'" berhasil di-UNACC (dinonaktifkan).');
         } else {
             // Not ACC'd -> ACC
-            $user->update(['email_verified_at' => now()]);
+            $approvalTime = now();
+            $user->update(['email_verified_at' => $approvalTime]);
             session()->flash('success_message', 'Akun karyawan "'.$user->name.'" berhasil di-ACC dan sekarang sudah aktif.');
 
             // Kirim email pemberitahuan akun telah di-ACC & aktif
             try {
                 AccountApprovedMail::sendTo(
                     $user->email,
-                    $user->name
+                    $user->name,
+                    null,
+                    $approvalTime
                 );
             } catch (\Throwable $mailErr) {
                 Log::warning('Gagal mengirim email konfirmasi ACC akun: '.$mailErr->getMessage());

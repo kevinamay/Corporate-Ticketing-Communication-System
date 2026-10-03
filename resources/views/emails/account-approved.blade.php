@@ -74,7 +74,7 @@
                 </tr>
                 <tr>
                     <td class="info-label">Waktu Konfirmasi</td>
-                    <td class="info-value">{{ date('d M Y, H:i') }} WIB</td>
+                    <td class="info-value">{{ $confirmedAt ?? \Carbon\Carbon::now('Asia/Jakarta')->format('d M Y, H:i \W\I\B') }}</td>
                 </tr>
             </table>
 

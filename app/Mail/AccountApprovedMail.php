@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
@@ -20,7 +21,7 @@ class AccountApprovedMail extends Mailable
      *
      * @return array{success: bool, sandboxed: bool, message: string}
      */
-    public static function sendTo(string $toEmail, string $userName, ?string $loginUrl = null): array
+    public static function sendTo(string $toEmail, string $userName, ?string $loginUrl = null, mixed $confirmedAt = null): array
     {
         if (empty($loginUrl)) {
             $loginUrl = route('login');
@@ -33,8 +34,10 @@ class AccountApprovedMail extends Mailable
             }
         }
 
+        $mailable = new self($userName, $toEmail, $loginUrl, $confirmedAt);
+
         if (app()->environment('testing')) {
-            Mail::to($toEmail)->send(new self($userName, $toEmail, $loginUrl));
+            Mail::to($toEmail)->send($mailable);
 
             return [
                 'success' => true,
@@ -67,7 +70,7 @@ class AccountApprovedMail extends Mailable
             ]);
             Mail::purge('smtp');
 
-            Mail::mailer('smtp')->to($toEmail)->send(new self($userName, $toEmail, $loginUrl));
+            Mail::mailer('smtp')->to($toEmail)->send($mailable);
             Log::info("Account approved notification sent successfully to {$toEmail} via Gmail SMTP.");
 
             return [
@@ -91,6 +94,7 @@ class AccountApprovedMail extends Mailable
                 'userName' => $userName,
                 'userEmail' => $toEmail,
                 'loginUrl' => $loginUrl,
+                'confirmedAt' => $mailable->confirmedAtFormatted,
             ])->render();
 
             $cleanTo = strtolower(trim($toEmail));
@@ -151,11 +155,26 @@ class AccountApprovedMail extends Mailable
         ];
     }
 
+    public string $confirmedAtFormatted;
+
     public function __construct(
         public string $userName,
         public string $userEmail,
-        public string $loginUrl = 'https://ticketing-kappa-jet.vercel.app/login'
-    ) {}
+        public string $loginUrl = 'https://ticketing-kappa-jet.vercel.app/login',
+        mixed $confirmedAt = null
+    ) {
+        if ($confirmedAt instanceof \DateTimeInterface) {
+            $this->confirmedAtFormatted = Carbon::instance($confirmedAt)->setTimezone('Asia/Jakarta')->format('d M Y, H:i').' WIB';
+        } elseif (is_string($confirmedAt) && ! empty($confirmedAt)) {
+            try {
+                $this->confirmedAtFormatted = Carbon::parse($confirmedAt)->setTimezone('Asia/Jakarta')->format('d M Y, H:i').' WIB';
+            } catch (\Throwable) {
+                $this->confirmedAtFormatted = str_ends_with($confirmedAt, 'WIB') ? $confirmedAt : $confirmedAt.' WIB';
+            }
+        } else {
+            $this->confirmedAtFormatted = Carbon::now('Asia/Jakarta')->format('d M Y, H:i').' WIB';
+        }
+    }
 
     public function envelope(): Envelope
     {
@@ -172,6 +191,7 @@ class AccountApprovedMail extends Mailable
                 'userName' => $this->userName,
                 'userEmail' => $this->userEmail,
                 'loginUrl' => $this->loginUrl,
+                'confirmedAt' => $this->confirmedAtFormatted,
             ]
         );
     }
