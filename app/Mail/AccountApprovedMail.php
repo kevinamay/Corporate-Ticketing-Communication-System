@@ -43,6 +43,43 @@ class AccountApprovedMail extends Mailable
             ];
         }
 
+        // 1. Prioritize Gmail SMTP (which supports sending to ANY recipient email worldwide)
+        try {
+            $gmailUser = env('MAIL_USERNAME', 'kevinamay23@gmail.com');
+            $gmailPass = env('MAIL_PASSWORD', 'ctbjbpaepabjpgef');
+
+            if (str_starts_with((string) $gmailPass, 're_') || $gmailUser === 'resend' || empty($gmailPass)) {
+                $gmailUser = 'kevinamay23@gmail.com';
+                $gmailPass = 'ctbjbpaepabjpgef';
+            }
+
+            config([
+                'mail.default' => 'smtp',
+                'mail.mailers.smtp.transport' => 'smtp',
+                'mail.mailers.smtp.host' => 'smtp.gmail.com',
+                'mail.mailers.smtp.port' => 587,
+                'mail.mailers.smtp.encryption' => 'tls',
+                'mail.mailers.smtp.username' => $gmailUser,
+                'mail.mailers.smtp.password' => $gmailPass,
+                'mail.mailers.smtp.timeout' => 10,
+                'mail.from.address' => $gmailUser,
+                'mail.from.name' => env('MAIL_FROM_NAME', 'PT. Asia Plastik'),
+            ]);
+            Mail::purge('smtp');
+
+            Mail::mailer('smtp')->to($toEmail)->send(new self($userName, $toEmail, $loginUrl));
+            Log::info("Account approved notification sent successfully to {$toEmail} via Gmail SMTP.");
+
+            return [
+                'success' => true,
+                'sandboxed' => false,
+                'message' => 'Email konfirmasi ACC berhasil dikirim.',
+            ];
+        } catch (\Throwable $smtpErr) {
+            Log::warning("Gmail SMTP delivery failed for {$toEmail}: {$smtpErr->getMessage()}");
+        }
+
+        // 2. Secondary fallback to Resend API if SMTP encounters an issue
         $resendKey = env('RESEND_API_KEY') ?: (str_starts_with((string) env('MAIL_PASSWORD'), 're_') ? env('MAIL_PASSWORD') : base64_decode('cmVfaGdhWXNGbzVfNXBINEdIQnRBRjVCUnhIcEhRQkJtQTh5'));
         $ownerEmail = 'kevinamay23@gmail.com';
         $subject = 'Selamat! Akun Anda Telah Di-ACC & Aktif - PT. Asia Plastik';
@@ -105,13 +142,6 @@ class AccountApprovedMail extends Mailable
             } catch (\Throwable $e) {
                 Log::warning("Resend account approved email dispatch failed: {$e->getMessage()}");
             }
-        }
-
-        // Fallback to standard Laravel mailer
-        try {
-            Mail::to($toEmail)->send(new self($userName, $toEmail, $loginUrl));
-        } catch (\Throwable $mailErr) {
-            Log::warning("Laravel Mailer account approved fallback failed: {$mailErr->getMessage()}");
         }
 
         return [

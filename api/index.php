@@ -103,12 +103,12 @@ $envDefaults = [
     'DB_CONNECTION' => $defaultDbConn,
     'RESEND_API_KEY' => $resendSecret,
     'MAIL_MAILER' => 'smtp',
-    'MAIL_HOST' => 'smtp.resend.com',
+    'MAIL_HOST' => 'smtp.gmail.com',
     'MAIL_PORT' => '587',
-    'MAIL_USERNAME' => 'resend',
-    'MAIL_PASSWORD' => $resendSecret,
+    'MAIL_USERNAME' => 'kevinamay23@gmail.com',
+    'MAIL_PASSWORD' => 'ctbjbpaepabjpgef',
     'MAIL_ENCRYPTION' => 'tls',
-    'MAIL_FROM_ADDRESS' => 'onboarding@resend.dev',
+    'MAIL_FROM_ADDRESS' => 'kevinamay23@gmail.com',
     'MAIL_FROM_NAME' => 'PT. Asia Plastik',
     'LOG_CHANNEL' => 'stderr',
     'VIEW_COMPILED_PATH' => '/tmp/storage/framework/views',
@@ -123,6 +123,28 @@ foreach ($envDefaults as $key => $val) {
         putenv("{$key}={$val}");
         $_ENV[$key] = $val;
         $_SERVER[$key] = $val;
+    }
+}
+
+// Force Gmail SMTP if old Resend sandbox host/credentials are detected in environment
+$curMailHost = getenv('MAIL_HOST') ?: ($_ENV['MAIL_HOST'] ?? '');
+$curMailPass = getenv('MAIL_PASSWORD') ?: ($_ENV['MAIL_PASSWORD'] ?? '');
+$curMailUser = getenv('MAIL_USERNAME') ?: ($_ENV['MAIL_USERNAME'] ?? '');
+if ($curMailHost === 'smtp.resend.com' || str_starts_with((string) $curMailPass, 're_') || $curMailUser === 'resend' || empty($curMailHost)) {
+    $mailOverrides = [
+        'MAIL_MAILER' => 'smtp',
+        'MAIL_HOST' => 'smtp.gmail.com',
+        'MAIL_PORT' => '587',
+        'MAIL_USERNAME' => 'kevinamay23@gmail.com',
+        'MAIL_PASSWORD' => 'ctbjbpaepabjpgef',
+        'MAIL_ENCRYPTION' => 'tls',
+        'MAIL_FROM_ADDRESS' => 'kevinamay23@gmail.com',
+        'MAIL_FROM_NAME' => 'PT. Asia Plastik',
+    ];
+    foreach ($mailOverrides as $mk => $mv) {
+        putenv("{$mk}={$mv}");
+        $_ENV[$mk] = $mv;
+        $_SERVER[$mk] = $mv;
     }
 }
 
