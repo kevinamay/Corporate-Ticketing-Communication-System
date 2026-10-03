@@ -90,13 +90,12 @@ class HcmEmployeeMaster extends Component
     }
 
     /**
-     * Realtime reactive event listener: re-renders immediately upon new user registration or status update.
+     * Realtime reactive event listener: re-renders immediately upon new user registration.
      */
     #[On('userRegistered')]
-    #[On('userStatusUpdated')]
     public function refreshUsers(): void
     {
-        // Re-renders the component immediately upon new user registration or status update
+        // Re-renders the component immediately upon new user registration
     }
 
     /**
@@ -271,8 +270,6 @@ class HcmEmployeeMaster extends Component
             $user->update(['email_verified_at' => now()]);
             session()->flash('success_message', 'Akun karyawan "'.$user->name.'" berhasil di-ACC dan sekarang sudah aktif.');
         }
-
-        $this->dispatch('userStatusUpdated');
     }
 
     /**
@@ -480,14 +477,20 @@ class HcmEmployeeMaster extends Component
 
         $users = $query->latest()->paginate(10);
 
-        $otherUsers = User::where('id', '!=', $currentUserId);
+        $stats = User::where('id', '!=', $currentUserId)
+            ->selectRaw('count(*) as total, count(case when email_verified_at is null then 1 end) as pending, count(case when email_verified_at is not null then 1 end) as active')
+            ->first();
+
+        $totalEmployees = (int) ($stats->total ?? 0);
+        $pendingCount = (int) ($stats->pending ?? 0);
+        $activeCount = (int) ($stats->active ?? 0);
 
         return view('livewire.hcm-employee-master', [
             'employees' => $users,
-            'totalEmployees' => (clone $otherUsers)->count(),
-            'pendingCount' => (clone $otherUsers)->whereNull('email_verified_at')->count(),
-            'activeCount' => (clone $otherUsers)->whereNotNull('email_verified_at')->count(),
-            'registeredCount' => (clone $otherUsers)->whereNotNull('email_verified_at')->count(),
+            'totalEmployees' => $totalEmployees,
+            'pendingCount' => $pendingCount,
+            'activeCount' => $activeCount,
+            'registeredCount' => $activeCount,
         ]);
     }
 }
