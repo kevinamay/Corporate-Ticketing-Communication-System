@@ -117,16 +117,23 @@ class HcmEmployeeMaster extends Component
     /**
      * Open Modal to Edit an existing employee record.
      */
-    public function openEditModal(int $id): void
+    public function openEditModal(int $id, string $name = '', string $whatsappNumber = '', string $email = ''): void
     {
         $this->ensureAuthorized();
         $this->resetValidation();
-        $user = User::findOrFail($id);
 
-        $this->editingEmployeeId = $user->id;
-        $this->name = $user->name;
-        $this->whatsapp_number = $user->whatsapp_number ?? '';
-        $this->email = $user->email;
+        $this->editingEmployeeId = $id;
+
+        if ($name !== '' || $email !== '') {
+            $this->name = $name;
+            $this->whatsapp_number = $whatsappNumber;
+            $this->email = $email;
+        } else {
+            $user = User::findOrFail($id);
+            $this->name = $user->name;
+            $this->whatsapp_number = $user->whatsapp_number ?? '';
+            $this->email = $user->email;
+        }
 
         $this->isFormModalOpen = true;
     }
@@ -203,12 +210,18 @@ class HcmEmployeeMaster extends Component
     /**
      * Open confirmation modal for deleting an employee.
      */
-    public function confirmDelete(int $id): void
+    public function confirmDelete(int $id, string $name = ''): void
     {
         $this->ensureAuthorized();
-        $user = User::findOrFail($id);
-        $this->deletingEmployeeId = $user->id;
-        $this->deletingEmployeeName = $user->name;
+        $this->deletingEmployeeId = $id;
+
+        if ($name !== '') {
+            $this->deletingEmployeeName = $name;
+        } else {
+            $user = User::findOrFail($id);
+            $this->deletingEmployeeName = $user->name;
+        }
+
         $this->isDeleteModalOpen = true;
     }
 

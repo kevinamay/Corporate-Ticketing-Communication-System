@@ -1,4 +1,57 @@
-<div class="space-y-6" @if(!$isFormModalOpen && !$isDeleteModalOpen && !$isCsvModalOpen) wire:poll.3s @endif>
+<div class="space-y-6"
+     x-data="{
+         formModal: false,
+         deleteModal: false,
+         csvModal: false,
+         modalTitle: '',
+         editingId: null,
+         name: '',
+         whatsapp_number: '',
+         email: '',
+         deletingId: null,
+         deletingName: '',
+         openEdit(id, name, wa, email) {
+             this.editingId = id;
+             this.modalTitle = 'Edit Data Akun Karyawan';
+             this.name = name;
+             this.whatsapp_number = wa;
+             this.email = email;
+             this.formModal = true;
+             $wire.openEditModal(id, name, wa, email);
+         },
+         openCreate() {
+             this.editingId = null;
+             this.modalTitle = 'Tambah Akun Karyawan Baru';
+             this.name = '';
+             this.whatsapp_number = '';
+             this.email = '';
+             this.formModal = true;
+             $wire.openCreateModal();
+         },
+         openDelete(id, name) {
+             this.deletingId = id;
+             this.deletingName = name;
+             this.deleteModal = true;
+             $wire.confirmDelete(id, name);
+         },
+         openCsv() {
+             this.csvModal = true;
+             $wire.openCsvModal();
+         },
+         closeForm() {
+             this.formModal = false;
+             $wire.closeFormModal();
+         },
+         closeDelete() {
+             this.deleteModal = false;
+             $wire.closeDeleteModal();
+         },
+         closeCsv() {
+             this.csvModal = false;
+             $wire.closeCsvModal();
+         }
+     }"
+     @if(!$isFormModalOpen && !$isDeleteModalOpen && !$isCsvModalOpen) wire:poll.3s @endif>
     <!-- Top Corporate Security Header Banner -->
     <div class="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900 rounded-2xl p-6 sm:p-8 text-white shadow-xl border border-blue-700/50 relative overflow-hidden">
         <!-- Background Decorative Pattern -->
@@ -33,6 +86,7 @@
             <div class="flex flex-wrap sm:flex-nowrap items-center gap-2.5 shrink-0">
                 <!-- 1. Tambah Manual Button (Blue: bg-blue-600) -->
                 <button type="button" 
+                        @click="openCreate()"
                         wire:click="openCreateModal"
                         class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-95 text-white font-bold text-xs uppercase tracking-wider shadow-lg shadow-blue-900/30 border border-blue-400/30 transition-all cursor-pointer">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -43,6 +97,7 @@
 
                 <!-- 2. Import CSV Button (Emerald: bg-emerald-600) -->
                 <button type="button" 
+                        @click="openCsv()"
                         wire:click="openCsvModal"
                         class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold text-xs uppercase tracking-wider shadow-lg shadow-emerald-900/30 border border-emerald-400/30 transition-all cursor-pointer">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -246,17 +301,17 @@
                                 <div class="inline-flex items-center gap-1.5">
                                     <!-- Edit Button -->
                                     <button type="button" 
-                                            wire:click="openEditModal({{ $emp->id }})"
+                                            @click="openEdit({{ $emp->id }}, {{ Js::from($emp->name) }}, {{ Js::from($emp->whatsapp_number ?? '') }}, {{ Js::from($emp->email) }})"
                                             title="{{ __('Edit Data Karyawan') }}"
-                                            class="p-1.5 rounded-lg text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/60 transition cursor-pointer">
+                                            class="p-1.5 rounded-lg text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/60 active:scale-90 active:bg-blue-100 dark:active:bg-blue-900 transition-all duration-100 cursor-pointer">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                                     </button>
 
                                     <!-- Delete Button -->
                                     <button type="button" 
-                                            wire:click="confirmDelete({{ $emp->id }})"
+                                            @click="openDelete({{ $emp->id }}, {{ Js::from($emp->name) }})"
                                             title="{{ __('Hapus Karyawan') }}"
-                                            class="p-1.5 rounded-lg text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/60 transition cursor-pointer">
+                                            class="p-1.5 rounded-lg text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/60 active:scale-90 active:bg-rose-100 dark:active:bg-rose-900 transition-all duration-100 cursor-pointer">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                     </button>
                                 </div>
@@ -288,189 +343,191 @@
     <!-- ======================================================== -->
     <!-- MODAL 1: TAMBAH / EDIT KARYAWAN SECARA MANUAL -->
     <!-- ======================================================== -->
-    @if ($isFormModalOpen)
-        <div class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 sm:p-6"
-             x-data
-             x-init="$el.focus()"
-             @keydown.escape.window="$wire.closeFormModal()">
+    <div x-show="formModal || $wire.isFormModalOpen"
+         x-cloak
+         class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 sm:p-6"
+         @keydown.escape.window="closeForm()">
+        
+        <!-- Backdrop -->
+        <div class="fixed inset-0 bg-slate-900/60 dark:bg-black/80 backdrop-blur-xs transition-opacity"
+             @click="closeForm()"></div>
+
+        <!-- Modal Content Card -->
+        <div class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-slate-800 w-full max-w-lg z-10 animate-fade-in text-slate-800 dark:text-slate-100 overflow-hidden"
+             @click.stop>
             
-            <!-- Backdrop -->
-            <div class="fixed inset-0 bg-slate-900/60 dark:bg-black/80 backdrop-blur-xs transition-opacity"
-                 wire:click="closeFormModal"></div>
-
-            <!-- Modal Content Card -->
-            <div class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-slate-800 w-full max-w-lg z-10 animate-fade-in text-slate-800 dark:text-slate-100 overflow-hidden">
-                
-                <!-- Modal Header -->
-                <div class="px-6 py-4 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/80 dark:bg-slate-800/40">
-                    <div class="flex items-center gap-2.5">
-                        <div class="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold shadow-xs">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-                        </div>
-                        <div>
-                            <h3 class="text-sm font-bold text-slate-900 dark:text-white">
-                                {{ $editingEmployeeId ? __('Edit Data Akun Karyawan') : __('Tambah Akun Karyawan Baru') }}
-                            </h3>
-                            <p class="text-[11px] text-slate-400">
-                                {{ __('Input Nama Lengkap, No HP, dan Email aktif karyawan.') }}
-                            </p>
-                        </div>
+            <!-- Modal Header -->
+            <div class="px-6 py-4 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/80 dark:bg-slate-800/40">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold shadow-xs">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                     </div>
-
-                    <button type="button" 
-                            wire:click="closeFormModal" 
-                            class="p-1 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                    </button>
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-900 dark:text-white" x-text="modalTitle || ({{ $editingEmployeeId ? 'true' : 'false' }} ? 'Edit Data Akun Karyawan' : 'Tambah Akun Karyawan Baru')">
+                            {{ $editingEmployeeId ? __('Edit Data Akun Karyawan') : __('Tambah Akun Karyawan Baru') }}
+                        </h3>
+                        <p class="text-[11px] text-slate-400">
+                            {{ __('Input Nama Lengkap, No HP, dan Email aktif karyawan.') }}
+                        </p>
+                    </div>
                 </div>
 
-                <!-- Modal Body Form -->
-                <form wire:submit.prevent="saveEmployee" class="p-6 space-y-4 text-xs">
-                    <!-- Nama Lengkap -->
-                    <div>
-                        <label for="form_name" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                            {{ __('Nama Lengkap') }} <span class="text-rose-500">*</span>
-                        </label>
-                        <input type="text" 
-                                id="form_name" 
-                                wire:model="name" 
-                                placeholder="{{ __('Contoh: Budi Santoso') }}"
-                                class="w-full text-xs px-3.5 py-2.5 rounded-lg border @error('name') border-rose-400 bg-rose-50 dark:bg-rose-950/30 @else border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 @enderror focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition">
-                        @error('name') <p class="text-[11px] text-rose-600 dark:text-rose-400 mt-1">{{ $message }}</p> @enderror
-                    </div>
-
-                    <!-- No HP / WhatsApp -->
-                    <div>
-                        <label for="form_whatsapp" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                            {{ __('Nomor HP / WhatsApp Aktif') }} <span class="text-rose-500">*</span>
-                        </label>
-                        <input type="text" 
-                                id="form_whatsapp" 
-                                wire:model="whatsapp_number" 
-                                placeholder="{{ __('Contoh: 081234567890') }}"
-                                class="w-full text-xs font-mono px-3.5 py-2.5 rounded-lg border @error('whatsapp_number') border-rose-400 bg-rose-50 dark:bg-rose-950/30 @else border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 @enderror focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition">
-                        @error('whatsapp_number') <p class="text-[11px] text-rose-600 dark:text-rose-400 mt-1">{{ $message }}</p> @enderror
-                    </div>
-
-                    <!-- Email Aktif -->
-                    <div>
-                        <label for="form_email" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                            {{ __('Alamat Email Aktif') }} <span class="text-rose-500">*</span>
-                        </label>
-                        <input type="email" 
-                                id="form_email" 
-                                wire:model="email" 
-                                placeholder="{{ __('Contoh: budi.santoso@asiaplastik.com') }}"
-                                class="w-full text-xs px-3.5 py-2.5 rounded-lg border @error('email') border-rose-400 bg-rose-50 dark:bg-rose-950/30 @else border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 @enderror focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition">
-                        @error('email') <p class="text-[11px] text-rose-600 dark:text-rose-400 mt-1">{{ $message }}</p> @enderror
-                    </div>
-
-                    <!-- Footer Buttons -->
-                    <div class="pt-4 border-t border-gray-100 dark:border-slate-800 flex items-center justify-end gap-3">
-                        <button type="button" 
-                                wire:click="closeFormModal" 
-                                class="px-4 py-2 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition cursor-pointer">
-                            {{ __('Batal') }}
-                        </button>
-
-                        <button type="submit" 
-                                wire:loading.attr="disabled"
-                                class="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs uppercase tracking-wider shadow-md transition flex items-center gap-2 cursor-pointer">
-                            <span wire:loading.remove wire:target="saveEmployee">{{ $editingEmployeeId ? __('Simpan Perubahan') : __('Simpan Akun') }}</span>
-                            <span wire:loading wire:target="saveEmployee">{{ __('Menyimpan...') }}</span>
-                        </button>
-                    </div>
-                </form>
-
+                <button type="button" 
+                        @click="closeForm()" 
+                        class="p-1 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
             </div>
+
+            <!-- Modal Body Form -->
+            <form wire:submit.prevent="saveEmployee" class="p-6 space-y-4 text-xs">
+                <!-- Nama Lengkap -->
+                <div>
+                    <label for="form_name" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                        {{ __('Nama Lengkap') }} <span class="text-rose-500">*</span>
+                    </label>
+                    <input type="text" 
+                            id="form_name" 
+                            wire:model="name"
+                            x-model="name"
+                            placeholder="{{ __('Contoh: Budi Santoso') }}"
+                            class="w-full text-xs px-3.5 py-2.5 rounded-lg border @error('name') border-rose-400 bg-rose-50 dark:bg-rose-950/30 @else border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 @enderror focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition">
+                    @error('name') <p class="text-[11px] text-rose-600 dark:text-rose-400 mt-1">{{ $message }}</p> @enderror
+                </div>
+
+                <!-- No HP / WhatsApp -->
+                <div>
+                    <label for="form_whatsapp" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                        {{ __('Nomor HP / WhatsApp Aktif') }} <span class="text-rose-500">*</span>
+                    </label>
+                    <input type="text" 
+                            id="form_whatsapp" 
+                            wire:model="whatsapp_number"
+                            x-model="whatsapp_number"
+                            placeholder="{{ __('Contoh: 081234567890') }}"
+                            class="w-full text-xs font-mono px-3.5 py-2.5 rounded-lg border @error('whatsapp_number') border-rose-400 bg-rose-50 dark:bg-rose-950/30 @else border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 @enderror focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition">
+                    @error('whatsapp_number') <p class="text-[11px] text-rose-600 dark:text-rose-400 mt-1">{{ $message }}</p> @enderror
+                </div>
+
+                <!-- Email Aktif -->
+                <div>
+                    <label for="form_email" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                        {{ __('Alamat Email Aktif') }} <span class="text-rose-500">*</span>
+                    </label>
+                    <input type="email" 
+                            id="form_email" 
+                            wire:model="email"
+                            x-model="email"
+                            placeholder="{{ __('Contoh: budi.santoso@asiaplastik.com') }}"
+                            class="w-full text-xs px-3.5 py-2.5 rounded-lg border @error('email') border-rose-400 bg-rose-50 dark:bg-rose-950/30 @else border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 @enderror focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition">
+                    @error('email') <p class="text-[11px] text-rose-600 dark:text-rose-400 mt-1">{{ $message }}</p> @enderror
+                </div>
+
+                <!-- Footer Buttons -->
+                <div class="pt-4 border-t border-gray-100 dark:border-slate-800 flex items-center justify-end gap-3">
+                    <button type="button" 
+                            @click="closeForm()" 
+                            class="px-4 py-2 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition cursor-pointer">
+                        {{ __('Batal') }}
+                    </button>
+
+                    <button type="submit" 
+                            wire:loading.attr="disabled"
+                            class="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs uppercase tracking-wider shadow-md transition flex items-center gap-2 cursor-pointer">
+                        <span wire:loading.remove wire:target="saveEmployee" x-text="editingId ? 'Simpan Perubahan' : 'Simpan Akun'">{{ $editingEmployeeId ? __('Simpan Perubahan') : __('Simpan Akun') }}</span>
+                        <span wire:loading wire:target="saveEmployee">{{ __('Menyimpan...') }}</span>
+                    </button>
+                </div>
+            </form>
+
         </div>
-    @endif
+    </div>
 
     <!-- ======================================================== -->
     <!-- MODAL 2: KONFIRMASI HAPUS KARYAWAN -->
     <!-- ======================================================== -->
-    @if ($isDeleteModalOpen)
-        <div class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 sm:p-6"
-             x-data
-             x-init="$el.focus()"
-             @keydown.escape.window="$wire.closeDeleteModal()">
+    <div x-show="deleteModal || $wire.isDeleteModalOpen"
+         x-cloak
+         class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 sm:p-6"
+         @keydown.escape.window="closeDelete()">
+        
+        <!-- Backdrop -->
+        <div class="fixed inset-0 bg-slate-900/60 dark:bg-black/80 backdrop-blur-xs transition-opacity"
+             @click="closeDelete()"></div>
+
+        <!-- Modal Content Card -->
+        <div class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-slate-800 w-full max-w-md z-10 animate-fade-in text-slate-800 dark:text-slate-100 overflow-hidden p-6 text-center"
+             @click.stop>
             
-            <!-- Backdrop -->
-            <div class="fixed inset-0 bg-slate-900/60 dark:bg-black/80 backdrop-blur-xs transition-opacity"
-                 wire:click="closeDeleteModal"></div>
-
-            <!-- Modal Content Card -->
-            <div class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-slate-800 w-full max-w-md z-10 animate-fade-in text-slate-800 dark:text-slate-100 overflow-hidden p-6 text-center">
-                
-                <div class="w-12 h-12 rounded-full bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800 mx-auto flex items-center justify-center mb-4">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                </div>
-
-                <h3 class="text-sm font-bold text-slate-900 dark:text-white mb-1">
-                    {{ __('Konfirmasi Hapus Akun Karyawan') }}
-                </h3>
-                <p class="text-xs text-slate-500 dark:text-slate-400 mb-6">
-                    {{ __('Apakah Anda yakin ingin menghapus akun') }} <strong class="text-slate-800 dark:text-slate-200">{{ $deletingEmployeeName }}</strong>? {{ __('Tindakan ini tidak dapat dibatalkan.') }}
-                </p>
-
-                <div class="flex items-center justify-center gap-3">
-                    <button type="button" 
-                            wire:click="closeDeleteModal" 
-                            class="w-1/2 py-2.5 px-3 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 transition cursor-pointer">
-                        {{ __('Batal') }}
-                    </button>
-
-                    <button type="button" 
-                            wire:click="deleteEmployee" 
-                            wire:loading.attr="disabled"
-                            class="w-1/2 py-2.5 px-3 rounded-lg text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 shadow-md transition cursor-pointer">
-                        <span wire:loading.remove wire:target="deleteEmployee">{{ __('Ya, Hapus') }}</span>
-                        <span wire:loading wire:target="deleteEmployee">{{ __('Menghapus...') }}</span>
-                    </button>
-                </div>
-
+            <div class="w-12 h-12 rounded-full bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800 mx-auto flex items-center justify-center mb-4">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
             </div>
+
+            <h3 class="text-sm font-bold text-slate-900 dark:text-white mb-1">
+                {{ __('Konfirmasi Hapus Akun Karyawan') }}
+            </h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mb-6">
+                {{ __('Apakah Anda yakin ingin menghapus akun') }} <strong class="text-slate-800 dark:text-slate-200" x-text="deletingName || {{ Js::from($deletingEmployeeName) }}">{{ $deletingEmployeeName }}</strong>? {{ __('Tindakan ini tidak dapat dibatalkan.') }}
+            </p>
+
+            <div class="flex items-center justify-center gap-3">
+                <button type="button" 
+                        @click="closeDelete()" 
+                        class="w-1/2 py-2.5 px-3 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 transition cursor-pointer">
+                    {{ __('Batal') }}
+                </button>
+
+                <button type="button" 
+                        wire:click="deleteEmployee" 
+                        wire:loading.attr="disabled"
+                        @click="deleteModal = false"
+                        class="w-1/2 py-2.5 px-3 rounded-lg text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 shadow-md transition cursor-pointer">
+                    <span wire:loading.remove wire:target="deleteEmployee">{{ __('Ya, Hapus') }}</span>
+                    <span wire:loading wire:target="deleteEmployee">{{ __('Menghapus...') }}</span>
+                </button>
+            </div>
+
         </div>
-    @endif
+    </div>
 
     <!-- ======================================================== -->
     <!-- MODAL 3: IMPORT BULK CSV KARYAWAN -->
     <!-- ======================================================== -->
-    @if ($isCsvModalOpen)
-        <div class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 sm:p-6"
-             x-data
-             x-init="$el.focus()"
-             @keydown.escape.window="$wire.closeCsvModal()">
+    <div x-show="csvModal || $wire.isCsvModalOpen"
+         x-cloak
+         class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 sm:p-6"
+         @keydown.escape.window="closeCsv()">
+        
+        <!-- Backdrop -->
+        <div class="fixed inset-0 bg-slate-900/60 dark:bg-black/80 backdrop-blur-xs transition-opacity"
+             @click="closeCsv()"></div>
+
+        <!-- Modal Content Card -->
+        <div class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-slate-800 w-full max-w-lg z-10 animate-fade-in text-slate-800 dark:text-slate-100 overflow-hidden"
+             @click.stop>
             
-            <!-- Backdrop -->
-            <div class="fixed inset-0 bg-slate-900/60 dark:bg-black/80 backdrop-blur-xs transition-opacity"
-                 wire:click="closeCsvModal"></div>
-
-            <!-- Modal Content Card -->
-            <div class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-slate-800 w-full max-w-lg z-10 animate-fade-in text-slate-800 dark:text-slate-100 overflow-hidden">
-                
-                <!-- Modal Header -->
-                <div class="px-6 py-4 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between bg-emerald-50/60 dark:bg-emerald-950/30">
-                    <div class="flex items-center gap-2.5">
-                        <div class="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold shadow-xs">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
-                        </div>
-                        <div>
-                            <h3 class="text-sm font-bold text-slate-900 dark:text-white">
-                                {{ __('Import Massal Data Karyawan (CSV)') }}
-                            </h3>
-                            <p class="text-[11px] text-slate-400">
-                                {{ __('Unggah file CSV dengan kolom: name, whatsapp_number, email.') }}
-                            </p>
-                        </div>
+            <!-- Modal Header -->
+            <div class="px-6 py-4 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between bg-emerald-50/60 dark:bg-emerald-950/30">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold shadow-xs">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
                     </div>
-
-                    <button type="button" 
-                            wire:click="closeCsvModal" 
-                            class="p-1 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                    </button>
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-900 dark:text-white">
+                            {{ __('Import Massal Data Karyawan (CSV)') }}
+                        </h3>
+                        <p class="text-[11px] text-slate-400">
+                            {{ __('Unggah file CSV dengan kolom: name, whatsapp_number, email.') }}
+                        </p>
+                    </div>
                 </div>
+
+                <button type="button" 
+                        @click="closeCsv()" 
+                        class="p-1 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
 
                 <!-- Modal Body Form -->
                 <form wire:submit.prevent="importCsv" class="p-6 space-y-4 text-xs">
@@ -519,7 +576,7 @@
 
                         <div class="flex items-center gap-2">
                             <button type="button" 
-                                    wire:click="closeCsvModal" 
+                                    @click="closeCsv()" 
                                     class="px-3.5 py-2 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 transition cursor-pointer">
                                 {{ __('Tutup') }}
                             </button>
@@ -536,6 +593,5 @@
 
             </div>
         </div>
-    @endif
 </div>
 
