@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\Message;
 use App\Models\Ticket;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -20,7 +21,29 @@ class TicketChat extends Component
 
     public function mount(?int $initialTicketId = null): void
     {
-        $this->ticketId = $initialTicketId ?? Ticket::latest()->first()?->id;
+        $activeUserId = Auth::id() ?? session('active_user_id');
+        $activeUser = Auth::user() ?? ($activeUserId ? User::find($activeUserId) : null);
+        $isAdmin = $activeUser && ($activeUser->role === 'admin' || $activeUser->email === 'user123@gmail.com');
+
+        if ($initialTicketId) {
+            $t = Ticket::find($initialTicketId);
+            $isOwner = $t && ((int) $t->user_id === (int) $activeUserId || (int) $t->sender_id === (int) $activeUserId);
+            if ($isAdmin || $isOwner) {
+                $this->ticketId = $initialTicketId;
+            }
+        } else {
+            $query = Ticket::latest();
+            if (! $isAdmin) {
+                if ($activeUserId) {
+                    $query->where(function ($q) use ($activeUserId) {
+                        $q->where('user_id', $activeUserId)->orWhere('sender_id', $activeUserId);
+                    });
+                } else {
+                    $query->whereRaw('1 = 0');
+                }
+            }
+            $this->ticketId = $query->first()?->id;
+        }
     }
 
     #[On('ticketCreated')]
@@ -32,16 +55,39 @@ class TicketChat extends Component
     #[On('ticketSelected')]
     public function onTicketSelected(int $ticketId): void
     {
-        $this->ticketId = $ticketId;
-        $this->isCalling = false;
-        $this->callSeconds = 0;
+        $activeUserId = Auth::id() ?? session('active_user_id');
+        $activeUser = Auth::user() ?? ($activeUserId ? User::find($activeUserId) : null);
+        $isAdmin = $activeUser && ($activeUser->role === 'admin' || $activeUser->email === 'user123@gmail.com');
+
+        $t = Ticket::find($ticketId);
+        $isOwner = $t && ((int) $t->user_id === (int) $activeUserId || (int) $t->sender_id === (int) $activeUserId);
+
+        if ($isAdmin || $isOwner) {
+            $this->ticketId = $ticketId;
+            $this->isCalling = false;
+            $this->callSeconds = 0;
+        }
     }
 
     #[On('ticketDeleted')]
     public function onTicketDeleted(int $ticketId): void
     {
         if ($this->ticketId === $ticketId) {
-            $this->ticketId = Ticket::latest()->first()?->id;
+            $activeUserId = Auth::id() ?? session('active_user_id');
+            $activeUser = Auth::user() ?? ($activeUserId ? User::find($activeUserId) : null);
+            $isAdmin = $activeUser && ($activeUser->role === 'admin' || $activeUser->email === 'user123@gmail.com');
+
+            $query = Ticket::latest();
+            if (! $isAdmin) {
+                if ($activeUserId) {
+                    $query->where(function ($q) use ($activeUserId) {
+                        $q->where('user_id', $activeUserId)->orWhere('sender_id', $activeUserId);
+                    });
+                } else {
+                    $query->whereRaw('1 = 0');
+                }
+            }
+            $this->ticketId = $query->first()?->id;
             $this->isCalling = false;
             $this->callSeconds = 0;
         }
@@ -49,7 +95,16 @@ class TicketChat extends Component
 
     public function selectTicket(int $id): void
     {
-        $this->ticketId = $id;
+        $activeUserId = Auth::id() ?? session('active_user_id');
+        $activeUser = Auth::user() ?? ($activeUserId ? User::find($activeUserId) : null);
+        $isAdmin = $activeUser && ($activeUser->role === 'admin' || $activeUser->email === 'user123@gmail.com');
+
+        $t = Ticket::find($id);
+        $isOwner = $t && ((int) $t->user_id === (int) $activeUserId || (int) $t->sender_id === (int) $activeUserId);
+
+        if ($isAdmin || $isOwner) {
+            $this->ticketId = $id;
+        }
     }
 
     public function sendMessage(): void
@@ -71,6 +126,21 @@ class TicketChat extends Component
             return;
         }
 
+        $ticket = Ticket::find($this->ticketId);
+        if (! $ticket) {
+            return;
+        }
+
+        $activeUser = Auth::user() ?? ($activeUserId ? User::find($activeUserId) : null);
+        $isAdmin = $activeUser && ($activeUser->role === 'admin' || $activeUser->email === 'user123@gmail.com');
+        $isOwner = (int) $ticket->user_id === (int) $activeUserId || (int) $ticket->sender_id === (int) $activeUserId;
+
+        if (! $isAdmin && ! $isOwner) {
+            session()->flash('error', 'Akses ditolak: Anda tidak memiliki akses ke tiket ini.');
+
+            return;
+        }
+
         Message::create([
             'ticket_id' => $this->ticketId,
             'user_id' => $activeUserId,
@@ -87,9 +157,16 @@ class TicketChat extends Component
             return;
         }
 
+        $activeUserId = Auth::id() ?? session('active_user_id');
+        $activeUser = Auth::user() ?? ($activeUserId ? User::find($activeUserId) : null);
+        $isAdmin = $activeUser && ($activeUser->role === 'admin' || $activeUser->email === 'user123@gmail.com');
+
         $ticket = Ticket::find($this->ticketId);
         if ($ticket) {
-            $ticket->update(['status' => $status]);
+            $isOwner = (int) $ticket->user_id === (int) $activeUserId || (int) $ticket->sender_id === (int) $activeUserId;
+            if ($isAdmin || $isOwner) {
+                $ticket->update(['status' => $status]);
+            }
         }
     }
 
@@ -107,11 +184,20 @@ class TicketChat extends Component
 
     public function render()
     {
-        $ticket = $this->ticketId
-            ? Ticket::with(['sender', 'targetDepartment', 'messages.user'])->find($this->ticketId)
-            : null;
-
         $activeUserId = Auth::id() ?? session('active_user_id');
+        $activeUser = Auth::user() ?? ($activeUserId ? User::find($activeUserId) : null);
+        $isAdmin = $activeUser && ($activeUser->role === 'admin' || $activeUser->email === 'user123@gmail.com');
+
+        $ticket = null;
+        if ($this->ticketId) {
+            $t = Ticket::with(['sender', 'targetDepartment', 'messages.user'])->find($this->ticketId);
+            if ($t) {
+                $isOwner = (int) $t->user_id === (int) $activeUserId || (int) $t->sender_id === (int) $activeUserId;
+                if ($isAdmin || $isOwner) {
+                    $ticket = $t;
+                }
+            }
+        }
 
         return view('livewire.ticket-chat', [
             'ticket' => $ticket,

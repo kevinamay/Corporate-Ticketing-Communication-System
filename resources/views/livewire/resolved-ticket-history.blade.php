@@ -14,7 +14,7 @@
                         @if ($isAdmin)
                             {{ __('Riwayat Tiket Selesai & Arsip Solusi (Semua Departemen)') }}
                         @else
-                            {{ __('Riwayat Tiket yang Sudah Terselesaikan') }}
+                            {{ __('Riwayat Tiket Saya yang Selesai') }}
                         @endif
                     </h2>
                     <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
@@ -29,14 +29,14 @@
                     @if ($isAdmin)
                         {{ __('Arsip lengkap seluruh tiket antar-divisi yang telah berhasil diselesaikan oleh tim dukungan dan departemen tujuan.') }}
                     @else
-                        {{ __('Daftar riwayat tiket yang telah selesai diproses. Anda dapat memeriksa hasil pengerjaan dan solusi penanganan.') }}
+                        {{ __('Daftar riwayat tiket yang Anda ajukan yang telah selesai diproses. Anda dapat memeriksa hasil pengerjaan dan solusi penanganan.') }}
                     @endif
                 </p>
             </div>
         </div>
 
-        <!-- Scope Tabs for Employee: Semua Tiket Selesai vs Tiket Saya Selesai -->
-        @if (!$isAdmin)
+        <!-- Scope Tabs for Admin: Semua Tiket Selesai vs Tiket Saya Selesai -->
+        @if ($isAdmin)
             <div class="flex items-center gap-1.5 p-1 rounded-xl bg-slate-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-xs">
                 <button type="button" wire:click="$set('scopeFilter', 'all')" 
                     class="px-3 py-1.5 rounded-lg font-bold transition cursor-pointer {{ $scopeFilter === 'all' ? 'bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">

@@ -63,6 +63,18 @@ class ResolvedTicketHistory extends Component
 
     public function viewDetail(int $ticketId): void
     {
+        $ticket = Ticket::find($ticketId);
+        $isAdmin = $this->viewMode === 'admin' || ($this->viewMode === 'auto' && $this->isAdminUser());
+        $currentUser = Auth::user() ?? (session('active_user_id') ? User::find(session('active_user_id')) : null);
+
+        if (! $isAdmin) {
+            if (! $ticket || ! $currentUser || ((int) $ticket->user_id !== (int) $currentUser->id && (int) $ticket->sender_id !== (int) $currentUser->id)) {
+                session()->flash('history_error', 'Akses ditolak: Anda hanya dapat melihat detail tiket milik Anda sendiri.');
+
+                return;
+            }
+        }
+
         $this->viewingTicketId = $ticketId;
         $this->isDetailModalOpen = true;
     }
@@ -88,6 +100,24 @@ class ResolvedTicketHistory extends Component
         $query = Ticket::query()
             ->where('status', 'Resolved')
             ->with(['sender', 'user', 'targetDepartment', 'messages.user']);
+
+        // Privacy Isolation: Non-admin employees can ONLY view their own resolved tickets!
+        if (! $isAdmin) {
+            if ($currentUser) {
+                $query->where(function ($q) use ($currentUser) {
+                    $q->where('user_id', $currentUser->id)
+                        ->orWhere('sender_id', $currentUser->id);
+                });
+            } else {
+                $query->whereRaw('1 = 0');
+            }
+        } elseif ($this->scopeFilter === 'mine' && $currentUser) {
+            // For admin who chooses to filter by "mine"
+            $query->where(function ($q) use ($currentUser) {
+                $q->where('user_id', $currentUser->id)
+                    ->orWhere('sender_id', $currentUser->id);
+            });
+        }
 
         // Search Filter
         if (trim($this->search) !== '') {
@@ -118,22 +148,21 @@ class ResolvedTicketHistory extends Component
             $query->where('target_department_id', (int) $this->departmentFilter);
         }
 
-        // Scope Filter (specifically for employee: all completed or mine)
-        if ($this->scopeFilter === 'mine' && $currentUser) {
-            $query->where(function ($q) use ($currentUser) {
-                $q->where('user_id', $currentUser->id)
-                    ->orWhere('sender_id', $currentUser->id);
-            });
-        }
-
         // Sorting: by updated_at (when marked Resolved)
         $query->orderBy('updated_at', $this->sortBy === 'oldest' ? 'asc' : 'desc');
 
         $tickets = $query->paginate(10);
 
-        $viewingTicket = $this->viewingTicketId
-            ? Ticket::with(['sender', 'user', 'targetDepartment', 'messages.user'])->find($this->viewingTicketId)
-            : null;
+        $viewingTicket = null;
+        if ($this->viewingTicketId) {
+            $vt = Ticket::with(['sender', 'user', 'targetDepartment', 'messages.user'])->find($this->viewingTicketId);
+            if ($vt) {
+                $isOwner = $currentUser && ((int) $vt->user_id === (int) $currentUser->id || (int) $vt->sender_id === (int) $currentUser->id);
+                if ($isAdmin || $isOwner) {
+                    $viewingTicket = $vt;
+                }
+            }
+        }
 
         $totalResolvedAll = Ticket::where('status', 'Resolved')->count();
         $totalResolvedMine = $currentUser

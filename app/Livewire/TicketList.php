@@ -58,7 +58,25 @@ class TicketList extends Component
 
     public function mount(?int $initialSelectedId = null): void
     {
-        $this->selectedTicketId = $initialSelectedId ?? Ticket::latest()->first()?->id;
+        $activeUserId = Auth::id() ?? session('active_user_id');
+        $activeUser = Auth::user() ?? ($activeUserId ? User::find($activeUserId) : null);
+        $isAdmin = $activeUser && ($activeUser->role === 'admin' || $activeUser->email === 'user123@gmail.com');
+
+        if ($initialSelectedId) {
+            $this->selectedTicketId = $initialSelectedId;
+        } else {
+            $firstTicketQuery = Ticket::latest();
+            if (! $isAdmin) {
+                if ($activeUserId) {
+                    $firstTicketQuery->where(function ($q) use ($activeUserId) {
+                        $q->where('user_id', $activeUserId)->orWhere('sender_id', $activeUserId);
+                    });
+                } else {
+                    $firstTicketQuery->whereRaw('1 = 0');
+                }
+            }
+            $this->selectedTicketId = $firstTicketQuery->first()?->id;
+        }
     }
 
     #[On('ticketCreated')]
@@ -77,7 +95,21 @@ class TicketList extends Component
     public function onTicketDeleted(int $ticketId): void
     {
         if ($this->selectedTicketId === $ticketId) {
-            $this->selectedTicketId = Ticket::latest()->first()?->id;
+            $activeUserId = Auth::id() ?? session('active_user_id');
+            $activeUser = Auth::user() ?? ($activeUserId ? User::find($activeUserId) : null);
+            $isAdmin = $activeUser && ($activeUser->role === 'admin' || $activeUser->email === 'user123@gmail.com');
+
+            $firstTicketQuery = Ticket::latest();
+            if (! $isAdmin) {
+                if ($activeUserId) {
+                    $firstTicketQuery->where(function ($q) use ($activeUserId) {
+                        $q->where('user_id', $activeUserId)->orWhere('sender_id', $activeUserId);
+                    });
+                } else {
+                    $firstTicketQuery->whereRaw('1 = 0');
+                }
+            }
+            $this->selectedTicketId = $firstTicketQuery->first()?->id;
         }
         if ($this->viewingTicketId === $ticketId) {
             $this->isDetailModalOpen = false;
@@ -102,6 +134,13 @@ class TicketList extends Component
      */
     public function viewTicket(int $id): void
     {
+        $ticket = Ticket::find($id);
+        if (! $ticket || ! $this->isOwner($ticket)) {
+            session()->flash('ticket_error', 'Akses ditolak: Anda hanya dapat melihat detail tiket milik Anda sendiri.');
+
+            return;
+        }
+
         $this->selectedTicketId = $id;
         $this->viewingTicketId = $id;
         $this->isDetailModalOpen = true;
@@ -342,7 +381,23 @@ class TicketList extends Component
 
     public function render()
     {
+        $activeUserId = Auth::id() ?? session('active_user_id');
+        $activeUser = Auth::user() ?? ($activeUserId ? User::find($activeUserId) : null);
+        $isAdmin = $activeUser && ($activeUser->role === 'admin' || $activeUser->email === 'user123@gmail.com');
+
         $query = Ticket::with(['sender', 'targetDepartment', 'messages.user'])->latest();
+
+        // Privacy & Isolation: Non-admin users can ONLY see their own tickets!
+        if (! $isAdmin) {
+            if ($activeUserId) {
+                $query->where(function ($q) use ($activeUserId) {
+                    $q->where('user_id', $activeUserId)
+                        ->orWhere('sender_id', $activeUserId);
+                });
+            } else {
+                $query->whereRaw('1 = 0');
+            }
+        }
 
         if ($this->statusFilter !== 'all') {
             $query->where('status', $this->statusFilter);
@@ -359,16 +414,18 @@ class TicketList extends Component
             });
         }
 
-        $viewingTicket = $this->viewingTicketId
-            ? Ticket::with(['sender', 'targetDepartment', 'messages.user'])->find($this->viewingTicketId)
-            : null;
+        $viewingTicket = null;
+        if ($this->viewingTicketId) {
+            $vt = Ticket::with(['sender', 'targetDepartment', 'messages.user'])->find($this->viewingTicketId);
+            if ($vt && ($isAdmin || $this->isOwner($vt))) {
+                $viewingTicket = $vt;
+            }
+        }
 
         $itDepartments = Department::where('name', 'like', 'IT%')->get();
         if ($itDepartments->isEmpty()) {
             $itDepartments = Department::take(1)->get();
         }
-
-        $activeUserId = Auth::id() ?? session('active_user_id');
 
         return view('livewire.ticket-list', [
             'tickets' => $query->get(),
