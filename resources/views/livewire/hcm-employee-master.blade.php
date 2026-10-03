@@ -1,4 +1,4 @@
-<div class="space-y-6">
+<div class="space-y-6" @if(!$isFormModalOpen && !$isDeleteModalOpen && !$isCsvModalOpen) wire:poll.3s @endif>
     <!-- Top Corporate Security Header Banner -->
     <div class="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900 rounded-2xl p-6 sm:p-8 text-white shadow-xl border border-blue-700/50 relative overflow-hidden">
         <!-- Background Decorative Pattern -->
@@ -14,6 +14,10 @@
                     <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
                         {{ __('Admin IT Only') }}
+                    </span>
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-blue-500/20 text-blue-200 border border-blue-400/30">
+                        <span class="w-1.5 h-1.5 rounded-full bg-blue-400 animate-ping"></span>
+                        {{ __('Real-Time Sync') }}
                     </span>
                 </div>
 

@@ -106,6 +106,7 @@ class RegisterUser extends Component
             $this->isRegisteredSuccess = true;
             $this->errorMessage = null;
             $this->successMessage = 'Pendaftaran berhasil dikirim. Akun Anda saat ini sedang menunggu ACC/Konfirmasi dari Administrator.';
+            $this->dispatch('userRegistered');
         } catch (ValidationException $ve) {
             throw $ve;
         } catch (\Throwable $e) {

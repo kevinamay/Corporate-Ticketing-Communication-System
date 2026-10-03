@@ -8,6 +8,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
+use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
@@ -86,6 +87,16 @@ class HcmEmployeeMaster extends Component
     public function updatingStatusFilter(): void
     {
         $this->resetPage();
+    }
+
+    /**
+     * Realtime reactive event listener: re-renders immediately upon new user registration or status update.
+     */
+    #[On('userRegistered')]
+    #[On('userStatusUpdated')]
+    public function refreshUsers(): void
+    {
+        // Re-renders the component immediately upon new user registration or status update
     }
 
     /**
@@ -260,6 +271,8 @@ class HcmEmployeeMaster extends Component
             $user->update(['email_verified_at' => now()]);
             session()->flash('success_message', 'Akun karyawan "'.$user->name.'" berhasil di-ACC dan sekarang sudah aktif.');
         }
+
+        $this->dispatch('userStatusUpdated');
     }
 
     /**
