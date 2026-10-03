@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Mail\AccountApprovedMail;
 use App\Models\Department;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
@@ -269,6 +270,16 @@ class HcmEmployeeMaster extends Component
             // Not ACC'd -> ACC
             $user->update(['email_verified_at' => now()]);
             session()->flash('success_message', 'Akun karyawan "'.$user->name.'" berhasil di-ACC dan sekarang sudah aktif.');
+
+            // Kirim email pemberitahuan akun telah di-ACC & aktif
+            try {
+                AccountApprovedMail::sendTo(
+                    $user->email,
+                    $user->name
+                );
+            } catch (\Throwable $mailErr) {
+                Log::warning('Gagal mengirim email konfirmasi ACC akun: '.$mailErr->getMessage());
+            }
         }
     }
 

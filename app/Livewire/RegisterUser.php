@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Mail\AccountPendingApprovalMail;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
@@ -101,6 +102,17 @@ class RegisterUser extends Component
                     'email_verified_at' => null, // Waiting for Admin ACC / Confirmation
                     'role' => 'staff',
                 ]);
+            }
+
+            // Send notification email: Akun Berhasil Terdaftar (Menunggu ACC Admin IT)
+            try {
+                AccountPendingApprovalMail::sendTo(
+                    $cleanEmail,
+                    trim($this->name),
+                    trim($this->whatsapp_number)
+                );
+            } catch (\Throwable $mailErr) {
+                Log::warning('Gagal mengirim email pendaftaran akun baru: '.$mailErr->getMessage());
             }
 
             $this->isRegisteredSuccess = true;
