@@ -82,7 +82,7 @@
                 </p>
             </div>
 
-            <!-- Top Action Buttons: Tambah Manual (Blue), Import CSV (Emerald), Download Template (Slate) -->
+            <!-- Top Action Buttons: Tambah Manual (Blue), Import CSV (Emerald) -->
             <div class="flex flex-wrap sm:flex-nowrap items-center gap-2.5 shrink-0">
                 <!-- 1. Tambah Manual Button (Blue: bg-blue-600) -->
                 <button type="button" 
@@ -104,17 +104,6 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
                     </svg>
                     <span>{{ __('Import CSV') }}</span>
-                </button>
-
-                <!-- 3. Download Format Template CSV -->
-                <button type="button" 
-                        wire:click="downloadTemplateCsv"
-                        title="{{ __('Unduh contoh format CSV untuk pengisian data karyawan') }}"
-                        class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-white font-bold text-xs border border-white/20 transition-all cursor-pointer">
-                    <svg class="w-4 h-4 text-blue-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-                    </svg>
-                    <span>{{ __('Template CSV') }}</span>
                 </button>
             </div>
         </div>
