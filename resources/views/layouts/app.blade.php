@@ -202,59 +202,312 @@
                 </div>
             </div>
 
-            <!-- Slide-down Menu for Mobile / Tablet -->
-            <div x-show="mobileMenuOpen" @click.away="mobileMenuOpen = false" 
-                 x-transition:enter="transition ease-out duration-200"
-                 x-transition:enter-start="opacity-0 -translate-y-2"
-                 x-transition:enter-end="opacity-100 translate-y-0"
-                 x-transition:leave="transition ease-in duration-150"
-                 x-transition:leave-start="opacity-100 translate-y-0"
-                 x-transition:leave-end="opacity-0 -translate-y-2"
-                 class="md:hidden bg-slate-900 rounded-xl p-3 border border-slate-800 mb-3 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs shadow-xl" 
-                 style="display: none;">
-                <a href="{{ route('dashboard') }}" class="p-2.5 rounded-lg bg-slate-800 text-white font-bold text-center hover:bg-blue-600 transition">
-                    {{ __('Dashboard') }}
-                </a>
-                @if (auth()->check() && (auth()->user()->role === 'admin' || auth()->user()->email === 'user123@gmail.com'))
-                    @if (auth()->user()->email === 'user123@gmail.com')
-                        <a href="{{ request()->is('/') ? '#hcm-master-section' : url('/#hcm-master-section') }}" @click="mobileMenuOpen = false" class="col-span-1 sm:col-span-2 p-2.5 rounded-lg bg-blue-600 text-white font-bold text-center hover:bg-blue-500 transition shadow-sm">
-                            {{ __('Master Karyawan (HCM)') }}
-                        </a>
-                    @endif
-                    <a href="{{ request()->is('/') ? '#global-tickets' : url('/#global-tickets') }}" @click="mobileMenuOpen = false" class="col-span-1 sm:col-span-2 p-2.5 rounded-lg bg-slate-800 text-white font-bold text-center hover:bg-blue-600 transition">
-                        {{ __('Tangani Tiket Masuk') }}
-                    </a>
-                    <a href="{{ request()->is('/') ? '#admin-resolved-history' : url('/#admin-resolved-history') }}" @click="mobileMenuOpen = false" class="col-span-1 sm:col-span-2 p-2.5 rounded-lg bg-slate-800 text-emerald-300 font-bold text-center hover:bg-emerald-600 hover:text-white transition">
-                        {{ __('Riwayat Tiket Selesai') }} ({{ \App\Models\Ticket::where('status', 'Resolved')->count() }})
-                    </a>
-                @else
-                    <a href="{{ request()->is('/') ? '#new-ticket' : url('/#new-ticket') }}" @click="mobileMenuOpen = false" class="p-2.5 rounded-lg bg-slate-800 text-blue-200 font-bold text-center hover:bg-blue-600 hover:text-white transition">
-                        {{ __('Buat Tiket') }}
-                    </a>
-                    <a href="{{ request()->is('/') ? '#queue' : url('/#queue') }}" @click="mobileMenuOpen = false" class="p-2.5 rounded-lg bg-slate-800 text-blue-200 font-bold text-center hover:bg-blue-600 hover:text-white transition">
-                        {{ __('Antrean Tiket') }}
-                    </a>
-                    <a href="{{ request()->is('/') ? '#resolved-history' : url('/#resolved-history') }}" @click="mobileMenuOpen = false" class="col-span-1 sm:col-span-2 p-2.5 rounded-lg bg-slate-800 text-emerald-300 font-bold text-center hover:bg-emerald-600 hover:text-white transition">
-                        {{ __('Riwayat Tiket Selesai') }} ({{ \App\Models\Ticket::where('status', 'Resolved')->count() }})
-                    </a>
-                @endif
+        </div>
+    </header>
 
-                <!-- Mobile Language Selector Row -->
-                <div class="col-span-1 sm:col-span-2 p-2 rounded-lg bg-slate-800/60 border border-slate-700/60 mt-1">
-                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 text-center">{{ __('Pilih Bahasa') }}</p>
-                    <div class="grid grid-cols-3 gap-1.5">
-                        @foreach($languages as $code => $lang)
+    <!-- ========================================================================= -->
+    <!-- SLIDE-OVER MOBILE DRAWER NAVIGATION (Matches Reference Image 1)           -->
+    <!-- ========================================================================= -->
+    <div x-show="mobileMenuOpen" 
+         x-cloak 
+         class="fixed inset-0 z-50 overflow-hidden md:hidden"
+         style="display: none;">
+        
+        <!-- Backdrop Dimmer Overlay -->
+        <div x-show="mobileMenuOpen" 
+             x-transition:enter="transition-opacity ease-out duration-250"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition-opacity ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             @click="mobileMenuOpen = false" 
+             class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm"></div>
+
+        <!-- Drawer Content Panel (Full-width on phone, max-w-sm on tablet) -->
+        <div x-show="mobileMenuOpen" 
+             x-transition:enter="transition ease-out duration-300 transform"
+             x-transition:enter-start="translate-x-full"
+             x-transition:enter-end="translate-x-0"
+             x-transition:leave="transition ease-in duration-200 transform"
+             x-transition:leave-start="translate-x-0"
+             x-transition:leave-end="translate-x-full"
+             class="fixed inset-y-0 right-0 w-full sm:max-w-md bg-white dark:bg-slate-900 shadow-2xl flex flex-col justify-between overflow-y-auto p-5 sm:p-6 transition-colors duration-200 z-10 text-slate-800 dark:text-slate-100">
+
+            <div>
+                <!-- 1. Drawer Header (Logo, Dark Mode Toggle Pill, Close Button) -->
+                <div class="flex items-center justify-between pb-5 border-b border-gray-100 dark:border-slate-800 mb-5">
+                    <!-- Brand Logo -->
+                    <a href="{{ url('/') }}" @click="mobileMenuOpen = false" class="flex items-center">
+                        <img src="{{ asset('images/logo2.webp') }}" alt="Asia Plastik" class="h-8 w-auto object-contain">
+                    </a>
+
+                    <!-- Header Right: Dark Mode Toggle Pill + Close Button -->
+                    <div class="flex items-center gap-2.5">
+                        <!-- Interactive Dark Mode Capsule Toggle (Matches Image 1) -->
+                        <button type="button" 
+                                @click="darkMode = !darkMode; if (darkMode) { document.documentElement.classList.add('dark'); localStorage.setItem('theme', 'dark'); } else { document.documentElement.classList.remove('dark'); localStorage.setItem('theme', 'light'); }" 
+                                class="flex items-center gap-1.5 px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 transition cursor-pointer shadow-2xs select-none"
+                                :title="darkMode ? '{{ __('Mode Terang') }}' : '{{ __('Mode Gelap') }}'">
+                            <!-- Moon icon -->
+                            <span class="w-5 h-5 flex items-center justify-center transition-colors"
+                                  :class="darkMode ? 'text-blue-400' : 'text-slate-400'">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                            </span>
+                            <!-- Sun icon with amber circular badge (Matches Image 1) -->
+                            <span class="w-6 h-6 rounded-full flex items-center justify-center transition-all"
+                                  :class="!darkMode ? 'bg-amber-400 text-slate-900 shadow-xs' : 'bg-slate-700 text-slate-300'">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                            </span>
+                        </button>
+
+                        <!-- Close Button (✕) -->
+                        <button type="button" 
+                                @click="mobileMenuOpen = false" 
+                                class="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+                                title="{{ __('Tutup Menu') }}">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 2. Language Selector Capsule Strip (Matches Image 1: 🌐 Lang: [ ID ] [ EN ] [ CN ]) -->
+                <div class="bg-slate-100 dark:bg-slate-800/80 p-1.5 rounded-2xl flex items-center justify-between text-xs font-semibold mb-6">
+                    <div class="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 pl-2 font-medium">
+                        <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path>
+                        </svg>
+                        <span>Lang:</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        @foreach(['id' => 'ID', 'en' => 'EN', 'zh' => 'CN'] as $code => $label)
                             <a href="{{ route('locale.switch', $code) }}" 
-                                class="py-1.5 px-2 rounded text-center flex items-center justify-center gap-1 text-[11px] font-semibold transition {{ $currentLocale === $code ? 'bg-blue-600 text-white font-bold shadow-xs' : 'bg-slate-700 text-slate-200 hover:bg-slate-600' }}">
-                                <span>{{ $lang['flag'] }}</span>
-                                <span>{{ $lang['short'] }}</span>
+                               class="px-4 py-1.5 rounded-xl transition text-center font-bold text-xs {{ $currentLocale === $code ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white' }}">
+                                {{ $label }}
                             </a>
                         @endforeach
                     </div>
                 </div>
+
+                <!-- 3. Navigation Menu Items (Vertical Cards with Left Icon Boxes - Matches Image 1) -->
+                <nav class="space-y-2.5">
+                    <!-- Beranda / Dashboard -->
+                    <a href="{{ route('dashboard') }}" @click="mobileMenuOpen = false" 
+                       class="w-full flex items-center gap-3.5 p-2.5 rounded-2xl transition {{ request()->routeIs('dashboard') && !request()->has('ticket') ? 'bg-blue-50/80 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/50' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/60' }}">
+                        <div class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 {{ request()->routeIs('dashboard') && !request()->has('ticket') ? 'bg-blue-600 text-white shadow-md shadow-blue-500/25' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300' }}">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                        </div>
+                        <div class="flex-1 text-left">
+                            <span class="font-bold text-sm sm:text-base block {{ request()->routeIs('dashboard') && !request()->has('ticket') ? 'text-blue-600 dark:text-blue-400' : 'text-slate-800 dark:text-slate-100' }}">
+                                {{ __('Beranda') }}
+                            </span>
+                        </div>
+                    </a>
+
+                    @if (auth()->check() && (auth()->user()->role === 'admin' || auth()->user()->email === 'user123@gmail.com'))
+                        <!-- ADMIN MENU ITEMS -->
+                        @if (auth()->user()->email === 'user123@gmail.com')
+                            <!-- Master Karyawan (HCM) -->
+                            <a href="{{ request()->is('/') ? '#hcm-master-section' : url('/#hcm-master-section') }}" @click="mobileMenuOpen = false" 
+                               class="w-full flex items-center gap-3.5 p-2.5 rounded-2xl transition hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-200">
+                                <div class="w-11 h-11 rounded-xl bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                                </div>
+                                <div class="flex-1 text-left">
+                                    <span class="font-bold text-sm sm:text-base text-slate-800 dark:text-slate-100 block">
+                                        {{ __('Master Karyawan (HCM)') }}
+                                    </span>
+                                </div>
+                            </a>
+                        @endif
+
+                        <!-- Tangani Tiket Masuk -->
+                        <a href="{{ request()->is('/') ? '#global-tickets' : url('/#global-tickets') }}" @click="mobileMenuOpen = false" 
+                           class="w-full flex items-center gap-3.5 p-2.5 rounded-2xl transition hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-200">
+                            <div class="w-11 h-11 rounded-xl bg-slate-100 dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                            </div>
+                            <div class="flex-1 text-left flex items-center justify-between">
+                                <span class="font-bold text-sm sm:text-base text-slate-800 dark:text-slate-100 block">
+                                    {{ __('Tangani Tiket Masuk') }}
+                                </span>
+                                <span class="px-2 py-0.5 rounded-full text-[10px] bg-blue-600 text-white font-bold">
+                                    {{ \App\Models\Ticket::where('status', '!=', 'Resolved')->count() }}
+                                </span>
+                            </div>
+                        </a>
+
+                        <!-- Riwayat Tiket Selesai -->
+                        <a href="{{ request()->is('/') ? '#admin-resolved-history' : url('/#admin-resolved-history') }}" @click="mobileMenuOpen = false" 
+                           class="w-full flex items-center gap-3.5 p-2.5 rounded-2xl transition hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-200">
+                            <div class="w-11 h-11 rounded-xl bg-slate-100 dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                            </div>
+                            <div class="flex-1 text-left flex items-center justify-between">
+                                <span class="font-bold text-sm sm:text-base text-slate-800 dark:text-slate-100 block">
+                                    {{ __('Riwayat Tiket Selesai') }}
+                                </span>
+                                <span class="px-2 py-0.5 rounded-full text-[10px] bg-emerald-600 text-white font-bold">
+                                    {{ \App\Models\Ticket::where('status', 'Resolved')->count() }}
+                                </span>
+                            </div>
+                        </a>
+
+                        <!-- Grafik Tren Harian -->
+                        <a href="{{ request()->is('/') ? '#daily-ticket-chart-section' : url('/#daily-ticket-chart-section') }}" @click="mobileMenuOpen = false" 
+                           class="w-full flex items-center gap-3.5 p-2.5 rounded-2xl transition hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-200">
+                            <div class="w-11 h-11 rounded-xl bg-slate-100 dark:bg-slate-800 text-amber-500 flex items-center justify-center shrink-0">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                            </div>
+                            <div class="flex-1 text-left">
+                                <span class="font-bold text-sm sm:text-base text-slate-800 dark:text-slate-100 block">
+                                    {{ __('Grafik Tren Permintaan') }}
+                                </span>
+                            </div>
+                        </a>
+
+                    @elseif (auth()->check())
+                        <!-- EMPLOYEE / STAFF MENU ITEMS -->
+                        <!-- Buat Tiket Baru -->
+                        <a href="{{ request()->is('/') ? '#new-ticket' : url('/#new-ticket') }}" @click="mobileMenuOpen = false" 
+                           class="w-full flex items-center gap-3.5 p-2.5 rounded-2xl transition hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-200">
+                            <div class="w-11 h-11 rounded-xl bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            </div>
+                            <div class="flex-1 text-left">
+                                <span class="font-bold text-sm sm:text-base text-slate-800 dark:text-slate-100 block">
+                                    {{ __('Buat Tiket Baru') }}
+                                </span>
+                            </div>
+                        </a>
+
+                        <!-- Antrean Tiket Aktif -->
+                        <a href="{{ request()->is('/') ? '#queue' : url('/#queue') }}" @click="mobileMenuOpen = false" 
+                           class="w-full flex items-center gap-3.5 p-2.5 rounded-2xl transition hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-200">
+                            <div class="w-11 h-11 rounded-xl bg-slate-100 dark:bg-slate-800 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                            </div>
+                            <div class="flex-1 text-left flex items-center justify-between">
+                                <span class="font-bold text-sm sm:text-base text-slate-800 dark:text-slate-100 block">
+                                    {{ __('Antrean Tiket & Status') }}
+                                </span>
+                                <span class="px-2 py-0.5 rounded-full text-[10px] bg-slate-700 text-slate-200 font-bold">
+                                    {{ \App\Models\Ticket::where('status', '!=', 'Resolved')->count() }}
+                                </span>
+                            </div>
+                        </a>
+
+                        <!-- Riwayat Tiket Selesai -->
+                        <a href="{{ request()->is('/') ? '#resolved-history' : url('/#resolved-history') }}" @click="mobileMenuOpen = false" 
+                           class="w-full flex items-center gap-3.5 p-2.5 rounded-2xl transition hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-200">
+                            <div class="w-11 h-11 rounded-xl bg-slate-100 dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                            </div>
+                            <div class="flex-1 text-left flex items-center justify-between">
+                                <span class="font-bold text-sm sm:text-base text-slate-800 dark:text-slate-100 block">
+                                    {{ __('Riwayat Tiket Selesai') }}
+                                </span>
+                                <span class="px-2 py-0.5 rounded-full text-[10px] bg-emerald-600 text-white font-bold">
+                                    {{ \App\Models\Ticket::where('status', 'Resolved')->count() }}
+                                </span>
+                            </div>
+                        </a>
+
+                    @else
+                        <!-- GUEST MENU ITEMS -->
+                        <!-- Antrean Tiket Publik -->
+                        <a href="{{ request()->is('/') ? '#queue' : url('/#queue') }}" @click="mobileMenuOpen = false" 
+                           class="w-full flex items-center gap-3.5 p-2.5 rounded-2xl transition hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-200">
+                            <div class="w-11 h-11 rounded-xl bg-slate-100 dark:bg-slate-800 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                            </div>
+                            <div class="flex-1 text-left">
+                                <span class="font-bold text-sm sm:text-base text-slate-800 dark:text-slate-100 block">
+                                    {{ __('Antrean Tiket Publik') }}
+                                </span>
+                            </div>
+                        </a>
+
+                        <!-- Masuk Akun -->
+                        <a href="{{ route('login') }}" class="w-full flex items-center gap-3.5 p-2.5 rounded-2xl transition hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-200">
+                            <div class="w-11 h-11 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                            </div>
+                            <div class="flex-1 text-left">
+                                <span class="font-bold text-sm sm:text-base text-blue-600 dark:text-blue-400 block">
+                                    {{ __('Masuk ke Akun (Login)') }}
+                                </span>
+                            </div>
+                        </a>
+
+                        <!-- Daftar Baru -->
+                        <a href="{{ route('register') }}" class="w-full flex items-center gap-3.5 p-2.5 rounded-2xl transition hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-200">
+                            <div class="w-11 h-11 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+                            </div>
+                            <div class="flex-1 text-left">
+                                <span class="font-bold text-sm sm:text-base text-emerald-600 dark:text-emerald-400 block">
+                                    {{ __('Daftar Akun Baru (Register)') }}
+                                </span>
+                            </div>
+                        </a>
+                    @endif
+
+                    <!-- Hubungi Bantuan & WhatsApp (Matches Image 1 "Hubungi Penjualan") -->
+                    <a href="https://wa.me/62318433078?text=Halo%20Admin%20PT.%20Asia%20Plastik%2C%20saya%20butuh%20bantuan%20terkait%20layanan%20sistem..." target="_blank" rel="noopener noreferrer" 
+                       class="w-full flex items-center gap-3.5 p-2.5 rounded-2xl transition hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-200">
+                        <div class="w-11 h-11 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-[#25D366] flex items-center justify-center shrink-0">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                        </div>
+                        <div class="flex-1 text-left">
+                            <span class="font-bold text-sm sm:text-base text-slate-800 dark:text-slate-100 block">
+                                {{ __('Bantuan Operasional & WA') }}
+                            </span>
+                        </div>
+                    </a>
+                </nav>
             </div>
+
+            <!-- 4. Bottom Representative Contact Card (Matches Reference Image 1) -->
+            <div class="pt-6">
+                <div class="rounded-3xl bg-slate-50 dark:bg-slate-800/60 p-4 border border-gray-100 dark:border-slate-800/80 space-y-3">
+                    <p class="text-[10px] font-black tracking-wider uppercase text-slate-400 dark:text-slate-500">
+                        {{ __('KONTAK REPRESENTATIF') }}
+                    </p>
+
+                    <!-- Email -->
+                    <a href="mailto:marketing@asiaplastik.com" class="flex items-center gap-3 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 transition">
+                        <div class="w-8 h-8 rounded-xl bg-blue-100/80 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                        </div>
+                        <span class="truncate">marketing@asiaplastik.com</span>
+                    </a>
+
+                    <!-- Telepon -->
+                    <a href="tel:+62318433078" class="flex items-center gap-3 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 transition">
+                        <div class="w-8 h-8 rounded-xl bg-blue-100/80 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                        </div>
+                        <span>+6231 8433078</span>
+                    </a>
+                </div>
+
+                @auth
+                    <!-- Logout Action Button -->
+                    <form action="{{ route('logout') }}" method="POST" class="pt-3">
+                        @csrf
+                        <button type="submit" class="w-full flex items-center justify-center gap-2 p-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/60 font-bold text-xs border border-rose-200 dark:border-rose-900/50 transition cursor-pointer">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                            <span>{{ __('Logout / Keluar dari Akun') }}</span>
+                        </button>
+                    </form>
+                @endauth
+            </div>
+
         </div>
-    </header>
+    </div>
 
     <!-- MAIN BODY CONTENT AREA (Split-Screen & Desk Dashboard with clean spacing, no negative margins) -->
     <div class="flex-1 max-w-7xl 2xl:max-w-[1440px] w-full mx-auto px-3 sm:px-6 lg:px-8 xl:px-10 py-5 sm:py-6 lg:py-8 relative z-20">
