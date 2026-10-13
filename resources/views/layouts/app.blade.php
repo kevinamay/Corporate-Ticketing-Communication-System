@@ -47,9 +47,9 @@
         <div class="max-w-7xl 2xl:max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8 xl:px-10">
             <!-- Top Utility Bar (Active user, Quick Role info, Dark Mode, Language, Logout) -->
             <div class="py-1 sm:py-1.5 flex items-center justify-between text-[10px] sm:text-[11px] text-slate-300 border-b border-slate-800/80 font-medium tracking-wide">
-                <div class="flex items-center gap-1.5 sm:gap-2 text-slate-400 min-w-0 shrink">
+                <div class="flex items-center gap-1.5 sm:gap-2 text-slate-400 min-w-0">
                     <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
-                    <span class="font-bold text-slate-200 truncate shrink-0">PT. ASIA PLASTIK</span>
+                    <span class="font-bold text-slate-200 truncate">PT. ASIA PLASTIK</span>
                     <span class="hidden lg:inline text-slate-500">•</span>
                     <span class="hidden lg:inline text-slate-400 text-[10px] uppercase tracking-wider truncate">{{ __('Portal Layanan Tiket & Komunikasi Internal') }}</span>
                 </div>
@@ -58,11 +58,11 @@
                     @auth
                         @if (Auth::user()->email === 'user123@gmail.com')
                             <a href="{{ request()->is('/') ? '#hcm-master-section' : url('/#hcm-master-section') }}" 
-                               class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white font-bold text-[10px] uppercase tracking-wider shadow-xs transition">
+                               class="hidden lg:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white font-bold text-[10px] uppercase tracking-wider shadow-xs transition">
                                 <svg class="w-3 h-3 text-blue-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                                 <span>{{ __('Master Karyawan') }}</span>
                             </a>
-                            <span class="hidden sm:inline text-slate-700">|</span>
+                            <span class="hidden lg:inline text-slate-700">|</span>
                         @endif
                         <span class="text-emerald-300 font-semibold truncate max-w-[100px] text-[11px] sm:text-xs hidden md:inline">{{ Auth::user()->name }}</span>
                         <span class="text-slate-700 hidden md:inline">|</span>
