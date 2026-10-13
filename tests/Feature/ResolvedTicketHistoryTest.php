@@ -85,7 +85,7 @@ class ResolvedTicketHistoryTest extends TestCase
         Livewire::test(ResolvedTicketHistory::class, ['viewMode' => 'admin'])
             ->assertOk()
             ->assertSee('Komputer Mati Total Ruang HR')
-            ->assertSee('Resolved')
+            ->assertSee(__('Terselesaikan'))
             ->assertDontSee('Wi-Fi Ruang Meeting Lambat');
     }
 

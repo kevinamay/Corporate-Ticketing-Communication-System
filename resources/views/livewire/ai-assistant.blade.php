@@ -25,7 +25,7 @@
            class="flex items-center shadow-2xl rounded-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 overflow-hidden hover:scale-105 active:scale-95 transition-all duration-200 group cursor-pointer"
            title="{{ __('Hubungi WhatsApp PT. Asia Plastik (+6231 8433078 / 8439998)') }}">
             
-            <span class="hidden sm:inline-flex px-4 py-2.5 text-xs font-black text-slate-800 dark:text-slate-100 tracking-tight select-none items-center gap-1.5">
+            <span class="hidden md:inline-flex px-4 py-2.5 text-xs font-black text-slate-800 dark:text-slate-100 tracking-tight select-none items-center gap-1.5">
                 <span>{{ __('WhatsApp') }}</span>
             </span>
 
@@ -50,7 +50,7 @@
                     class="flex items-center shadow-2xl rounded-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 overflow-hidden hover:scale-105 active:scale-95 transition-all duration-200 group cursor-pointer"
                     title="{{ __('Buka AI Assistant') }}">
                 
-                <span class="hidden sm:inline-flex px-4 py-2.5 text-xs font-black text-slate-800 dark:text-slate-100 tracking-tight select-none items-center gap-1.5">
+                <span class="hidden md:inline-flex px-4 py-2.5 text-xs font-black text-slate-800 dark:text-slate-100 tracking-tight select-none items-center gap-1.5">
                     <span x-show="!isOpen">{{ __('AI Assistant') }}</span>
                     <span x-show="isOpen" style="display: none;" class="text-blue-600 dark:text-blue-400 font-bold flex items-center gap-1">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>

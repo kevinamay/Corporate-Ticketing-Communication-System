@@ -55,7 +55,7 @@ class TicketFormAuthTest extends TestCase
             ->assertOk()
             ->assertDontSee('Akses Tamu (Belum Login)')
             ->assertDontSee('Masuk (Login) untuk Kirim Tiket')
-            ->assertSee('Submit Request');
+            ->assertSee(__('Submit Request'));
     }
 
     public function test_logged_in_employee_can_submit_ticket_successfully(): void

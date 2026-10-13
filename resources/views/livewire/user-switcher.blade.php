@@ -10,7 +10,7 @@
                      class="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover border border-white/40 shadow-xs" />
                 <span class="absolute -bottom-0.5 -right-0.5 w-2 sm:w-2.5 h-2 sm:h-2.5 bg-emerald-400 border border-white rounded-full"></span>
             </div>
-            <div class="text-left hidden sm:block">
+            <div class="text-left hidden md:block">
                 <div class="flex items-center gap-1.5">
                     <p class="text-xs font-semibold text-white leading-tight">{{ $currentUser->name }}</p>
                     <span class="text-[9px] uppercase font-bold px-1.5 py-0.2 rounded bg-blue-500/40 text-blue-100 border border-blue-400/30">
@@ -131,7 +131,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
             </div>
-            <div class="text-left hidden sm:block">
+            <div class="text-left hidden md:block">
                 <div class="flex items-center gap-1.5">
                     <p class="text-xs font-semibold text-white leading-tight">{{ __('Belum Masuk') }}</p>
                     <span class="text-[9px] uppercase font-bold px-1.5 py-0.2 rounded bg-amber-500/30 text-amber-200 border border-amber-400/30">

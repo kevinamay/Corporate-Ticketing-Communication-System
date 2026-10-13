@@ -37,38 +37,40 @@
     @endif
 
     <!-- Filters Row -->
-    <div class="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-4 pb-3 border-b border-gray-100 dark:border-slate-800 text-xs">
-        <span class="text-[10px] sm:text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{{ __('STATUS:') }}</span>
-        <button wire:click="$set('statusFilter', 'all')" 
-            class="px-2 sm:px-2.5 py-1 rounded-md font-semibold text-[11px] sm:text-xs transition cursor-pointer {{ $statusFilter === 'all' ? 'bg-blue-600 text-white shadow-xs' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700' }}">
-            {{ __('Semua') }}
-        </button>
-        <button wire:click="$set('statusFilter', 'Pending')" 
-            class="px-2 sm:px-2.5 py-1 rounded-md font-semibold text-[11px] sm:text-xs transition cursor-pointer {{ $statusFilter === 'Pending' ? 'bg-amber-500 text-white shadow-xs' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700' }}">
-            {{ __('Pending') }}
-        </button>
-        <button wire:click="$set('statusFilter', 'Open')" 
-            class="px-2 sm:px-2.5 py-1 rounded-md font-semibold text-[11px] sm:text-xs transition cursor-pointer {{ $statusFilter === 'Open' ? 'bg-blue-500 text-white shadow-xs' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700' }}">
-            {{ __('Open') }}
-        </button>
-        <button wire:click="$set('statusFilter', 'In Progress')" 
-            class="px-2 sm:px-2.5 py-1 rounded-md font-semibold text-[11px] sm:text-xs transition cursor-pointer {{ $statusFilter === 'In Progress' ? 'bg-purple-600 text-white shadow-xs' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700' }}">
-            {{ __('In Progress') }}
-        </button>
-        <button wire:click="$set('statusFilter', 'Resolved')" 
-            class="px-2 sm:px-2.5 py-1 rounded-md font-semibold text-[11px] sm:text-xs transition cursor-pointer {{ $statusFilter === 'Resolved' ? 'bg-emerald-600 text-white shadow-xs' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700' }}">
-            {{ __('Resolved') }}
-        </button>
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-2.5 sm:gap-3 mb-4 pb-3 border-b border-gray-100 dark:border-slate-800 text-xs">
+        <div class="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none w-full md:w-auto">
+            <span class="text-[10px] sm:text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider shrink-0 mr-1">{{ __('STATUS:') }}</span>
+            <button wire:click="$set('statusFilter', 'all')" 
+                class="px-2.5 py-1 rounded-md font-semibold text-[11px] sm:text-xs transition cursor-pointer shrink-0 {{ $statusFilter === 'all' ? 'bg-blue-600 text-white shadow-xs' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700' }}">
+                {{ __('Semua') }}
+            </button>
+            <button wire:click="$set('statusFilter', 'Pending')" 
+                class="px-2.5 py-1 rounded-md font-semibold text-[11px] sm:text-xs transition cursor-pointer shrink-0 {{ $statusFilter === 'Pending' ? 'bg-amber-500 text-white shadow-xs' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700' }}">
+                {{ __('Pending') }}
+            </button>
+            <button wire:click="$set('statusFilter', 'Open')" 
+                class="px-2.5 py-1 rounded-md font-semibold text-[11px] sm:text-xs transition cursor-pointer shrink-0 {{ $statusFilter === 'Open' ? 'bg-blue-500 text-white shadow-xs' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700' }}">
+                {{ __('Open') }}
+            </button>
+            <button wire:click="$set('statusFilter', 'In Progress')" 
+                class="px-2.5 py-1 rounded-md font-semibold text-[11px] sm:text-xs transition cursor-pointer shrink-0 {{ $statusFilter === 'In Progress' ? 'bg-purple-600 text-white shadow-xs' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700' }}">
+                {{ __('In Progress') }}
+            </button>
+            <button wire:click="$set('statusFilter', 'Resolved')" 
+                class="px-2.5 py-1 rounded-md font-semibold text-[11px] sm:text-xs transition cursor-pointer shrink-0 {{ $statusFilter === 'Resolved' ? 'bg-emerald-600 text-white shadow-xs' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700' }}">
+                {{ __('Resolved') }}
+            </button>
+        </div>
 
-        <div class="h-4 w-[1px] bg-gray-200 dark:bg-slate-700 mx-1 hidden sm:block"></div>
-
-        <span class="text-[10px] sm:text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{{ __('DEPARTEMEN:') }}</span>
-        <select wire:model.live="departmentFilter" class="w-full sm:w-auto px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-[11px] sm:text-xs text-slate-700 dark:text-slate-300 border border-gray-200 dark:border-slate-700 focus:ring-1 focus:ring-blue-500 focus:outline-none">
-            <option value="all">{{ __('Semua Departemen') }}</option>
-            @foreach ($departments as $dept)
-                <option value="{{ $dept->id }}">{{ __($dept->name) }}</option>
-            @endforeach
-        </select>
+        <div class="flex items-center gap-2 w-full md:w-auto shrink-0">
+            <span class="text-[10px] sm:text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider shrink-0">{{ __('DEPARTEMEN:') }}</span>
+            <select wire:model.live="departmentFilter" class="w-full sm:w-auto px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-[11px] sm:text-xs text-slate-700 dark:text-slate-300 border border-gray-200 dark:border-slate-700 focus:ring-1 focus:ring-blue-500 focus:outline-none">
+                <option value="all">{{ __('Semua Departemen') }}</option>
+                @foreach ($departments as $dept)
+                    <option value="{{ $dept->id }}">{{ __($dept->name) }}</option>
+                @endforeach
+            </select>
+        </div>
     </div>
 
     <!-- Ticket Cards Grid: 1 col on mobile, 2 cols on tablet, 3 cols on desktop, 4 cols on wide screen -->

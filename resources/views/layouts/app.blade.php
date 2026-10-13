@@ -47,14 +47,14 @@
         <div class="max-w-7xl 2xl:max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8 xl:px-10">
             <!-- Top Utility Bar (Active user, Quick Role info, Dark Mode, Language, Logout) -->
             <div class="py-1 sm:py-1.5 flex items-center justify-between text-[10px] sm:text-[11px] text-slate-300 border-b border-slate-800/80 font-medium tracking-wide">
-                <div class="flex items-center gap-1.5 sm:gap-2 text-slate-400 min-w-0">
+                <div class="flex items-center gap-1.5 sm:gap-2 text-slate-400 min-w-0 shrink">
                     <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
-                    <span class="font-bold text-slate-200 truncate">PT. ASIA PLASTIK</span>
-                    <span class="hidden sm:inline text-slate-500">•</span>
-                    <span class="hidden sm:inline text-slate-400 text-[10px] uppercase tracking-wider">{{ __('Portal Layanan Tiket & Komunikasi Internal') }}</span>
+                    <span class="font-bold text-slate-200 truncate shrink-0">PT. ASIA PLASTIK</span>
+                    <span class="hidden lg:inline text-slate-500">•</span>
+                    <span class="hidden lg:inline text-slate-400 text-[10px] uppercase tracking-wider truncate">{{ __('Portal Layanan Tiket & Komunikasi Internal') }}</span>
                 </div>
 
-                <div class="flex items-center gap-1.5 sm:gap-3 shrink-0">
+                <div class="flex items-center gap-1.5 sm:gap-2.5 shrink-0 ml-2">
                     @auth
                         @if (Auth::user()->email === 'user123@gmail.com')
                             <a href="{{ request()->is('/') ? '#hcm-master-section' : url('/#hcm-master-section') }}" 
@@ -64,11 +64,11 @@
                             </a>
                             <span class="hidden sm:inline text-slate-700">|</span>
                         @endif
-                        <span class="text-emerald-300 font-semibold truncate max-w-[80px] sm:max-w-none text-[11px] sm:text-xs hidden xs:inline">{{ Auth::user()->name }}</span>
-                        <span class="text-slate-700 hidden xs:inline">|</span>
+                        <span class="text-emerald-300 font-semibold truncate max-w-[100px] text-[11px] sm:text-xs hidden md:inline">{{ Auth::user()->name }}</span>
+                        <span class="text-slate-700 hidden md:inline">|</span>
                         <form action="{{ route('logout') }}" method="POST" class="inline">
                             @csrf
-                            <button type="submit" class="hover:text-rose-300 text-rose-400 transition cursor-pointer font-bold text-[11px] sm:text-xs">{{ __('Logout') }}</button>
+                            <button type="submit" class="hover:text-rose-300 text-rose-400 transition cursor-pointer font-bold text-[10px] sm:text-xs">{{ __('Logout') }}</button>
                         </form>
                     @else
                         <a href="{{ route('login') }}" class="hover:text-white font-bold text-blue-300 transition text-[11px] sm:text-xs">{{ __('Masuk') }}</a>
@@ -137,11 +137,11 @@
             </div>
 
             <!-- Main Navigation Bar -->
-            <div class="h-14 sm:h-16 flex items-center justify-between">
+            <div class="h-14 sm:h-16 flex items-center justify-between gap-2 sm:gap-4">
                 <!-- Left: ASIA PLASTIK Brand Logo -->
-                <div class="flex items-center gap-2 sm:gap-3 min-w-0">
-                    <a href="{{ url('/') }}" class="flex items-center group">
-                        <img src="{{ asset('images/logo2.webp') }}" alt="Asia Plastik" class="h-8 sm:h-10 w-auto object-contain transition duration-200 group-hover:opacity-90">
+                <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+                    <a href="{{ url('/') }}" class="flex items-center group shrink-0">
+                        <img src="{{ asset('images/logo2.webp') }}" alt="Asia Plastik" class="h-7 sm:h-8 md:h-10 w-auto object-contain transition duration-200 group-hover:opacity-90 shrink-0">
                     </a>
                 </div>
 
@@ -268,12 +268,12 @@
     <livewire:ai-assistant />
 
     <!-- Corporate Footer -->
-    <footer class="mt-auto border-t border-gray-200 dark:border-slate-800/80 bg-white dark:bg-slate-900 py-8 text-xs text-slate-500 dark:text-slate-400 transition-colors duration-200">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
+    <footer class="mt-auto border-t border-gray-200 dark:border-slate-800/80 bg-white dark:bg-slate-900 py-6 sm:py-8 text-xs text-slate-500 dark:text-slate-400 transition-colors duration-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-4 text-center md:text-left">
             <div>
-                <span class="font-bold text-slate-800 dark:text-slate-100">PT. ASIA PLASTIK</span> &bull; {{ __('PT. ASIA PLASTIK • Sistem Manajemen Tiket & Komunikasi Internal Manufaktur') }}
+                <span class="font-bold text-slate-800 dark:text-slate-100">PT. ASIA PLASTIK</span> &bull; {{ __('Sistem Manajemen Tiket & Komunikasi Internal Manufaktur') }}
             </div>
-            <div class="flex items-center gap-5 text-[11px] text-slate-400 dark:text-slate-500">
+            <div class="flex flex-wrap items-center justify-center md:justify-end gap-x-3.5 sm:gap-x-5 gap-y-1 text-[11px] text-slate-400 dark:text-slate-500">
                 <span>{{ __('Kantor & Pabrik: Rungkut Industri, Surabaya') }}</span>
                 <span>{{ __('Telp: +6231 8433078') }}</span>
                 <span>&copy; {{ date('Y') }} {{ __('All Rights Reserved') }}</span>

@@ -61,7 +61,7 @@
                     <svg class="w-5 h-5 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path></svg>
                 </div>
                 <div>
-                    <div class="flex items-center gap-2">
+                    <div class="flex flex-wrap items-center gap-2">
                         <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-600/40 text-blue-200 border border-blue-400/30">
                             {{ __('Portal Layanan Tiket Karyawan') }}
                         </span>
@@ -72,15 +72,15 @@
                 </div>
             </div>
 
-            <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-                <a href="#new-ticket" class="flex-1 sm:flex-initial justify-center px-3.5 sm:px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition shadow-sm flex items-center gap-1.5 text-center">
+            <div class="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full sm:w-auto">
+                <a href="#new-ticket" class="justify-center px-3.5 sm:px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition shadow-sm flex items-center gap-1.5 text-center">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
                     <span>{{ __('Buat Tiket Baru') }}</span>
                 </a>
-                <a href="#queue" class="flex-1 sm:flex-initial justify-center px-3 sm:px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition border border-white/20 text-center">
+                <a href="#queue" class="justify-center px-3 sm:px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition border border-white/20 text-center">
                     {{ __('Daftar Tiket') }}
                 </a>
-                <a href="#resolved-history" class="w-full sm:w-auto justify-center px-3.5 py-2 rounded-xl bg-emerald-600/80 hover:bg-emerald-600 text-white font-bold text-xs transition border border-emerald-400/30 flex items-center gap-1.5 shadow-sm text-center">
+                <a href="#resolved-history" class="col-span-2 sm:col-span-1 sm:w-auto justify-center px-3.5 py-2 rounded-xl bg-emerald-600/80 hover:bg-emerald-600 text-white font-bold text-xs transition border border-emerald-400/30 flex items-center gap-1.5 shadow-sm text-center">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     <span>{{ __('Riwayat Tiket Selesai') }}</span>
                 </a>
