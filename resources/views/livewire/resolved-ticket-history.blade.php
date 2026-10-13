@@ -25,13 +25,11 @@
                         {{ __('Realtime Auto-Sync') }}
                     </span>
                 </div>
-                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                    @if ($isAdmin)
-                        {{ __('Arsip lengkap seluruh tiket antar-divisi yang telah berhasil diselesaikan oleh tim dukungan dan departemen tujuan.') }}
-                    @else
+                @if (! $isAdmin)
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                         {{ __('Daftar riwayat tiket yang Anda ajukan yang telah selesai diproses. Anda dapat memeriksa hasil pengerjaan dan solusi penanganan.') }}
-                    @endif
-                </p>
+                    </p>
+                @endif
             </div>
         </div>
 
