@@ -21,9 +21,6 @@
                         {{ __('Realtime Auto-Sync') }}
                     </span>
                 </div>
-                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                    {{ __('Semua karyawan dapat memantau tiket antar-divisi, namun tindakan pemrosesan hanya dapat dilakukan oleh departemen yang dituju.') }}
-                </p>
             </div>
         </div>
 

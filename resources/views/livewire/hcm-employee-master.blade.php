@@ -77,9 +77,6 @@
                 <h1 class="text-2xl sm:text-3xl font-black tracking-tight text-white">
                     {{ __('Daftar Akun Karyawan Terdaftar') }}
                 </h1>
-                <p class="text-xs sm:text-sm text-blue-100/90 max-w-2xl leading-relaxed">
-                    {{ __('Memuat seluruh data akun karyawan yang terdaftar di sistem. Terdiri dari Nama Lengkap, Nomor HP/WhatsApp, Email Aktif, dan Waktu Registrasi.') }}
-                </p>
             </div>
 
             <!-- Top Action Buttons: Tambah Manual (Blue), Import CSV (Emerald) -->

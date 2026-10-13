@@ -33,9 +33,6 @@
                     {{ $days }} {{ __('Hari Terakhir') }}
                 </span>
             </div>
-            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-2xl leading-relaxed">
-                {{ __('Pantau seberapa banyak request ticketing per harinya untuk mengukur beban penanganan, efektivitas respon, dan stabilitas operasional.') }}
-            </p>
         </div>
 
         <!-- Filter Controls: Department Filter, Days Period, Chart Type -->
