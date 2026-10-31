@@ -1,6 +1,6 @@
 <div class="min-h-screen relative flex items-center justify-center p-3 sm:p-6 lg:p-8 bg-gradient-to-br from-sky-100 via-blue-50 to-white dark:from-slate-950 dark:via-slate-900 dark:to-sky-950 overflow-y-auto transition-colors duration-300">
     
-    <!-- AI Slop Light & Airy Soft Glowing Orbs (Light Blue & White Palette with Dark Mode Support) -->
+    <!-- Light & Airy Soft Glowing Orbs (Light Blue & White Palette with Dark Mode Support) -->
     <div class="absolute -top-24 -left-24 w-96 h-96 bg-sky-200/60 dark:bg-sky-500/20 rounded-full blur-3xl pointer-events-none animate-pulse"></div>
     <div class="absolute -bottom-24 -right-24 w-96 h-96 bg-blue-200/50 dark:bg-blue-600/20 rounded-full blur-3xl pointer-events-none animate-pulse" style="animation-duration: 6s;"></div>
     <div class="absolute top-1/3 right-1/4 w-80 h-80 bg-cyan-100/70 dark:bg-cyan-500/15 rounded-full blur-3xl pointer-events-none"></div>
