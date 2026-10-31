@@ -18,6 +18,33 @@
                 document.documentElement.classList.remove('dark');
             }
         })();
+
+        function toggleAuthTheme() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            updateThemeButtonUI();
+            window.dispatchEvent(new CustomEvent('theme-changed', { detail: { theme: isDark ? 'dark' : 'light' } }));
+            if (window.Livewire) {
+                window.Livewire.dispatch('theme-changed', { theme: isDark ? 'dark' : 'light' });
+            }
+        }
+
+        function updateThemeButtonUI() {
+            const isDark = document.documentElement.classList.contains('dark');
+            const darkLabel = document.getElementById('theme-label-dark');
+            const lightLabel = document.getElementById('theme-label-light');
+            if (darkLabel && lightLabel) {
+                darkLabel.style.display = isDark ? 'inline-flex' : 'none';
+                lightLabel.style.display = isDark ? 'none' : 'inline-flex';
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', updateThemeButtonUI);
+        } else {
+            updateThemeButtonUI();
+        }
+        window.addEventListener('load', updateThemeButtonUI);
     </script>
 
     <!-- Google Fonts: Inter -->
@@ -38,7 +65,7 @@
     ];
     $currentLang = $languages[$currentLocale] ?? $languages['id'];
 @endphp
-<body class="h-full font-sans antialiased text-slate-800 dark:text-slate-100 bg-slate-900 transition-colors"
+<body class="h-full font-sans antialiased text-slate-800 dark:text-slate-100 bg-slate-50 dark:bg-slate-900 transition-colors"
       x-data="{ darkMode: document.documentElement.classList.contains('dark') }">
     <!-- Floating Dark Mode & Language Switcher on Auth pages -->
     <div class="fixed top-3 sm:top-4 right-3 sm:right-4 z-50 flex items-center gap-1.5 sm:gap-2">
@@ -84,14 +111,14 @@
             </div>
         </div>
 
-        <button type="button" @click="darkMode = !darkMode; if (darkMode) { document.documentElement.classList.add('dark'); localStorage.setItem('theme', 'dark'); } else { document.documentElement.classList.remove('dark'); localStorage.setItem('theme', 'light'); }" 
-            class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full bg-slate-900/80 hover:bg-slate-800 text-white border border-white/25 shadow-lg backdrop-blur-md transition cursor-pointer text-xs font-bold"
-            :title="darkMode ? '{{ __('Mode Terang') }}' : '{{ __('Mode Gelap') }}'">
-            <span x-show="darkMode" class="flex items-center gap-1.5 text-amber-300">
+        <button type="button" onclick="toggleAuthTheme()" id="theme-toggle"
+            class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full bg-slate-900/80 dark:bg-slate-800/90 hover:bg-slate-800 dark:hover:bg-slate-700 text-white border border-white/25 dark:border-white/20 shadow-lg backdrop-blur-md transition cursor-pointer text-xs font-bold"
+            title="{{ __('Ubah Mode Tampilan (Gelap / Terang)') }}">
+            <span id="theme-label-dark" class="items-center gap-1.5 text-amber-300" style="display: none;">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
                 <span class="hidden sm:inline">{{ __('Mode Terang') }}</span>
             </span>
-            <span x-show="!darkMode" class="flex items-center gap-1.5 text-blue-200">
+            <span id="theme-label-light" class="items-center gap-1.5 text-blue-200" style="display: none;">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
                 <span class="hidden sm:inline">{{ __('Mode Gelap') }}</span>
             </span>
@@ -100,6 +127,32 @@
 
     {{ $slot ?? '' }}
     @yield('content')
+
+        // Theme Toggle Script (handles dark mode class toggle and persistence)
+        function initThemeToggle() {
+            const themeToggleBtn = document.getElementById('theme-toggle');
+            if (!themeToggleBtn) return;
+            
+            themeToggleBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const isDark = document.documentElement.classList.toggle('dark');
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                
+                // Dispatch standard custom event and Livewire event if loaded
+                window.dispatchEvent(new CustomEvent('theme-changed', { detail: { theme: isDark ? 'dark' : 'light' } }));
+                if (window.Livewire) {
+                    window.Livewire.dispatch('theme-changed', { theme: isDark ? 'dark' : 'light' });
+                }
+            });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initThemeToggle);
+        } else {
+            initThemeToggle();
+        }
+        document.addEventListener('livewire:navigated', initThemeToggle);
+    </script>
 
     @livewireScripts
 </body>
