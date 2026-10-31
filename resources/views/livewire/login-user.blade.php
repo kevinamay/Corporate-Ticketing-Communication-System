@@ -112,18 +112,12 @@
 
             </form>
 
-            <!-- Link to Register & Portal HRD -->
-            <div class="mt-6 pt-5 border-t border-slate-200 dark:border-slate-800 text-center text-xs text-slate-600 dark:text-slate-400 space-y-2.5">
+            <!-- Link to Register -->
+            <div class="mt-6 pt-5 border-t border-slate-200 dark:border-slate-800 text-center text-xs text-slate-600 dark:text-slate-400">
                 <div>
                     {{ __('Belum memiliki akun?') }}
                     <a href="{{ route('register') }}" class="font-bold text-blue-600 dark:text-blue-400 hover:text-blue-800 transition underline ml-1">
                         {{ __('Daftar Akun Baru') }}
-                    </a>
-                </div>
-                <div class="pt-1">
-                    <a href="{{ route('hrd.login') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition border border-indigo-200 dark:border-indigo-800/60">
-                        <svg class="w-3.5 h-3.5 text-indigo-500 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                        <span>{{ __('Login Khusus Tim HRD (AI Portal)') }} &rarr;</span>
                     </a>
                 </div>
             </div>
