@@ -15,13 +15,6 @@
             <a href="{{ url('/') }}" class="flex items-center group relative z-10">
                 <img src="{{ asset('images/logo2.webp') }}" alt="PT. Asia Plastik" class="h-9 sm:h-11 w-auto object-contain transition duration-200 group-hover:opacity-95 drop-shadow-sm">
             </a>
-            <div class="text-right relative z-10">
-                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] sm:text-xs font-bold bg-white/20 dark:bg-sky-950/60 text-white border border-white/30 dark:border-sky-500/30 shadow-sm backdrop-blur-md">
-                    <span class="w-2 h-2 rounded-full bg-cyan-300 animate-ping"></span>
-                    <svg class="w-3.5 h-3.5 text-cyan-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                    {{ __('Portal HRD • AI Slop') }}
-                </span>
-            </div>
         </div>
 
         <!-- Login Form Body -->
