@@ -9,7 +9,19 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Validation\ValidationException;
 
-Route::get('/', function () {
+$isHrdPortal = function () {
+    $portalType = env('PORTAL_TYPE') ?: env('APP_PORTAL');
+    if ($portalType === 'hrd') {
+        return true;
+    }
+    $host = request()->getHost();
+
+    return str_contains($host, 'hrd') || str_contains($host, 'hcm');
+};
+
+Route::get('/', function () use ($isHrdPortal) {
+    $defaultLogin = $isHrdPortal() ? 'hrd.login' : 'login';
+
     $activeUser = Auth::user();
     if (! $activeUser && session('active_user_id')) {
         $activeUser = User::find(session('active_user_id'));
@@ -22,17 +34,21 @@ Route::get('/', function () {
         Auth::logout();
         session()->forget('active_user_id');
 
-        return redirect()->route('login');
+        return redirect()->route($defaultLogin);
     }
 
     if (! Auth::check()) {
-        return redirect()->route('login');
+        return redirect()->route($defaultLogin);
     }
 
     return redirect()->route('dashboard');
 });
 
-Route::get('/login', function () {
+Route::get('/login', function () use ($isHrdPortal) {
+    if ($isHrdPortal()) {
+        return redirect()->route('hrd.login');
+    }
+
     $activeUser = Auth::user();
     if (! $activeUser && session('active_user_id')) {
         $activeUser = User::find(session('active_user_id'));
@@ -47,6 +63,26 @@ Route::get('/login', function () {
 
     return view('auth.login');
 })->name('login');
+
+Route::get('/hrd/login', function () {
+    $activeUser = Auth::user();
+    if (! $activeUser && session('active_user_id')) {
+        $activeUser = User::find(session('active_user_id'));
+        if ($activeUser) {
+            Auth::login($activeUser);
+        }
+    }
+
+    if (Auth::check()) {
+        return redirect()->route('dashboard');
+    }
+
+    return view('auth.login-hrd');
+})->name('hrd.login');
+
+Route::get('/hrd', function () {
+    return redirect()->route('hrd.login');
+});
 
 Route::get('/register', function () {
     $activeUser = Auth::user();
@@ -119,22 +155,26 @@ Route::get('/dashboard', function () {
     return view('dashboard');
 })->name('dashboard');
 
-Route::post('/logout', function () {
+Route::post('/logout', function () use ($isHrdPortal) {
+    $redirectRoute = $isHrdPortal() ? 'hrd.login' : 'login';
+
     session()->forget('active_user_id');
     Auth::logout();
     request()->session()->invalidate();
     request()->session()->regenerateToken();
 
-    return redirect()->route('login');
+    return redirect()->route($redirectRoute);
 })->name('logout');
 
-Route::get('/reset-session', function () {
+Route::get('/reset-session', function () use ($isHrdPortal) {
+    $redirectRoute = $isHrdPortal() ? 'hrd.login' : 'login';
+
     session()->forget('active_user_id');
     Auth::logout();
     request()->session()->invalidate();
     request()->session()->regenerateToken();
 
-    $response = redirect()->route('login');
+    $response = redirect()->route($redirectRoute);
 
     $cookiesToForget = [
         'corporate_ticketing_session',
