@@ -7,7 +7,8 @@ void main() {
     await tester.pumpWidget(const MaterialApp(
       home: LoginScreen(),
     ));
-    expect(find.text('PT. ASIA PLASTIK'), findsOneWidget);
     expect(find.text('Selamat Datang'), findsOneWidget);
+    expect(find.text('Portal Masuk'), findsOneWidget);
+    expect(find.text('MASUK KE SISTEM'), findsOneWidget);
   });
 }
