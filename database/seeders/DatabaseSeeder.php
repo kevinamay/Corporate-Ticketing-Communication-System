@@ -83,10 +83,32 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
+        User::updateOrCreate(
+            ['email' => 'hr@asiaplastik.com'],
+            [
+                'name' => 'Staf HRD',
+                'password' => $password,
+                'department_id' => $hrDept->id,
+                'role' => 'user',
+                'national_id_ktp' => '3578010101990002',
+                'whatsapp_number' => '081234567800',
+                'gender' => 'female',
+                'complete_address' => 'Divisi HRD PT Asia Plastik, Surabaya',
+                'postal_code' => '60293',
+                'email_verified_at' => now(),
+                'avatar' => 'https://ui-avatars.com/api/?name=Staf+HRD&background=0284c7&color=fff',
+            ]
+        );
+
         // 4. Master Data Karyawan Resmi (HCM Core)
         EmployeeMasterData::updateOrCreate(
             ['ktp_number' => '3578010101990001'],
             ['name' => 'Admin IT', 'department_id' => $itDept->id]
+        );
+
+        EmployeeMasterData::updateOrCreate(
+            ['ktp_number' => '3578010101990002'],
+            ['name' => 'Staf HRD', 'department_id' => $hrDept->id]
         );
 
         EmployeeMasterData::updateOrCreate(
