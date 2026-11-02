@@ -414,47 +414,14 @@ class _TicketListScreenState extends State<TicketListScreen> {
         border: Border(bottom: BorderSide(color: Color(0xFF1E293B))),
       ),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Expanded(
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Image.asset(
-                  'assets/images/logo2.webp',
-                  height: 24,
-                  fit: BoxFit.contain,
-                  errorBuilder: (_, __, ___) => const Icon(Icons.business, color: Colors.white, size: 20),
-                ),
-                const SizedBox(width: 6),
-                const Flexible(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.circle, color: Color(0xFF10B981), size: 5),
-                          SizedBox(width: 3),
-                          Text(
-                            'PT. ASIA PLASTIK',
-                            style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 0.5),
-                          ),
-                        ],
-                      ),
-                      Text(
-                        'PORTAL LAYANAN TIKET',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(color: Color(0xFF94A3B8), fontSize: 8, fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+          Image.asset(
+            'assets/images/logo2.webp',
+            height: 26,
+            fit: BoxFit.contain,
+            errorBuilder: (_, __, ___) => const Icon(Icons.business, color: Colors.white, size: 22),
           ),
-          const SizedBox(width: 6),
 
           Row(
             mainAxisSize: MainAxisSize.min,
