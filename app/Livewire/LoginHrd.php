@@ -104,7 +104,7 @@ class LoginHrd extends Component
             if (! $isAuthorizedHrd) {
                 Auth::logout();
                 session()->forget('active_user_id');
-                $this->errorMessage = 'Akses Terbatas: Akun Anda terdaftar di divisi lain. Halaman ini khusus diperuntukkan bagi Tim Human Resources (HRD) dan Administrator. Silakan gunakan Portal Karyawan.';
+                $this->errorMessage = __('Akses Terbatas: Akun Anda terdaftar di divisi lain. Halaman ini khusus diperuntukkan bagi Tim Human Resources (HRD) dan Administrator. Silakan gunakan Portal Karyawan.');
 
                 return;
             }

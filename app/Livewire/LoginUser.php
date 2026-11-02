@@ -88,6 +88,22 @@ class LoginUser extends Component
                 return;
             }
 
+            // Validasi: Portal Karyawan hanya untuk staf/karyawan biasa (non-HRD & non-Admin)
+            $deptName = strtolower($user->department?->name ?? '');
+            $isHrdOrAdmin = $user->role === 'admin'
+                || $user->email === 'user123@gmail.com'
+                || str_contains($deptName, 'hr')
+                || str_contains($deptName, 'human resource')
+                || str_contains($deptName, 'personalia');
+
+            if ($isHrdOrAdmin) {
+                Auth::logout();
+                session()->forget('active_user_id');
+                $this->errorMessage = __('Akses Ditolak: Akun Anda terdaftar sebagai Tim HRD / Administrator. Halaman ini khusus untuk Portal Karyawan. Silakan masuk melalui Portal Login HRD.');
+
+                return;
+            }
+
             session()->regenerate();
             session(['active_user_id' => Auth::id()]);
             session(['auth.password_confirmed_at' => time()]);

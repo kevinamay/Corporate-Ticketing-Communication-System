@@ -630,5 +630,7 @@
     "Memverifikasi Kredensial AI...": "Verifying...",
     "Email atau Nomor WhatsApp staf HRD wajib diisi.": "HRD Email or WhatsApp number is required.",
     "Password wajib diisi.": "Password is required.",
-    "Akses Terbatas: Akun Anda terdaftar di divisi lain. Halaman ini khusus diperuntukkan bagi Tim Human Resources (HRD) dan Administrator. Silakan gunakan Portal Karyawan.": "Restricted Access: Your account is registered in another division. This page is specifically intended for the Human Resources (HRD) Team and Administrators. Please use the Employee Portal."
+    "Akses Terbatas: Akun Anda terdaftar di divisi lain. Halaman ini khusus diperuntukkan bagi Tim Human Resources (HRD) dan Administrator. Silakan gunakan Portal Karyawan.": "Restricted Access: Your account is registered in another division. This page is specifically intended for the Human Resources (HRD) Team and Administrators. Please use the Employee Portal.",
+    "Akses Ditolak: Akun Anda terdaftar sebagai Tim HRD / Administrator. Halaman ini khusus untuk Portal Karyawan. Silakan masuk melalui Portal Login HRD.": "Access Denied: Your account is registered as HRD / Administrator. This page is exclusively for the Employee Portal. Please log in via the HRD Portal.",
+    "Akses Master Data HCM & Karyawan": "Access HCM & Employee Master Data"
 }

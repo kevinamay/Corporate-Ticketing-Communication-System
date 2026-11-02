@@ -39,6 +39,14 @@
         'zh' => ['name' => '简体中文', 'short' => 'ZH', 'flag' => '🇨🇳'],
     ];
     $currentLang = $languages[$currentLocale] ?? $languages['id'];
+    $authUserDept = strtolower(Auth::user()?->department?->name ?? '');
+    $isHrdOrAdmin = Auth::check() && (
+        Auth::user()->role === 'admin' ||
+        Auth::user()->email === 'user123@gmail.com' ||
+        str_contains($authUserDept, 'hr') ||
+        str_contains($authUserDept, 'human resource') ||
+        str_contains($authUserDept, 'personalia')
+    );
 @endphp
 <body class="min-h-screen font-sans antialiased text-slate-800 dark:text-slate-100 bg-[#f4f6fa] dark:bg-[#0b1120] flex flex-col transition-colors duration-200" x-data="{ mobileMenuOpen: false, darkMode: document.documentElement.classList.contains('dark') }">
 
@@ -56,7 +64,7 @@
 
                 <div class="flex items-center gap-1.5 sm:gap-2.5 shrink-0 ml-2">
                     @auth
-                        @if (Auth::user()->email === 'user123@gmail.com')
+                        @if ($isHrdOrAdmin)
                             <a href="{{ request()->is('/') ? '#hcm-master-section' : url('/#hcm-master-section') }}" 
                                class="hidden lg:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white font-bold text-[10px] uppercase tracking-wider shadow-xs transition">
                                 <svg class="w-3 h-3 text-blue-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
@@ -150,13 +158,11 @@
                     <a href="{{ route('dashboard') }}" class="px-3 py-1.5 rounded-lg text-slate-200 hover:text-white hover:bg-slate-800 transition {{ request()->routeIs('dashboard') ? 'bg-slate-800 text-white font-bold' : '' }}">
                         {{ __('Dashboard') }}
                     </a>
-                    @if (auth()->check() && (auth()->user()->role === 'admin' || auth()->user()->email === 'user123@gmail.com'))
-                        @if (auth()->user()->email === 'user123@gmail.com')
-                            <a href="{{ request()->is('/') ? '#hcm-master-section' : url('/#hcm-master-section') }}" class="px-3 py-1.5 rounded-lg text-blue-300 hover:text-white hover:bg-blue-600 transition flex items-center gap-1.5">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                                <span>{{ __('Master Karyawan (HCM)') }}</span>
-                            </a>
-                        @endif
+                    @if ($isHrdOrAdmin)
+                        <a href="{{ request()->is('/') ? '#hcm-master-section' : url('/#hcm-master-section') }}" class="px-3 py-1.5 rounded-lg text-blue-300 hover:text-white hover:bg-blue-600 transition flex items-center gap-1.5">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                            <span>{{ __('Master Karyawan (HCM)') }}</span>
+                        </a>
                         <a href="{{ request()->is('/') ? '#global-tickets' : url('/#global-tickets') }}" class="px-3 py-1.5 rounded-lg text-slate-200 hover:text-white hover:bg-slate-800 transition flex items-center gap-1.5">
                             <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
                             <span>{{ __('Tangani Tiket Masuk') }}</span>
@@ -306,22 +312,20 @@
                         </div>
                     </a>
 
-                    @if (auth()->check() && (auth()->user()->role === 'admin' || auth()->user()->email === 'user123@gmail.com'))
-                        <!-- ADMIN MENU ITEMS -->
-                        @if (auth()->user()->email === 'user123@gmail.com')
-                            <!-- Master Karyawan (HCM) -->
-                            <a href="{{ request()->is('/') ? '#hcm-master-section' : url('/#hcm-master-section') }}" @click="mobileMenuOpen = false" 
-                               class="w-full flex items-center gap-3.5 p-2.5 rounded-2xl transition hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-200">
-                                <div class="w-11 h-11 rounded-xl bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-                                </div>
-                                <div class="flex-1 text-left">
-                                    <span class="font-bold text-sm sm:text-base text-slate-800 dark:text-slate-100 block">
-                                        {{ __('Master Karyawan (HCM)') }}
-                                    </span>
-                                </div>
-                            </a>
-                        @endif
+                    @if ($isHrdOrAdmin)
+                        <!-- ADMIN & HRD MENU ITEMS -->
+                        <!-- Master Karyawan (HCM) -->
+                        <a href="{{ request()->is('/') ? '#hcm-master-section' : url('/#hcm-master-section') }}" @click="mobileMenuOpen = false" 
+                           class="w-full flex items-center gap-3.5 p-2.5 rounded-2xl transition hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-200">
+                            <div class="w-11 h-11 rounded-xl bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                            </div>
+                            <div class="flex-1 text-left">
+                                <span class="font-bold text-sm sm:text-base text-slate-800 dark:text-slate-100 block">
+                                    {{ __('Master Karyawan (HCM)') }}
+                                </span>
+                            </div>
+                        </a>
 
                         <!-- Tangani Tiket Masuk -->
                         <a href="{{ request()->is('/') ? '#global-tickets' : url('/#global-tickets') }}" @click="mobileMenuOpen = false" 

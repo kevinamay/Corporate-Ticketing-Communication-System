@@ -96,13 +96,23 @@
                 @endif
             </div>
 
-            @if ($currentUser && $currentUser->email === 'user123@gmail.com')
+            @php
+                $switcherUserDept = strtolower($currentUser?->department?->name ?? '');
+                $isHrdOrAdminSwitcher = $currentUser && (
+                    $currentUser->role === 'admin' ||
+                    $currentUser->email === 'user123@gmail.com' ||
+                    str_contains($switcherUserDept, 'hr') ||
+                    str_contains($switcherUserDept, 'human resource') ||
+                    str_contains($switcherUserDept, 'personalia')
+                );
+            @endphp
+            @if ($isHrdOrAdminSwitcher)
                 <div class="p-2.5 bg-blue-50/60 dark:bg-blue-950/40 border-b border-gray-100 dark:border-slate-800">
                     <a href="{{ url('/#hcm-master-section') }}" 
                        class="w-full py-2 px-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-between shadow-sm transition">
                         <span class="flex items-center gap-2">
                             <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                            <span>{{ __('Akses Master Data Admin IT (Upload CSV)') }}</span>
+                            <span>{{ __('Akses Master Data HCM & Karyawan') }}</span>
                         </span>
                         <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
                     </a>

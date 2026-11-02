@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Livewire\LoginHrd;
+use App\Livewire\LoginUser;
 use App\Models\Department;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -133,5 +134,46 @@ class HrdLoginTest extends TestCase
         $response->assertSee('Welcome, HRD Team');
         $response->assertSee('Centralized Authentication for Human Resources & Personnel Division');
         $response->assertSee('Sign In to HRD Portal');
+    }
+
+    public function test_hrd_and_admin_cannot_login_via_employee_portal(): void
+    {
+        $hrDept = Department::create(['name' => 'Human Resources (HRD)']);
+
+        // 1. Admin IT attempting login via employee portal
+        User::create([
+            'name' => 'Admin IT',
+            'email' => 'user123@gmail.com',
+            'password' => Hash::make('password123'),
+            'department_id' => $hrDept->id,
+            'role' => 'admin',
+            'email_verified_at' => now(),
+        ]);
+
+        Livewire::test(LoginUser::class)
+            ->set('login_id', 'user123@gmail.com')
+            ->set('password', 'password123')
+            ->call('login')
+            ->assertSet('errorMessage', 'Akses Ditolak: Akun Anda terdaftar sebagai Tim HRD / Administrator. Halaman ini khusus untuk Portal Karyawan. Silakan masuk melalui Portal Login HRD.');
+
+        $this->assertGuest();
+
+        // 2. HR staff attempting login via employee portal
+        User::create([
+            'name' => 'Staf HRD',
+            'email' => 'hr.staff@asiaplastik.com',
+            'password' => Hash::make('password123'),
+            'department_id' => $hrDept->id,
+            'role' => 'user',
+            'email_verified_at' => now(),
+        ]);
+
+        Livewire::test(LoginUser::class)
+            ->set('login_id', 'hr.staff@asiaplastik.com')
+            ->set('password', 'password123')
+            ->call('login')
+            ->assertSet('errorMessage', 'Akses Ditolak: Akun Anda terdaftar sebagai Tim HRD / Administrator. Halaman ini khusus untuk Portal Karyawan. Silakan masuk melalui Portal Login HRD.');
+
+        $this->assertGuest();
     }
 }
