@@ -452,12 +452,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 // Asisten AI Button
                 ElevatedButton.icon(
                   onPressed: _openAiAssistantDialog,
-                  icon: const Icon(Icons.auto_awesome, color: Colors.white, size: 16),
-                  label: const Text('Asisten AI', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                  icon: const Icon(Icons.auto_awesome, color: Color(0xFF2563EB), size: 16),
+                  label: const Text('Asisten AI', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF0F172A))),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2563EB),
-                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.white,
+                    foregroundColor: const Color(0xFF0F172A),
                     elevation: 4,
+                    side: const BorderSide(color: Color(0xFFE2E8F0)),
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
                   ),
@@ -506,6 +507,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(Icons.circle, color: Color(0xFF10B981), size: 7),
                           SizedBox(width: 4),
@@ -527,6 +529,7 @@ class _HomeScreenState extends State<HomeScreen> {
               // Quick In-Page Navigation Pills
               Wrap(
                 spacing: 6,
+                runSpacing: 4,
                 crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
                   _navPill('Dashboard', isHighlight: true, onTap: () {
@@ -561,9 +564,13 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                         const SizedBox(width: 6),
-                        Text(
-                          _user?.name ?? 'Karyawan',
-                          style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 130),
+                          child: Text(
+                            _user?.name ?? 'Karyawan',
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                          ),
                         ),
                         const SizedBox(width: 6),
                         Container(
@@ -649,7 +656,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildWelcomeBanner(int resolvedCount) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [
@@ -673,108 +680,103 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Wrap(
-            alignment: WrapAlignment.spaceBetween,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            spacing: 16,
-            runSpacing: 14,
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Left: Info & User Subtitle
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF2563EB).withValues(alpha: 0.25),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFF3B82F6).withValues(alpha: 0.35)),
-                    ),
-                    child: const Icon(Icons.confirmation_number_outlined, color: Color(0xFF93C5FD), size: 24),
-                  ),
-                  const SizedBox(width: 14),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Wrap(
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        spacing: 6,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF2563EB).withValues(alpha: 0.35),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: const Color(0xFF60A5FA).withValues(alpha: 0.3)),
-                            ),
-                            child: const Text(
-                              'PORTAL LAYANAN TIKET KARYAWAN',
-                              style: TextStyle(color: Color(0xFFBFDBFE), fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 0.5),
-                            ),
-                          ),
-                          Text(
-                            '• ${_user?.name ?? 'Karyawan'}',
-                            style: const TextStyle(color: Color(0xFF93C5FD), fontSize: 11, fontWeight: FontWeight.bold),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      const Text(
-                        'Pengajuan Kendala & Bantuan Teknis',
-                        style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900),
-                      ),
-                      const SizedBox(height: 2),
-                      const Text(
-                        'Laporkan kendala operasional ke tim IT Support dan pantau status penyelesaian tiket secara real-time.',
-                        style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
-                      ),
-                    ],
-                  ),
-                ],
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2563EB).withValues(alpha: 0.25),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFF3B82F6).withValues(alpha: 0.35)),
+                ),
+                child: const Icon(Icons.confirmation_number_outlined, color: Color(0xFF93C5FD), size: 24),
               ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: 6,
+                      runSpacing: 4,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF2563EB).withValues(alpha: 0.35),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFF60A5FA).withValues(alpha: 0.3)),
+                          ),
+                          child: const Text(
+                            'PORTAL LAYANAN TIKET KARYAWAN',
+                            style: TextStyle(color: Color(0xFFBFDBFE), fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 0.5),
+                          ),
+                        ),
+                        Text(
+                          '• ${_user?.name ?? 'Karyawan'}',
+                          style: const TextStyle(color: Color(0xFF93C5FD), fontSize: 11, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      'Pengajuan Kendala & Bantuan Teknis',
+                      style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900),
+                    ),
+                    const SizedBox(height: 2),
+                    const Text(
+                      'Laporkan kendala operasional ke tim IT Support dan pantau status penyelesaian tiket secara real-time.',
+                      style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
 
-              // Right: Action Buttons Row
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  ElevatedButton.icon(
-                    onPressed: () => _scrollToKey(_formSectionKey),
-                    icon: const Icon(Icons.add, size: 16),
-                    label: const Text('Buat Tiket Baru', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2563EB),
-                      foregroundColor: Colors.white,
-                      elevation: 1,
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                  ),
-                  OutlinedButton(
-                    onPressed: () => _scrollToKey(_queueSectionKey),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      side: BorderSide(color: Colors.white.withValues(alpha: 0.25)),
-                      backgroundColor: Colors.white.withValues(alpha: 0.08),
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                    child: const Text('Daftar Tiket', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                  ),
-                  ElevatedButton.icon(
-                    onPressed: () => _scrollToKey(_resolvedSectionKey),
-                    icon: const Icon(Icons.check_circle_outline, size: 16),
-                    label: const Text('Riwayat Tiket Selesai', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF059669),
-                      foregroundColor: Colors.white,
-                      elevation: 1,
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                  ),
-                ],
+          // Action Buttons Row
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              ElevatedButton.icon(
+                onPressed: () => _scrollToKey(_formSectionKey),
+                icon: const Icon(Icons.add, size: 16),
+                label: const Text('Buat Tiket Baru', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF2563EB),
+                  foregroundColor: Colors.white,
+                  elevation: 1,
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+              OutlinedButton(
+                onPressed: () => _scrollToKey(_queueSectionKey),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  side: BorderSide(color: Colors.white.withValues(alpha: 0.25)),
+                  backgroundColor: Colors.white.withValues(alpha: 0.08),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: const Text('Daftar Tiket', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+              ),
+              ElevatedButton.icon(
+                onPressed: () => _scrollToKey(_resolvedSectionKey),
+                icon: const Icon(Icons.check_circle_outline, size: 16),
+                label: const Text('Riwayat Tiket Selesai', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF059669),
+                  foregroundColor: Colors.white,
+                  elevation: 1,
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
               ),
             ],
           ),
@@ -922,41 +924,40 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Header Bar
+          // Header Bar with Responsive Expanded layout
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFEFF6FF),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: const Color(0xFFBFDBFE)),
-                      ),
-                      child: const Icon(Icons.description_outlined, color: Color(0xFF2563EB), size: 20),
-                    ),
-                    const SizedBox(width: 12),
-                    const Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Submit Support Request',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
-                        ),
-                        Text(
-                          'Dispatch an official ticket to designated corporate department',
-                          style: TextStyle(fontSize: 11, color: Color(0xFF64748B)),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEFF6FF),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFBFDBFE)),
+                  ),
+                  child: const Icon(Icons.description_outlined, color: Color(0xFF2563EB), size: 20),
+                ),
+                const SizedBox(width: 10),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Submit Support Request',
+                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+                      ),
+                      Text(
+                        'Dispatch an official ticket to designated corporate department',
+                        style: TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: const Color(0xFFEFF6FF),
                     borderRadius: BorderRadius.circular(20),
@@ -966,7 +967,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(Icons.circle, color: Color(0xFF2563EB), size: 7),
-                      SizedBox(width: 5),
+                      SizedBox(width: 4),
                       Text(
                         'Live Routing',
                         style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF1D4ED8)),
@@ -982,7 +983,7 @@ class _HomeScreenState extends State<HomeScreen> {
           // Success message banner if recently dispatched
           if (_ticketFormSuccessMsg != null)
             Container(
-              margin: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+              margin: const EdgeInsets.fromLTRB(16, 14, 16, 0),
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
                 color: const Color(0xFFECFDF5),
@@ -1012,7 +1013,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
           // Form Body
           Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(16),
             child: Form(
               key: _formKey,
               child: Column(
@@ -1162,8 +1163,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     },
                   ),
                   const SizedBox(height: 4),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  Wrap(
+                    alignment: WrapAlignment.spaceBetween,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: 8,
+                    runSpacing: 4,
                     children: [
                       Text(
                         '${_descController.text.length} karakter • ${_descController.text.split(RegExp(r'\s+')).where((s) => s.isNotEmpty).length} kata (Min. 10 karakter)',
@@ -1322,15 +1326,12 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           // Header Row with Title & Search
           Padding(
-            padding: const EdgeInsets.all(20),
-            child: Wrap(
-              alignment: WrapAlignment.spaceBetween,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              spacing: 16,
-              runSpacing: 12,
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Row(
-                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
                       padding: const EdgeInsets.all(8),
@@ -1341,39 +1342,39 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       child: const Icon(Icons.inbox_outlined, color: Color(0xFF2563EB), size: 20),
                     ),
-                    const SizedBox(width: 12),
-                    const Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Antrean Tiket & Insiden Aktif',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
-                        ),
-                        Text(
-                          'Pilih atau klik tiket untuk membuka detail lengkap dan riwayat penanganan',
-                          style: TextStyle(fontSize: 11, color: Color(0xFF64748B)),
-                        ),
-                      ],
+                    const SizedBox(width: 10),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Antrean Tiket & Insiden Aktif',
+                            style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+                          ),
+                          Text(
+                            'Pilih atau klik tiket untuk membuka detail lengkap dan riwayat penanganan',
+                            style: TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
+                const SizedBox(height: 12),
 
                 // Search Bar Input
-                SizedBox(
-                  width: 260,
-                  child: TextField(
-                    onChanged: (val) => setState(() => _activeQueueSearch = val),
-                    style: const TextStyle(fontSize: 12),
-                    decoration: InputDecoration(
-                      hintText: 'Cari judul atau rincian tiket...',
-                      hintStyle: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8)),
-                      prefixIcon: const Icon(Icons.search, size: 16, color: Color(0xFF94A3B8)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                      isDense: true,
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFCBD5E1))),
-                    ),
+                TextField(
+                  onChanged: (val) => setState(() => _activeQueueSearch = val),
+                  style: const TextStyle(fontSize: 12),
+                  decoration: InputDecoration(
+                    hintText: 'Cari judul atau rincian tiket...',
+                    hintStyle: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8)),
+                    prefixIcon: const Icon(Icons.search, size: 16, color: Color(0xFF94A3B8)),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    isDense: true,
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFCBD5E1))),
                   ),
                 ),
               ],
@@ -1383,7 +1384,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
           // Status & Department Filter Bar
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Wrap(
               alignment: WrapAlignment.spaceBetween,
               crossAxisAlignment: WrapCrossAlignment.center,
@@ -1393,6 +1394,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 // Status Filter Pills
                 Wrap(
                   spacing: 6,
+                  runSpacing: 4,
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     const Text('STATUS:', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Color(0xFF64748B))),
@@ -1440,7 +1442,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ListView.separated(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(16),
               itemCount: tickets.length,
               separatorBuilder: (_, __) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
@@ -1494,76 +1496,80 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           // Header Bar
           Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFECFDF5),
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: const Color(0xFFA7F3D0)),
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFECFDF5),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: const Color(0xFFA7F3D0)),
+                      ),
+                      child: const Icon(Icons.verified_outlined, color: Color(0xFF059669), size: 20),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Wrap(
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            spacing: 8,
+                            runSpacing: 4,
+                            children: [
+                              const Text(
+                                'Riwayat Tiket Saya yang Selesai',
+                                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFECFDF5),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: const Color(0xFFA7F3D0)),
+                                ),
+                                child: Text(
+                                  '${resolvedTickets.length} SELESAI',
+                                  style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Color(0xFF065F46)),
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFEFF6FF),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: const Color(0xFFBFDBFE)),
+                                ),
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.circle, color: Color(0xFF2563EB), size: 6),
+                                    SizedBox(width: 4),
+                                    Text(
+                                      'Sinkronisasi Realtime',
+                                      style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF1D4ED8)),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
-                          child: const Icon(Icons.verified_outlined, color: Color(0xFF059669), size: 20),
-                        ),
-                        const SizedBox(width: 12),
-                        Wrap(
-                          crossAxisAlignment: WrapCrossAlignment.center,
-                          spacing: 8,
-                          children: [
-                            const Text(
-                              'Riwayat Tiket Saya yang Selesai',
-                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFECFDF5),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: const Color(0xFFA7F3D0)),
-                              ),
-                              child: Text(
-                                '${resolvedTickets.length} SELESAI',
-                                style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Color(0xFF065F46)),
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFEFF6FF),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: const Color(0xFFBFDBFE)),
-                              ),
-                              child: const Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(Icons.circle, color: Color(0xFF2563EB), size: 6),
-                                  SizedBox(width: 4),
-                                  Text(
-                                    'Sinkronisasi Realtime',
-                                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF1D4ED8)),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
+                          const SizedBox(height: 4),
+                          const Text(
+                            'Daftar riwayat tiket yang Anda ajukan yang telah selesai diproses. Anda dapat memeriksa hasil pengerjaan dan solusi penanganan.',
+                            style: TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 4),
-                const Text(
-                  'Daftar riwayat tiket yang Anda ajukan yang telah selesai diproses. Anda dapat memeriksa hasil pengerjaan dan solusi penanganan.',
-                  style: TextStyle(fontSize: 11, color: Color(0xFF64748B)),
-                ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 12),
 
                 // Search & Filter Row
                 Wrap(
@@ -1572,12 +1578,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     SizedBox(
-                      width: 280,
+                      width: 260,
                       child: TextField(
                         onChanged: (val) => setState(() => _resolvedSearch = val),
                         style: const TextStyle(fontSize: 12),
                         decoration: InputDecoration(
-                          hintText: 'Cari riwayat tiket, judul, ID tiket, atau solusi...',
+                          hintText: 'Cari riwayat tiket, judul, ID tiket...',
                           hintStyle: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8)),
                           prefixIcon: const Icon(Icons.search, size: 16, color: Color(0xFF94A3B8)),
                           contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
@@ -1619,7 +1625,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ListView.separated(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(16),
               itemCount: resolvedTickets.length,
               separatorBuilder: (_, __) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
@@ -1701,12 +1707,16 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: 12),
 
-            // Footer Badges & Actions
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            // Footer Badges & Actions (Responsive Wrap)
+            Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 8,
+              runSpacing: 6,
               children: [
                 Wrap(
                   spacing: 6,
+                  runSpacing: 4,
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     // Target Dept Badge
@@ -1728,6 +1738,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     // Di-ACC Admin indicator
                     const Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(Icons.verified, size: 12, color: Color(0xFF10B981)),
                         SizedBox(width: 2),
@@ -1739,6 +1750,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 // Button Action
                 Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       isResolvedSection ? 'Detail Riwayat & Solusi' : 'Buka Laporan',
@@ -1808,8 +1820,9 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       child: const Column(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          Wrap(
+            alignment: WrapAlignment.center,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               Text(
                 'PT. ASIA PLASTIK',
