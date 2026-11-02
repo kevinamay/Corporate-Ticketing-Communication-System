@@ -2,7 +2,6 @@
 
 namespace App\Livewire;
 
-use App\Models\Department;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -35,8 +34,8 @@ class LoginHrd extends Component
     protected function messages(): array
     {
         return [
-            'login_id.required' => 'Email atau Nomor WhatsApp staf HRD wajib diisi.',
-            'password.required' => 'Password wajib diisi.',
+            'login_id.required' => __('Email atau Nomor WhatsApp staf HRD wajib diisi.'),
+            'password.required' => __('Password wajib diisi.'),
         ];
     }
 

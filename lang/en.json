@@ -619,5 +619,16 @@
     "Tiket ini diselesaikan langsung oleh penangan tanpa catatan percakapan tambahan.": "This ticket was directly resolved by the handler without additional conversation notes.",
     "Teknisi / Admin": "Technician / Admin",
     "Lampiran Solusi": "Solution Attachment",
-    "Tutup Riwayat": "Close History"
+    "Tutup Riwayat": "Close History",
+    "Selamat Datang, Tim HRD": "Welcome, HRD Team",
+    "Autentikasi Terpusat Divisi Human Resources & Personalia": "Centralized Authentication for Human Resources & Personnel Division",
+    "Email / No. WhatsApp HRD": "HRD Email / WhatsApp Number",
+    "hrd@perusahaan.com atau No. WhatsApp": "hrd@company.com or WhatsApp number",
+    "Masukkan password staf HRD": "Enter HRD staff password",
+    "Ingat sesi saya di portal ini": "Remember my session on this portal",
+    "Masuk ke Portal HRD": "Sign In to HRD Portal",
+    "Memverifikasi Kredensial AI...": "Verifying...",
+    "Email atau Nomor WhatsApp staf HRD wajib diisi.": "HRD Email or WhatsApp number is required.",
+    "Password wajib diisi.": "Password is required.",
+    "Akses Terbatas: Akun Anda terdaftar di divisi lain. Halaman ini khusus diperuntukkan bagi Tim Human Resources (HRD) dan Administrator. Silakan gunakan Portal Karyawan.": "Restricted Access: Your account is registered in another division. This page is specifically intended for the Human Resources (HRD) Team and Administrators. Please use the Employee Portal."
 }

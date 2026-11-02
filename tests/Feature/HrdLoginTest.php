@@ -21,7 +21,7 @@ class HrdLoginTest extends TestCase
         $response->assertStatus(200);
         $response->assertSeeLivewire(LoginHrd::class);
         $response->assertSee('Portal HRD');
-        $response->assertSee('AI Slop');
+        $response->assertSee('Tim HRD');
     }
 
     public function test_hrd_shortcut_redirects_to_hrd_login(): void
@@ -113,5 +113,25 @@ class HrdLoginTest extends TestCase
             ->assertSet('errorMessage', 'Akun Anda belum aktif karena masih menunggu persetujuan (ACC/Konfirmasi) dari Administrator. Silakan hubungi Administrator IT untuk aktivasi akun.');
 
         $this->assertGuest();
+    }
+
+    public function test_hrd_login_page_renders_in_chinese(): void
+    {
+        $response = $this->withCookie('locale', 'zh')->get('/hrd/login');
+
+        $response->assertStatus(200);
+        $response->assertSee('欢迎，人力资源团队');
+        $response->assertSee('人力资源与人事部门集中认证');
+        $response->assertSee('登录 HRD 门户');
+    }
+
+    public function test_hrd_login_page_renders_in_english(): void
+    {
+        $response = $this->withCookie('locale', 'en')->get('/hrd/login');
+
+        $response->assertStatus(200);
+        $response->assertSee('Welcome, HRD Team');
+        $response->assertSee('Centralized Authentication for Human Resources & Personnel Division');
+        $response->assertSee('Sign In to HRD Portal');
     }
 }
