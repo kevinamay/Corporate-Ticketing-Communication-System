@@ -1,13 +1,20 @@
 import 'dart:convert';
-import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../models/department_model.dart';
+import '../models/ticket_model.dart';
+import '../models/user_model.dart';
 import '../services/api_service.dart';
+import 'login_screen.dart';
 
 class CreateTicketScreen extends StatefulWidget {
   final VoidCallback onTicketCreated;
-  const CreateTicketScreen({super.key, required this.onTicketCreated});
+
+  const CreateTicketScreen({
+    super.key,
+    required this.onTicketCreated,
+  });
 
   @override
   State<CreateTicketScreen> createState() => _CreateTicketScreenState();
@@ -18,19 +25,21 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
   final _titleController = TextEditingController();
   final _descController = TextEditingController();
 
+  UserModel? _user;
   List<DepartmentModel> _departments = [];
   Map<String, List<String>> _categoriesMap = {};
-  int? _selectedDepartmentId;
+  int? _selectedSenderDeptId;
+  int? _selectedTargetDeptId;
   String? _selectedCategory;
-  String _selectedPriority = 'Medium';
 
-  File? _selectedImage;
-  String? _base64Image;
   final ImagePicker _picker = ImagePicker();
+  Uint8List? _imageBytes;
+  String? _base64Image;
+  String? _imageFileName;
 
-  bool _isLoadingDepts = true;
+  bool _isLoading = true;
   bool _isSubmitting = false;
-  String? _errorMessage;
+  String? _successMessage;
 
   @override
   void initState() {
@@ -46,29 +55,33 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
   }
 
   Future<void> _loadMetadata() async {
+    final user = await ApiService.getSavedUser();
     final depts = await ApiService.getDepartments();
     final cats = await ApiService.getCategories();
 
     if (!mounted) return;
 
     setState(() {
+      _user = user;
       _departments = depts;
       _categoriesMap = cats;
+
       if (_departments.isNotEmpty) {
-        _selectedDepartmentId = _departments.first.id;
+        _selectedSenderDeptId = user?.departmentId ?? _departments.first.id;
+        _selectedTargetDeptId = _departments.first.id;
         _updateCategoriesForDept(_departments.first.name);
       }
-      _isLoadingDepts = false;
+      _isLoading = false;
     });
   }
 
   void _updateCategoriesForDept(String deptName) {
-    List<String> list = _categoriesMap[deptName] ?? [
+    final list = _categoriesMap[deptName] ?? [
+      'Network & WiFi',
       'Hardware & PC',
       'Software & OS',
-      'Network & WiFi',
       'Printer & Scanner',
-      'Fasilitas & Utilitas',
+      'Email & Akun',
       'Lainnya',
     ];
     setState(() {
@@ -76,20 +89,38 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
     });
   }
 
-  Future<void> _pickImage(ImageSource source) async {
+  void _beautifyDescription() {
+    final current = _descController.text.trim();
+    if (current.isEmpty) {
+      _descController.text =
+          "[Kendala]: Gangguan operasional pada sistem/perangkat kerja.\n"
+          "[Lokasi / Aset]: Lantai kerja / No. Aset PC / Ruang operasional.\n"
+          "[Dampak Operasional]: Proses input data pekerjaan terhambat.\n"
+          "[Tindakan Mandiri]: Sudah mencoba restart perangkat dan memeriksa kabel koneksi.";
+    } else {
+      _descController.text =
+          "[Kendala]: $current\n\n"
+          "[Lokasi / Aset]: Area kerja operasional PT. Asia Plastik\n"
+          "[Dampak]: Pekerjaan membutuhkan penanganan dari tim teknisi\n"
+          "[Tindakan]: Telah dilakukan pengecekan awal secara mandiri";
+    }
+    setState(() {});
+  }
+
+  Future<void> _pickPhoto(ImageSource source) async {
     try {
       final picked = await _picker.pickImage(
         source: source,
-        maxWidth: 1200,
-        maxHeight: 1200,
-        imageQuality: 80,
+        maxWidth: 1280,
+        maxHeight: 1280,
+        imageQuality: 82,
       );
       if (picked != null) {
-        final file = File(picked.path);
-        final bytes = await file.readAsBytes();
+        final bytes = await picked.readAsBytes();
         setState(() {
-          _selectedImage = file;
+          _imageBytes = bytes;
           _base64Image = base64Encode(bytes);
+          _imageFileName = picked.name;
         });
       }
     } catch (e) {
@@ -103,314 +134,547 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
 
   Future<void> _submitTicket() async {
     if (!_formKey.currentState!.validate()) return;
-    if (_selectedDepartmentId == null || _selectedCategory == null) {
-      setState(() => _errorMessage = 'Pilih divisi tujuan dan kategori');
+    if (_selectedTargetDeptId == null || _selectedCategory == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Pilih departemen tujuan dan kategori tiket')),
+      );
       return;
     }
 
-    setState(() {
-      _isSubmitting = true;
-      _errorMessage = null;
-    });
+    setState(() => _isSubmitting = true);
 
     final res = await ApiService.createTicket(
       title: _titleController.text.trim(),
-      targetDepartmentId: _selectedDepartmentId!,
+      targetDepartmentId: _selectedTargetDeptId!,
       category: _selectedCategory!,
-      priority: _selectedPriority,
+      priority: 'Medium',
       description: _descController.text.trim(),
       photoBase64: _base64Image,
     );
 
     if (!mounted) return;
 
-    setState(() {
-      _isSubmitting = false;
-    });
+    setState(() => _isSubmitting = false);
 
     if (res['success'] == true) {
+      final ticket = res['ticket'] as TicketModel?;
+      setState(() {
+        _successMessage = 'Tiket Berhasil Diajukan #${ticket?.id ?? ''}';
+        _titleController.clear();
+        _descController.clear();
+        _imageBytes = null;
+        _base64Image = null;
+        _imageFileName = null;
+      });
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(res['message'] ?? 'Tiket berhasil dikirim!'),
-          backgroundColor: const Color(0xFF10B981),
+        const SnackBar(
+          content: Text('Tiket berhasil dikirim ke antrean departemen tujuan!'),
+          backgroundColor: Color(0xFF10B981),
         ),
       );
-      _titleController.clear();
-      _descController.clear();
-      setState(() {
-        _selectedImage = null;
-        _base64Image = null;
-      });
+
+      // Trigger navigation / reload
       widget.onTicketCreated();
     } else {
-      setState(() {
-        _errorMessage = res['message'];
-      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(res['message'] ?? 'Gagal membuat tiket.'),
+          backgroundColor: const Color(0xFFEF4444),
+        ),
+      );
     }
+  }
+
+  void _logout() async {
+    await ApiService.logout();
+    if (!mounted) return;
+    Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const LoginScreen()), (r) => false);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
-      appBar: AppBar(
-        title: const Text(
-          'Buat Tiket Baru',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF0F172A)),
+    if (_isLoading) {
+      return const Scaffold(
+        backgroundColor: Color(0xFFF8FAFC),
+        body: Center(
+          child: CircularProgressIndicator(color: Color(0xFF2563EB)),
         ),
-        backgroundColor: Colors.white,
-        elevation: 0.5,
-        centerTitle: false,
-      ),
+      );
+    }
+
+    final senderDeptName = _departments.firstWhere(
+      (d) => d.id == _selectedSenderDeptId,
+      orElse: () => DepartmentModel(id: 0, name: _user?.departmentName ?? 'IT Support'),
+    ).name;
+
+    final targetDept = _departments.firstWhere(
+      (d) => d.id == _selectedTargetDeptId,
+      orElse: () => DepartmentModel(id: 0, name: 'IT Support'),
+    );
+
+    final availableCategories = _categoriesMap[targetDept.name] ?? [
+      'Network & WiFi',
+      'Hardware & PC',
+      'Software & OS',
+      'Printer & Scanner',
+      'Email & Akun',
+      'Lainnya',
+    ];
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF1F5F9),
       body: SafeArea(
-        child: _isLoadingDepts
-            ? const Center(child: CircularProgressIndicator())
-            : SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 500),
-                    child: Form(
-                      key: _formKey,
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Top Corporate Navbar
+              _buildCorporateNavbar(),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // ========================================================
+                    // SUBMIT SUPPORT REQUEST CARD (GAMBAR 3)
+                    // ========================================================
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.04),
+                            blurRadius: 14,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          if (_errorMessage != null) ...[
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFFEF2F2),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: const Color(0xFFFCA5A5)),
-                              ),
-                              child: Text(
-                                _errorMessage!,
-                                style: const TextStyle(color: Color(0xFF991B1B), fontSize: 12, fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                            const SizedBox(height: 14),
-                          ],
-
-                          // Target Department
-                          _label('Tujukan Ke Divisi / Departemen *'),
-                          DropdownButtonFormField<int>(
-                            value: _selectedDepartmentId,
-                            decoration: _inputDecoration('Pilih Divisi Penanggung Jawab', Icons.business_rounded),
-                            items: _departments.map((d) {
-                              return DropdownMenuItem<int>(
-                                value: d.id,
-                                child: Text(d.name, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
-                              );
-                            }).toList(),
-                            onChanged: (val) {
-                              setState(() {
-                                _selectedDepartmentId = val;
-                                final found = _departments.firstWhere((d) => d.id == val);
-                                _updateCategoriesForDept(found.name);
-                              });
-                            },
-                          ),
-                          const SizedBox(height: 16),
-
-                          // Category
-                          _label('Kategori Kendala *'),
-                          DropdownButtonFormField<String>(
-                            value: _selectedCategory,
-                            decoration: _inputDecoration('Pilih Kategori Permasalahan', Icons.category_outlined),
-                            items: (_categoriesMap[_departments.firstWhere((d) => d.id == _selectedDepartmentId, orElse: () => _departments.first).name] ?? [
-                              'Hardware & PC',
-                              'Software & OS',
-                              'Network & WiFi',
-                              'Lainnya',
-                            ]).map((cat) {
-                              return DropdownMenuItem<String>(
-                                value: cat,
-                                child: Text(cat, style: const TextStyle(fontSize: 13)),
-                              );
-                            }).toList(),
-                            onChanged: (val) {
-                              setState(() => _selectedCategory = val);
-                            },
-                          ),
-                          const SizedBox(height: 16),
-
-                          // Priority
-                          _label('Tingkat Prioritas *'),
-                          Row(
-                            children: ['Low', 'Medium', 'High', 'Urgent'].map((p) {
-                              final isSelected = _selectedPriority == p;
-                              Color chipColor = const Color(0xFF64748B);
-                              if (p == 'Low') chipColor = const Color(0xFF10B981);
-                              if (p == 'Medium') chipColor = const Color(0xFF3B82F6);
-                              if (p == 'High') chipColor = const Color(0xFFF59E0B);
-                              if (p == 'Urgent') chipColor = const Color(0xFFEF4444);
-
-                              return Expanded(
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 2),
-                                  child: ChoiceChip(
-                                    label: Text(
-                                      p,
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.bold,
-                                        color: isSelected ? Colors.white : chipColor,
-                                      ),
-                                    ),
-                                    selected: isSelected,
-                                    selectedColor: chipColor,
-                                    backgroundColor: chipColor.withValues(alpha: 0.1),
-                                    side: BorderSide(color: isSelected ? chipColor : chipColor.withValues(alpha: 0.3)),
-                                    onSelected: (val) {
-                                      if (val) setState(() => _selectedPriority = p);
-                                    },
-                                  ),
-                                ),
-                              );
-                            }).toList(),
-                          ),
-                          const SizedBox(height: 16),
-
-                          // Title
-                          _label('Judul Kendala *'),
-                          TextFormField(
-                            controller: _titleController,
-                            decoration: _inputDecoration('Contoh: Printer Inkjet Line 2 Tidak Menyala', Icons.title_rounded),
-                            validator: (v) {
-                              if (v == null || v.trim().isEmpty) return 'Judul wajib diisi';
-                              if (v.trim().length < 4) return 'Judul minimal 4 karakter';
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 16),
-
-                          // Description
-                          _label('Deskripsi Lengkap Kendala *'),
-                          TextFormField(
-                            controller: _descController,
-                            maxLines: 4,
-                            decoration: _inputDecoration('Jelaskan detail kendala, lokasi mesin, atau langkah yang sudah dicoba...', Icons.description_outlined),
-                            validator: (v) {
-                              if (v == null || v.trim().isEmpty) return 'Deskripsi wajib diisi';
-                              if (v.trim().length < 5) return 'Deskripsi minimal 5 karakter';
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 16),
-
-                          // Photo Attachment
-                          _label('Lampiran Bukti Foto (Opsional)'),
-                          if (_selectedImage != null)
-                            Stack(
+                          // Header Bar
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Container(
-                                  width: double.infinity,
-                                  height: 180,
+                                  padding: const EdgeInsets.all(7),
                                   decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(14),
-                                    border: Border.all(color: const Color(0xFFCBD5E1)),
-                                    image: DecorationImage(
-                                      image: FileImage(_selectedImage!),
-                                      fit: BoxFit.cover,
-                                    ),
+                                    color: const Color(0xFFEFF6FF),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: const Color(0xFFBFDBFE)),
+                                  ),
+                                  child: const Icon(Icons.description_outlined, color: Color(0xFF2563EB), size: 18),
+                                ),
+                                const SizedBox(width: 8),
+                                const Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Submit Support Request',
+                                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+                                      ),
+                                      Text(
+                                        'Dispatch official ticket to designated corporate department',
+                                        style: TextStyle(fontSize: 10, color: Color(0xFF64748B)),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                Positioned(
-                                  top: 8,
-                                  right: 8,
-                                  child: CircleAvatar(
-                                    backgroundColor: Colors.black.withValues(alpha: 0.6),
-                                    radius: 16,
-                                    child: IconButton(
-                                      icon: const Icon(Icons.close, size: 16, color: Colors.white),
-                                      onPressed: () {
-                                        setState(() {
-                                          _selectedImage = null;
-                                          _base64Image = null;
-                                        });
-                                      },
-                                    ),
+                                const SizedBox(width: 4),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFEFF6FF),
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(color: const Color(0xFFBFDBFE)),
                                   ),
-                                ),
-                              ],
-                            )
-                          else
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: OutlinedButton.icon(
-                                    onPressed: () => _pickImage(ImageSource.camera),
-                                    icon: const Icon(Icons.camera_alt_outlined, size: 18),
-                                    label: const Text('Ambil Foto', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                                    style: OutlinedButton.styleFrom(
-                                      padding: const EdgeInsets.symmetric(vertical: 12),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                      side: const BorderSide(color: Color(0xFFCBD5E1)),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: OutlinedButton.icon(
-                                    onPressed: () => _pickImage(ImageSource.gallery),
-                                    icon: const Icon(Icons.photo_library_outlined, size: 18),
-                                    label: const Text('Dari Galeri', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                                    style: OutlinedButton.styleFrom(
-                                      padding: const EdgeInsets.symmetric(vertical: 12),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                      side: const BorderSide(color: Color(0xFFCBD5E1)),
-                                    ),
+                                  child: const Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.circle, color: Color(0xFF2563EB), size: 5),
+                                      SizedBox(width: 3),
+                                      Text(
+                                        'Live Routing',
+                                        style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: Color(0xFF1D4ED8)),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ],
                             ),
-                          const SizedBox(height: 28),
+                          ),
+                          const Divider(height: 1, color: Color(0xFFF1F5F9)),
 
-                          // Submit Button
-                          ElevatedButton(
-                            onPressed: _isSubmitting ? null : _submitTicket,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF2563EB),
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 15),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                              elevation: 2,
+                          // Success Alert
+                          if (_successMessage != null)
+                            Container(
+                              margin: const EdgeInsets.fromLTRB(14, 12, 14, 0),
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFECFDF5),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: const Color(0xFFA7F3D0)),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.check_circle, color: Color(0xFF059669), size: 16),
+                                  const SizedBox(width: 6),
+                                  Expanded(
+                                    child: Text(
+                                      _successMessage!,
+                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: Color(0xFF065F46)),
+                                    ),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.close, size: 14, color: Color(0xFF065F46)),
+                                    onPressed: () => setState(() => _successMessage = null),
+                                  ),
+                                ],
+                              ),
                             ),
-                            child: _isSubmitting
-                                ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                                : const Text('KIRIM PENGAJUAN TIKET', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13, letterSpacing: 0.5)),
+
+                          // Form Body
+                          Padding(
+                            padding: const EdgeInsets.all(14),
+                            child: Form(
+                              key: _formKey,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  _fieldLabel('JUDUL PERMINTAAN'),
+                                  const SizedBox(height: 5),
+                                  TextFormField(
+                                    controller: _titleController,
+                                    style: const TextStyle(fontSize: 12, color: Color(0xFF0F172A)),
+                                    decoration: _inputDecoration('Contoh: Gangguan koneksi VPN / Printer Offline di Lantai 2'),
+                                    validator: (val) {
+                                      if (val == null || val.trim().isEmpty) return 'Judul tiket wajib diisi';
+                                      return null;
+                                    },
+                                  ),
+                                  const SizedBox(height: 12),
+
+                                  _fieldLabel('DEPARTEMEN PENGIRIM'),
+                                  const SizedBox(height: 5),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFF8FAFC),
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(color: const Color(0xFFCBD5E1)),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        const Icon(Icons.business_outlined, size: 14, color: Color(0xFF64748B)),
+                                        const SizedBox(width: 6),
+                                        Expanded(
+                                          child: Text(
+                                            senderDeptName,
+                                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+
+                                  _fieldLabel('DEPARTEMEN TUJUAN'),
+                                  const SizedBox(height: 5),
+                                  DropdownButtonFormField<int>(
+                                    value: _selectedTargetDeptId,
+                                    isDense: true,
+                                    style: const TextStyle(fontSize: 12, color: Color(0xFF0F172A)),
+                                    decoration: _inputDecoration(''),
+                                    items: _departments.map((d) {
+                                      return DropdownMenuItem<int>(
+                                        value: d.id,
+                                        child: Text(d.name, style: const TextStyle(fontSize: 11, color: Color(0xFF0F172A))),
+                                      );
+                                    }).toList(),
+                                    onChanged: (val) {
+                                      if (val != null) {
+                                        setState(() {
+                                          _selectedTargetDeptId = val;
+                                          final dept = _departments.firstWhere((d) => d.id == val);
+                                          _updateCategoriesForDept(dept.name);
+                                        });
+                                      }
+                                    },
+                                  ),
+                                  const SizedBox(height: 12),
+
+                                  _fieldLabel('KATEGORI PERMINTAAN'),
+                                  const SizedBox(height: 5),
+                                  DropdownButtonFormField<String>(
+                                    value: availableCategories.contains(_selectedCategory) ? _selectedCategory : availableCategories.first,
+                                    isDense: true,
+                                    style: const TextStyle(fontSize: 12, color: Color(0xFF0F172A)),
+                                    decoration: _inputDecoration(''),
+                                    items: availableCategories.map((c) {
+                                      return DropdownMenuItem<String>(
+                                        value: c,
+                                        child: Text(c, style: const TextStyle(fontSize: 11, color: Color(0xFF0F172A))),
+                                      );
+                                    }).toList(),
+                                    onChanged: (val) => setState(() => _selectedCategory = val),
+                                  ),
+                                  const SizedBox(height: 12),
+
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      _fieldLabel('RINCIAN MASALAH / DESKRIPSI'),
+                                      TextButton.icon(
+                                        onPressed: _beautifyDescription,
+                                        icon: const Icon(Icons.auto_fix_high, size: 12, color: Color(0xFF2563EB)),
+                                        label: const Text('✨ Rapikan Deskripsi', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF2563EB))),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 5),
+                                  TextFormField(
+                                    controller: _descController,
+                                    minLines: 3,
+                                    maxLines: 5,
+                                    style: const TextStyle(fontSize: 12, color: Color(0xFF0F172A)),
+                                    onChanged: (_) => setState(() {}),
+                                    decoration: _inputDecoration('Jelaskan detail kendala, nomor aset, pesan error...'),
+                                    validator: (val) {
+                                      if (val == null || val.trim().length < 10) return 'Deskripsi masalah minimal 10 karakter';
+                                      return null;
+                                    },
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Wrap(
+                                    alignment: WrapAlignment.spaceBetween,
+                                    crossAxisAlignment: WrapCrossAlignment.center,
+                                    children: [
+                                      Text('${_descController.text.length} karakter (Min. 10)', style: const TextStyle(fontSize: 9, color: Color(0xFF94A3B8))),
+                                      const Text('Format: Teks / Template Otomatis', style: TextStyle(fontSize: 9, color: Color(0xFF94A3B8))),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 12),
+
+                                  _fieldLabel('BUKTI FOTO / LAMPIRAN (OPSIONAL)'),
+                                  const SizedBox(height: 5),
+                                  InkWell(
+                                    onTap: () {
+                                      showModalBottomSheet(
+                                        context: context,
+                                        builder: (_) => SafeArea(
+                                          child: Wrap(
+                                            children: [
+                                              ListTile(
+                                                leading: const Icon(Icons.photo_library),
+                                                title: const Text('Pilih dari Galeri'),
+                                                onTap: () {
+                                                  Navigator.pop(context);
+                                                  _pickPhoto(ImageSource.gallery);
+                                                },
+                                              ),
+                                              ListTile(
+                                                leading: const Icon(Icons.camera_alt),
+                                                title: const Text('Ambil dari Kamera'),
+                                                onTap: () {
+                                                  Navigator.pop(context);
+                                                  _pickPhoto(ImageSource.camera);
+                                                },
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    borderRadius: BorderRadius.circular(10),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFF8FAFC),
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(color: const Color(0xFFCBD5E1)),
+                                      ),
+                                      child: _imageBytes == null
+                                          ? const Column(
+                                              children: [
+                                                Icon(Icons.add_photo_alternate_outlined, color: Color(0xFF2563EB), size: 24),
+                                                SizedBox(height: 4),
+                                                Text('Pilih Bukti Foto atau Sentuh di Sini', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: Color(0xFF2563EB))),
+                                                Text('(tangkapan layar error, fisik alat, dsb. Maks 10MB)', style: TextStyle(fontSize: 9, color: Color(0xFF94A3B8))),
+                                              ],
+                                            )
+                                          : Row(
+                                              children: [
+                                                ClipRRect(borderRadius: BorderRadius.circular(6), child: Image.memory(_imageBytes!, width: 44, height: 44, fit: BoxFit.cover)),
+                                                const SizedBox(width: 8),
+                                                Expanded(
+                                                  child: Column(
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    children: [
+                                                      Text(_imageFileName ?? 'Foto Terlampir', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
+                                                      const Text('Siap diunggah bersama tiket', style: TextStyle(fontSize: 9, color: Color(0xFF10B981))),
+                                                    ],
+                                                  ),
+                                                ),
+                                                IconButton(
+                                                  icon: const Icon(Icons.delete_outline, color: Color(0xFFEF4444), size: 18),
+                                                  onPressed: () => setState(() {
+                                                    _imageBytes = null;
+                                                    _base64Image = null;
+                                                    _imageFileName = null;
+                                                  }),
+                                                ),
+                                              ],
+                                            ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+
+                                  ElevatedButton.icon(
+                                    onPressed: _isSubmitting ? null : _submitTicket,
+                                    icon: _isSubmitting
+                                        ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                                        : const Icon(Icons.send_rounded, size: 14),
+                                    label: Text(_isSubmitting ? 'Mengirim...' : 'Kirim Permintaan Tiket', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 12)),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFF2563EB),
+                                      foregroundColor: Colors.white,
+                                      padding: const EdgeInsets.symmetric(vertical: 12),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
                         ],
                       ),
                     ),
-                  ),
+                    const SizedBox(height: 80),
+                  ],
                 ),
               ),
+            ],
+          ),
+        ),
       ),
     );
   }
 
-  Widget _label(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
-      child: Text(
-        text,
-        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF334155)),
+  Widget _buildCorporateNavbar() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: const BoxDecoration(
+        color: Color(0xFF0F172A),
+        border: Border(bottom: BorderSide(color: Color(0xFF1E293B))),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image.asset(
+                  'assets/images/logo2.webp',
+                  height: 24,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => const Icon(Icons.business, color: Colors.white, size: 20),
+                ),
+                const SizedBox(width: 6),
+                const Flexible(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.circle, color: Color(0xFF10B981), size: 5),
+                          SizedBox(width: 3),
+                          Text('PT. ASIA PLASTIK', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
+                        ],
+                      ),
+                      Text('PORTAL LAYANAN TIKET', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: Color(0xFF94A3B8), fontSize: 8, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 6),
+
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E293B),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFF334155)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircleAvatar(
+                      radius: 9,
+                      backgroundColor: const Color(0xFF0284C7),
+                      child: Text((_user?.name ?? 'K').substring(0, 1).toUpperCase(), style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
+                    ),
+                    const SizedBox(width: 4),
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 55),
+                      child: Text(
+                        (_user?.name ?? 'Karyawan').split(' ').first,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                      decoration: BoxDecoration(color: const Color(0xFF2563EB), borderRadius: BorderRadius.circular(4)),
+                      child: const Text('EMP', style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.w900)),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.logout_rounded, color: Color(0xFF94A3B8), size: 17),
+                padding: const EdgeInsets.all(4),
+                constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                tooltip: 'Keluar',
+                onPressed: _logout,
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
 
-  InputDecoration _inputDecoration(String hint, IconData icon) {
+  Widget _fieldLabel(String text) {
+    return Text(text, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: Color(0xFF334155), letterSpacing: 0.5));
+  }
+
+  InputDecoration _inputDecoration(String hint) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8)),
-      prefixIcon: Icon(icon, size: 18, color: const Color(0xFF3B82F6)),
+      hintStyle: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8)),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      isDense: true,
       filled: true,
       fillColor: Colors.white,
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFCBD5E1))),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFCBD5E1))),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.8)),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFCBD5E1))),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.5)),
+      errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFEF4444))),
+      focusedErrorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1.5)),
     );
   }
 }
