@@ -10,6 +10,7 @@ class TicketModel {
   final String? createdAtHuman;
   final String? senderName;
   final String? senderAvatar;
+  final int? targetDepartmentId;
   final String? targetDepartmentName;
   final String? targetDepartmentIcon;
   final int messagesCount;
@@ -26,6 +27,7 @@ class TicketModel {
     this.createdAtHuman,
     this.senderName,
     this.senderAvatar,
+    this.targetDepartmentId,
     this.targetDepartmentName,
     this.targetDepartmentIcon,
     this.messagesCount = 0,
@@ -39,9 +41,11 @@ class TicketModel {
       sAvatar = json['sender']['avatar'];
     }
 
+    int? deptId = json['target_department_id'];
     String? deptName;
     String? deptIcon;
     if (json['target_department'] != null && json['target_department'] is Map) {
+      deptId ??= json['target_department']['id'];
       deptName = json['target_department']['name'];
       deptIcon = json['target_department']['icon'];
     }
@@ -58,6 +62,7 @@ class TicketModel {
       createdAtHuman: json['created_at_human'],
       senderName: sName,
       senderAvatar: sAvatar,
+      targetDepartmentId: deptId,
       targetDepartmentName: deptName,
       targetDepartmentIcon: deptIcon,
       messagesCount: json['messages_count'] ?? 0,
