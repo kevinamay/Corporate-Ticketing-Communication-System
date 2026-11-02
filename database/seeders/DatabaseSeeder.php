@@ -100,6 +100,23 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
+        User::updateOrCreate(
+            ['email' => 'kevinamay23@gmail.com'],
+            [
+                'name' => 'Kevina Maydiva Heriansaputri',
+                'password' => $password,
+                'department_id' => $itDept->id,
+                'role' => 'employee',
+                'national_id_ktp' => '3502016305030001',
+                'whatsapp_number' => '082244109503',
+                'gender' => 'female',
+                'complete_address' => 'Divisi IT Support PT Asia Plastik, Surabaya',
+                'postal_code' => '60293',
+                'email_verified_at' => now(),
+                'avatar' => 'https://ui-avatars.com/api/?name=Kevina+Maydiva&background=0284c7&color=fff',
+            ]
+        );
+
         // 4. Master Data Karyawan Resmi (HCM Core)
         EmployeeMasterData::updateOrCreate(
             ['ktp_number' => '3578010101990001'],
