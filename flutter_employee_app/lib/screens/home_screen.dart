@@ -12,23 +12,29 @@ import 'ticket_detail_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final Function(int)? onNavigateToTab;
-  const HomeScreen({super.key, this.onNavigateToTab});
+  final int prototypeVariant;
+  final ValueChanged<int>? onVariantChanged;
+
+  const HomeScreen({
+    super.key,
+    this.onNavigateToTab,
+    this.prototypeVariant = 0,
+    this.onVariantChanged,
+  });
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // Prototype Variant Index: 0 = Variant A, 1 = Variant B, 2 = Variant C
-  int _currentVariant = 0;
-  final List<String> _variantNames = [
-    'Varian A: Feed Korporat (Web Parity)',
-    'Varian B: Executive Hub (Segmented Tabs)',
-    'Varian C: Modern Bento Dashboard',
-  ];
+  // Prototype Variant Index: 0=A, 1=B, 2=C, 3=D, 4=E, 5=F
+  late int _currentVariant;
 
   // For Variant B Tab Controller
   int _variantBSelectedTab = 0;
+
+  // For Variant D Dual Stream Filter (0: Aktif, 1: Selesai)
+  int _variantDStreamFilter = 0;
 
   // Scroll Controller & Section Keys for In-Page Navigation
   final ScrollController _scrollController = ScrollController();
@@ -79,7 +85,18 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    _currentVariant = widget.prototypeVariant;
     _loadAllData();
+  }
+
+  @override
+  void didUpdateWidget(HomeScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.prototypeVariant != widget.prototypeVariant) {
+      setState(() {
+        _currentVariant = widget.prototypeVariant;
+      });
+    }
   }
 
   @override
@@ -106,7 +123,6 @@ class _HomeScreenState extends State<HomeScreen> {
       _kpi = kpi;
       _allTickets = tickets;
 
-      // Set default departments
       if (_departments.isNotEmpty) {
         _selectedSenderDeptId ??= user?.departmentId ?? _departments.first.id;
         _selectedTargetDeptId ??= _departments.first.id;
@@ -142,9 +158,22 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // --------------------------------------------------------------------------
-  // AI Beautifier / Rapid Description Formatter
-  // --------------------------------------------------------------------------
+  void _applyQuickPreset(String title, String category, String presetDesc) {
+    setState(() {
+      _titleController.text = title;
+      _selectedCategory = category;
+      _descController.text = presetDesc;
+    });
+    _scrollToKey(_formSectionKey);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Template "$title" telah dimuat ke form!'),
+        backgroundColor: const Color(0xFF2563EB),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
   void _beautifyDescription() {
     final current = _descController.text.trim();
     if (current.isEmpty) {
@@ -163,9 +192,6 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {});
   }
 
-  // --------------------------------------------------------------------------
-  // Image Picking
-  // --------------------------------------------------------------------------
   Future<void> _pickPhoto(ImageSource source) async {
     try {
       final picked = await _picker.pickImage(
@@ -191,9 +217,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // --------------------------------------------------------------------------
-  // Submit Ticket Request
-  // --------------------------------------------------------------------------
   Future<void> _submitTicket() async {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedTargetDeptId == null || _selectedCategory == null) {
@@ -247,9 +270,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // --------------------------------------------------------------------------
-  // Quick Dialogs (AI & WhatsApp)
-  // --------------------------------------------------------------------------
   void _openAiAssistantDialog() {
     showDialog(
       context: context,
@@ -266,10 +286,7 @@ class _HomeScreenState extends State<HomeScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Halo! Saya asisten cerdas sistem internal. Ada kendala teknis yang ingin Anda laporkan?',
-              style: TextStyle(fontSize: 13, height: 1.5),
-            ),
+            Text('Halo! Saya asisten cerdas sistem internal. Ada kendala teknis yang ingin Anda laporkan?', style: TextStyle(fontSize: 13, height: 1.5)),
             SizedBox(height: 12),
             Text(
               'Tips Pelaporan Cepat:\n'
@@ -351,125 +368,15 @@ class _HomeScreenState extends State<HomeScreen> {
       return isResolved && matchesSearch && matchesDept;
     }).toList();
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF1F5F9),
-      body: Stack(
-        children: [
-          SafeArea(
-            child: RefreshIndicator(
-              onRefresh: _loadAllData,
-              color: const Color(0xFF2563EB),
-              child: _renderCurrentVariant(filteredActiveTickets, resolvedTickets),
-            ),
-          ),
-
-          // ============================================================
-          // FLOATING PROTOTYPE SWITCHER (Bottom Pill Bar)
-          // ============================================================
-          Positioned(
-            bottom: 16,
-            left: 16,
-            right: 16,
-            child: Center(
-              child: _buildPrototypeSwitcher(),
-            ),
-          ),
-        ],
-      ),
+    return RefreshIndicator(
+      onRefresh: _loadAllData,
+      color: const Color(0xFF2563EB),
+      child: _renderCurrentVariant(filteredActiveTickets, resolvedTickets),
     );
   }
 
   // ==========================================================================
-  // PROTOTYPE SWITCHER BAR
-  // ==========================================================================
-  Widget _buildPrototypeSwitcher() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: const Color(0xFF0F172A).withValues(alpha: 0.94),
-        borderRadius: BorderRadius.circular(30),
-        border: Border.all(color: const Color(0xFF3B82F6).withValues(alpha: 0.6), width: 1.5),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.35),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Left Arrow
-          IconButton(
-            icon: const Icon(Icons.arrow_back_ios_rounded, color: Colors.white, size: 14),
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
-            onPressed: () {
-              setState(() {
-                _currentVariant = (_currentVariant - 1 + _variantNames.length) % _variantNames.length;
-              });
-            },
-          ),
-          const SizedBox(width: 4),
-
-          // Current Variant Badge & Name
-          InkWell(
-            onTap: () {
-              setState(() {
-                _currentVariant = (_currentVariant + 1) % _variantNames.length;
-              });
-            },
-            borderRadius: BorderRadius.circular(20),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF2563EB),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Text(
-                      'DESAIN ${_currentVariant + 1}/3',
-                      style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w900),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 160),
-                    child: Text(
-                      _variantNames[_currentVariant],
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(width: 4),
-
-          // Right Arrow
-          IconButton(
-            icon: const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 14),
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
-            onPressed: () {
-              setState(() {
-                _currentVariant = (_currentVariant + 1) % _variantNames.length;
-              });
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ==========================================================================
-  // VARIANT ROUTER
+  // VARIANT ROUTER (A to F)
   // ==========================================================================
   Widget _renderCurrentVariant(List<TicketModel> activeTickets, List<TicketModel> resolvedTickets) {
     switch (_currentVariant) {
@@ -478,8 +385,14 @@ class _HomeScreenState extends State<HomeScreen> {
       case 1:
         return _buildVariantB(activeTickets, resolvedTickets);
       case 2:
-      default:
         return _buildVariantC(activeTickets, resolvedTickets);
+      case 3:
+        return _buildVariantD(activeTickets, resolvedTickets);
+      case 4:
+        return _buildVariantE(activeTickets, resolvedTickets);
+      case 5:
+      default:
+        return _buildVariantF(activeTickets, resolvedTickets);
     }
   }
 
@@ -493,52 +406,25 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // 1. Sleek Mobile Corporate Top Bar (No crowded desktop buttons)
-          _buildVariantANavbar(),
-
+          _buildCorporateNavbar(),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 1200),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // 2. Banner with scroll actions
-                    _buildVariantABanner(resolvedTickets.length),
-                    const SizedBox(height: 16),
-
-                    // 3. Realtime KPI Metrics Strip
-                    _buildKpiMetricsStrip(),
-                    const SizedBox(height: 20),
-
-                    // 4. Submit Support Request Card
-                    Container(
-                      key: _formSectionKey,
-                      child: _buildSubmitTicketFormCard(),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // 5. Antrean Tiket & Insiden Aktif Card
-                    Container(
-                      key: _queueSectionKey,
-                      child: _buildActiveQueueCard(activeTickets),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // 6. Riwayat Tiket Selesai Card
-                    Container(
-                      key: _resolvedSectionKey,
-                      child: _buildResolvedArchiveCard(resolvedTickets),
-                    ),
-                    const SizedBox(height: 36),
-
-                    // 7. Corporate Footer
-                    _buildCorporateFooter(),
-                    const SizedBox(height: 80),
-                  ],
-                ),
-              ),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _buildVariantABanner(resolvedTickets.length),
+                const SizedBox(height: 14),
+                _buildKpiMetricsStrip(),
+                const SizedBox(height: 18),
+                Container(key: _formSectionKey, child: _buildSubmitTicketFormCard()),
+                const SizedBox(height: 20),
+                Container(key: _queueSectionKey, child: _buildActiveQueueCard(activeTickets)),
+                const SizedBox(height: 20),
+                Container(key: _resolvedSectionKey, child: _buildResolvedArchiveCard(resolvedTickets)),
+                const SizedBox(height: 30),
+                _buildCorporateFooter(),
+                const SizedBox(height: 20),
+              ],
             ),
           ),
         ],
@@ -546,7 +432,802 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildVariantANavbar() {
+  Widget _buildVariantABanner(int resolvedCount) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF0F172A), Color(0xFF1E3A8A), Color(0xFF0F172A)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFF3B82F6).withValues(alpha: 0.4)),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.12), blurRadius: 14, offset: const Offset(0, 4))],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2563EB).withValues(alpha: 0.25),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: const Color(0xFF3B82F6).withValues(alpha: 0.4)),
+                ),
+                child: const Icon(Icons.confirmation_number_outlined, color: Color(0xFF93C5FD), size: 20),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                      decoration: BoxDecoration(color: const Color(0xFF2563EB).withValues(alpha: 0.35), borderRadius: BorderRadius.circular(8)),
+                      child: const Text('PORTAL LAYANAN TIKET KARYAWAN', style: TextStyle(color: Color(0xFFBFDBFE), fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
+                    ),
+                    const SizedBox(height: 4),
+                    const Text('Pengajuan Kendala & Bantuan Teknis', style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w900)),
+                    const SizedBox(height: 2),
+                    const Text('Laporkan kendala operasional ke tim IT Support dan pantau status penyelesaian real-time.', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 11)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              ElevatedButton.icon(
+                onPressed: () => _scrollToKey(_formSectionKey),
+                icon: const Icon(Icons.add, size: 14),
+                label: const Text('Buat Tiket Baru', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF2563EB),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+              ),
+              OutlinedButton(
+                onPressed: () => _scrollToKey(_queueSectionKey),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  side: BorderSide(color: Colors.white.withValues(alpha: 0.25)),
+                  backgroundColor: Colors.white.withValues(alpha: 0.08),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                child: const Text('Daftar Antrean', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
+              ),
+              ElevatedButton.icon(
+                onPressed: () => _scrollToKey(_resolvedSectionKey),
+                icon: const Icon(Icons.check_circle_outline, size: 14),
+                label: const Text('Riwayat Selesai', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF059669),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ==========================================================================
+  // VARIAN B: EXECUTIVE HUB (Segmented Modular Tabs)
+  // ==========================================================================
+  Widget _buildVariantB(List<TicketModel> activeTickets, List<TicketModel> resolvedTickets) {
+    return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildCorporateNavbar(),
+          Padding(
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 3))],
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Halo, ${(_user?.name ?? 'Karyawan').split(' ').first} 👋', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: Color(0xFF0F172A))),
+                          const SizedBox(height: 2),
+                          Text('Dept: ${_user?.departmentName ?? 'General'} • Sesi Aktif', style: const TextStyle(fontSize: 11, color: Color(0xFF64748B))),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.chat_bubble_outline, color: Color(0xFF10B981), size: 18),
+                            onPressed: _openWhatsAppSupport,
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.auto_awesome, color: Color(0xFF2563EB), size: 18),
+                            onPressed: _openAiAssistantDialog,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                _buildKpiMetricsStrip(),
+                const SizedBox(height: 16),
+
+                // Segmented Tab Selector
+                Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(color: const Color(0xFFE2E8F0), borderRadius: BorderRadius.circular(12)),
+                  child: Row(
+                    children: [
+                      Expanded(child: _segmentTabButton(0, '📝 Buat Tiket')),
+                      Expanded(child: _segmentTabButton(1, '📋 Antrean (${activeTickets.length})')),
+                      Expanded(child: _segmentTabButton(2, '✅ Selesai (${resolvedTickets.length})')),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 14),
+
+                if (_variantBSelectedTab == 0)
+                  _buildSubmitTicketFormCard()
+                else if (_variantBSelectedTab == 1)
+                  _buildActiveQueueCard(activeTickets)
+                else
+                  _buildResolvedArchiveCard(resolvedTickets),
+
+                const SizedBox(height: 30),
+                _buildCorporateFooter(),
+                const SizedBox(height: 20),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _segmentTabButton(int index, String title) {
+    final isSelected = _variantBSelectedTab == index;
+    return InkWell(
+      onTap: () => setState(() => _variantBSelectedTab = index),
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.white : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: isSelected ? [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2))] : null,
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          title,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            fontSize: 10,
+            fontWeight: isSelected ? FontWeight.w900 : FontWeight.bold,
+            color: isSelected ? const Color(0xFF2563EB) : const Color(0xFF64748B),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ==========================================================================
+  // VARIAN C: MODERN BENTO DASHBOARD (Action-First Industrial Layout)
+  // ==========================================================================
+  Widget _buildVariantC(List<TicketModel> activeTickets, List<TicketModel> resolvedTickets) {
+    final total = _kpi['total_tickets'] ?? 0;
+    final resolved = _kpi['resolved_tickets'] ?? 0;
+    final percent = total > 0 ? (resolved / total).clamp(0.0, 1.0) : 1.0;
+
+    return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildCorporateNavbar(),
+          Padding(
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Modern Bento Progress Hero
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFF334155)),
+                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 16, offset: const Offset(0, 6))],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text('PERFORMA PENANGANAN TIKET', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 0.6)),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(color: const Color(0xFF10B981).withValues(alpha: 0.2), borderRadius: BorderRadius.circular(10)),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.bolt, color: Color(0xFF10B981), size: 12),
+                                const SizedBox(width: 4),
+                                Text('${(percent * 100).toInt()}% Selesai', style: const TextStyle(color: Color(0xFF34D399), fontSize: 10, fontWeight: FontWeight.w900)),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Text('$resolved', style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Colors.white)),
+                          Text(' / $total Tiket Terselesaikan', style: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8), fontWeight: FontWeight.bold)),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(6),
+                        child: LinearProgressIndicator(
+                          value: percent,
+                          minHeight: 7,
+                          backgroundColor: const Color(0xFF334155),
+                          color: const Color(0xFF10B981),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(child: _bentoMiniStat('Aktif', '${_kpi['active_tickets'] ?? 0}', const Color(0xFF3B82F6))),
+                          const SizedBox(width: 6),
+                          Expanded(child: _bentoMiniStat('Menunggu', '${_kpi['pending_tickets'] ?? 0}', const Color(0xFFF59E0B))),
+                          const SizedBox(width: 6),
+                          Expanded(child: _bentoMiniStat('Diproses', '${_kpi['in_progress_tickets'] ?? 0}', const Color(0xFF6366F1))),
+                          const SizedBox(width: 6),
+                          Expanded(child: _bentoMiniStat('Selesai', '${_kpi['resolved_tickets'] ?? 0}', const Color(0xFF10B981))),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 14),
+
+                // AI Preset Guidance Banner
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEFF6FF),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFBFDBFE)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.auto_awesome, color: Color(0xFF2563EB), size: 20),
+                      const SizedBox(width: 8),
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Butuh Bantuan Kendala Cepat?', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF1E3A8A))),
+                            Text('Gunakan tombol AI perapih deskripsi atau hubungi support langsung.', style: TextStyle(fontSize: 10, color: Color(0xFF3B82F6))),
+                          ],
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: _openAiAssistantDialog,
+                        style: TextButton.styleFrom(backgroundColor: const Color(0xFF2563EB), foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4)),
+                        child: const Text('Buka AI', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 14),
+
+                _buildSubmitTicketFormCard(),
+                const SizedBox(height: 18),
+                _buildActiveQueueCard(activeTickets),
+                const SizedBox(height: 18),
+                _buildResolvedArchiveCard(resolvedTickets),
+                const SizedBox(height: 30),
+                _buildCorporateFooter(),
+                const SizedBox(height: 20),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _bentoMiniStat(String label, String value, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 4),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F172A),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        children: [
+          Text(value, style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w900)),
+          Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 8)),
+        ],
+      ),
+    );
+  }
+
+  // ==========================================================================
+  // VARIAN D: ACTION-FIRST SPEED PORTAL (Center Action Focus)
+  // ==========================================================================
+  Widget _buildVariantD(List<TicketModel> activeTickets, List<TicketModel> resolvedTickets) {
+    return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildCorporateNavbar(),
+          Padding(
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Quick 1-Tap Preset Action Grid
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Row(
+                        children: [
+                          Icon(Icons.flash_on_rounded, color: Color(0xFFF59E0B), size: 18),
+                          SizedBox(width: 6),
+                          Text('LAPOR CEPAT (1-SENTUH)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Color(0xFF0F172A), letterSpacing: 0.5)),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _quickPresetCard(
+                              icon: Icons.computer_rounded,
+                              label: 'PC & Monitor Error',
+                              color: const Color(0xFF2563EB),
+                              onTap: () => _applyQuickPreset(
+                                'PC & Monitor Mengalami Kendala / Hang',
+                                'Hardware & PC',
+                                '[Kendala]: Layar monitor berkedip / PC mendadak mati dan tidak bisa boot ke sistem.\n[Lokasi]: Area Kerja Operasional\n[Dampak]: Pekerjaan input data tertunda.',
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: _quickPresetCard(
+                              icon: Icons.wifi_off_rounded,
+                              label: 'Jaringan & VPN',
+                              color: const Color(0xFF7C3AED),
+                              onTap: () => _applyQuickPreset(
+                                'Koneksi Internet / VPN Putus',
+                                'Jaringan & Internet',
+                                '[Kendala]: Tidak dapat mengakses server internal dan koneksi VPN terputus.\n[Lokasi]: Lantai Operasional Pabrik\n[Tindakan]: Sudah memeriksa kabel LAN.',
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _quickPresetCard(
+                              icon: Icons.print_disabled_rounded,
+                              label: 'Printer & Scanner',
+                              color: const Color(0xFF059669),
+                              onTap: () => _applyQuickPreset(
+                                'Printer Offline / Paper Jam',
+                                'Printer & Scanner',
+                                '[Kendala]: Printer tidak merespons perintah cetak dokumen laporan kerja.\n[Aset]: Printer Departemen.',
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: _quickPresetCard(
+                              icon: Icons.handyman_rounded,
+                              label: 'Fasilitas & HRD',
+                              color: const Color(0xFFEA580C),
+                              onTap: () => _applyQuickPreset(
+                                'Permintaan Fasilitas Kerja / GA',
+                                'Lainnya',
+                                '[Kebutuhan]: Pengajuan perbaikan kelengkapan fasilitas operasional kantor/pabrik.',
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 14),
+
+                // Form Section
+                Container(
+                  key: _formSectionKey,
+                  child: _buildSubmitTicketFormCard(),
+                ),
+                const SizedBox(height: 16),
+
+                // Dual Stream Filter: Aktif vs Selesai
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: const Color(0xFFE2E8F0))),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: InkWell(
+                          onTap: () => setState(() => _variantDStreamFilter = 0),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            decoration: BoxDecoration(
+                              color: _variantDStreamFilter == 0 ? const Color(0xFF2563EB) : Colors.transparent,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              '⚡ Antrean Aktif (${activeTickets.length})',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: _variantDStreamFilter == 0 ? Colors.white : const Color(0xFF64748B),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: InkWell(
+                          onTap: () => setState(() => _variantDStreamFilter = 1),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            decoration: BoxDecoration(
+                              color: _variantDStreamFilter == 1 ? const Color(0xFF059669) : Colors.transparent,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              '✅ Riwayat Selesai (${resolvedTickets.length})',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: _variantDStreamFilter == 1 ? Colors.white : const Color(0xFF64748B),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                if (_variantDStreamFilter == 0)
+                  _buildActiveQueueCard(activeTickets)
+                else
+                  _buildResolvedArchiveCard(resolvedTickets),
+
+                const SizedBox(height: 30),
+                _buildCorporateFooter(),
+                const SizedBox(height: 20),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _quickPresetCard({required IconData icon, required String label, required Color color, required VoidCallback onTap}) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.06),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: color.withValues(alpha: 0.25)),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: color, size: 20),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(label, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: color)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ==========================================================================
+  // VARIAN E: MINIMALIST LUXE / GLASSMORPHIC CLEAN
+  // ==========================================================================
+  Widget _buildVariantE(List<TicketModel> activeTickets, List<TicketModel> resolvedTickets) {
+    return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildCorporateNavbar(),
+          Padding(
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Clean Greeting Card
+                Container(
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 16, offset: const Offset(0, 4))],
+                  ),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 20,
+                        backgroundColor: const Color(0xFF2563EB).withValues(alpha: 0.1),
+                        child: Text(
+                          (_user?.name ?? 'K').substring(0, 1).toUpperCase(),
+                          style: const TextStyle(color: Color(0xFF2563EB), fontWeight: FontWeight.w900, fontSize: 16),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(_user?.name ?? 'Karyawan', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: Color(0xFF0F172A))),
+                            Text('${_user?.departmentName ?? 'IT Support'} • Portal Layanan Tiket', style: const TextStyle(fontSize: 11, color: Color(0xFF64748B))),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(color: const Color(0xFFECFDF5), borderRadius: BorderRadius.circular(20), border: Border.all(color: const Color(0xFFA7F3D0))),
+                        child: const Row(
+                          children: [
+                            Icon(Icons.circle, color: Color(0xFF10B981), size: 6),
+                            SizedBox(width: 4),
+                            Text('Online', style: TextStyle(color: Color(0xFF065F46), fontSize: 10, fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 14),
+
+                // Pill KPI Strip
+                _buildKpiMetricsStrip(),
+                const SizedBox(height: 18),
+
+                Container(key: _formSectionKey, child: _buildSubmitTicketFormCard()),
+                const SizedBox(height: 20),
+                Container(key: _queueSectionKey, child: _buildActiveQueueCard(activeTickets)),
+                const SizedBox(height: 20),
+                Container(key: _resolvedSectionKey, child: _buildResolvedArchiveCard(resolvedTickets)),
+                const SizedBox(height: 30),
+                _buildCorporateFooter(),
+                const SizedBox(height: 20),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ==========================================================================
+  // VARIAN F: FACTORY FLOOR HIGH-CONTRAST HUB (Asia Plastik Pro)
+  // ==========================================================================
+  Widget _buildVariantF(List<TicketModel> activeTickets, List<TicketModel> resolvedTickets) {
+    return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildCorporateNavbar(),
+
+          // Factory Operational Bar Banner
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            color: const Color(0xFF081021),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Row(
+                  children: [
+                    Icon(Icons.factory_rounded, color: Color(0xFFF59E0B), size: 16),
+                    SizedBox(width: 6),
+                    Text('PLANT RUNGKUT SURABAYA', style: TextStyle(color: Color(0xFFFDE68A), fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
+                  ],
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(color: const Color(0xFF10B981).withValues(alpha: 0.2), borderRadius: BorderRadius.circular(4)),
+                  child: const Text('JALUR PRODUKSI NORMAL', style: TextStyle(color: Color(0xFF34D399), fontSize: 8, fontWeight: FontWeight.w900)),
+                ),
+              ],
+            ),
+          ),
+
+          Padding(
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // 4 Factory Department Dispatch Tiles
+                const Text('PILIH DIVISI PENANGANAN CEPAT:', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Color(0xFF64748B), letterSpacing: 0.5)),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _factoryDeptButton('IT SUPPORT', Icons.computer, const Color(0xFF2563EB), 1),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _factoryDeptButton('MAINTENANCE', Icons.build_circle_rounded, const Color(0xFFD97706), 2),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _factoryDeptButton('HR & GA', Icons.people_alt_rounded, const Color(0xFF7C3AED), 3),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _factoryDeptButton('LOGISTIK', Icons.local_shipping_rounded, const Color(0xFF059669), 4),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+
+                // Emergency Call Bar for Factory Floor
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFEF3C7),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFFCD34D)),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Row(
+                        children: [
+                          Icon(Icons.warning_amber_rounded, color: Color(0xFFB45309), size: 18),
+                          SizedBox(width: 8),
+                          Text('Kendala Darurat Pabrik?', style: TextStyle(color: Color(0xFF92400E), fontSize: 11, fontWeight: FontWeight.w900)),
+                        ],
+                      ),
+                      ElevatedButton.icon(
+                        onPressed: _openWhatsAppSupport,
+                        icon: const Icon(Icons.call, size: 12),
+                        label: const Text('Hotline', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFD97706),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                _buildKpiMetricsStrip(),
+                const SizedBox(height: 16),
+
+                Container(key: _formSectionKey, child: _buildSubmitTicketFormCard()),
+                const SizedBox(height: 18),
+                Container(key: _queueSectionKey, child: _buildActiveQueueCard(activeTickets)),
+                const SizedBox(height: 18),
+                Container(key: _resolvedSectionKey, child: _buildResolvedArchiveCard(resolvedTickets)),
+                const SizedBox(height: 30),
+                _buildCorporateFooter(),
+                const SizedBox(height: 20),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _factoryDeptButton(String title, IconData icon, Color color, int targetId) {
+    final isSelected = _selectedTargetDeptId == targetId;
+    return InkWell(
+      onTap: () {
+        setState(() {
+          _selectedTargetDeptId = targetId;
+          final dept = _departments.firstWhere((d) => d.id == targetId, orElse: () => DepartmentModel(id: targetId, name: title));
+          _updateCategoriesForDept(dept.name);
+        });
+        _scrollToKey(_formSectionKey);
+      },
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? color : Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: isSelected ? color : const Color(0xFFCBD5E1), width: isSelected ? 2 : 1),
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 4, offset: const Offset(0, 2))],
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: isSelected ? Colors.white : color, size: 22),
+            const SizedBox(height: 4),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w900,
+                color: isSelected ? Colors.white : const Color(0xFF0F172A),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ==========================================================================
+  // SHARED: COMPACT CORPORATE TOP NAVBAR
+  // ==========================================================================
+  Widget _buildCorporateNavbar() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: const BoxDecoration(
@@ -555,7 +1236,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       child: Row(
         children: [
-          // Left: Branding wrapped in Expanded with Flexible text
           Expanded(
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -577,18 +1257,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         children: [
                           Icon(Icons.circle, color: Color(0xFF10B981), size: 5),
                           SizedBox(width: 3),
-                          Text(
-                            'PT. ASIA PLASTIK',
-                            style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 0.5),
-                          ),
+                          Text('PT. ASIA PLASTIK', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
                         ],
                       ),
-                      Text(
-                        'PORTAL LAYANAN TIKET',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(color: Color(0xFF94A3B8), fontSize: 8, fontWeight: FontWeight.bold),
-                      ),
+                      Text('PORTAL LAYANAN TIKET', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: Color(0xFF94A3B8), fontSize: 8, fontWeight: FontWeight.bold)),
                     ],
                   ),
                 ),
@@ -597,7 +1269,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const SizedBox(width: 6),
 
-          // Right: User Profile Chip & Logout Button
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -614,10 +1285,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     CircleAvatar(
                       radius: 9,
                       backgroundColor: const Color(0xFF0284C7),
-                      child: Text(
-                        (_user?.name ?? 'K').substring(0, 1).toUpperCase(),
-                        style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
-                      ),
+                      child: Text((_user?.name ?? 'K').substring(0, 1).toUpperCase(), style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
                     ),
                     const SizedBox(width: 4),
                     ConstrainedBox(
@@ -651,383 +1319,8 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildVariantABanner(int resolvedCount) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF0F172A), Color(0xFF1E3A8A), Color(0xFF0F172A)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF3B82F6).withValues(alpha: 0.4)),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.12), blurRadius: 14, offset: const Offset(0, 4))],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2563EB).withValues(alpha: 0.25),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: const Color(0xFF3B82F6).withValues(alpha: 0.4)),
-                ),
-                child: const Icon(Icons.confirmation_number_outlined, color: Color(0xFF93C5FD), size: 20),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(color: const Color(0xFF2563EB).withValues(alpha: 0.35), borderRadius: BorderRadius.circular(8)),
-                      child: const Text('PORTAL LAYANAN TIKET KARYAWAN', style: TextStyle(color: Color(0xFFBFDBFE), fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
-                    ),
-                    const SizedBox(height: 4),
-                    const Text('Pengajuan Kendala & Bantuan Teknis', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w900)),
-                    const SizedBox(height: 2),
-                    const Text('Laporkan kendala operasional ke tim IT Support dan pantau status penyelesaian real-time.', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 11)),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-
-          // 3 Quick Action Chips
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              ElevatedButton.icon(
-                onPressed: () => _scrollToKey(_formSectionKey),
-                icon: const Icon(Icons.add, size: 14),
-                label: const Text('Buat Tiket Baru', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2563EB),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                ),
-              ),
-              OutlinedButton(
-                onPressed: () => _scrollToKey(_queueSectionKey),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  side: BorderSide(color: Colors.white.withValues(alpha: 0.25)),
-                  backgroundColor: Colors.white.withValues(alpha: 0.08),
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                ),
-                child: const Text('Daftar Antrean', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
-              ),
-              ElevatedButton.icon(
-                onPressed: () => _scrollToKey(_resolvedSectionKey),
-                icon: const Icon(Icons.check_circle_outline, size: 14),
-                label: const Text('Riwayat Selesai', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF059669),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
   // ==========================================================================
-  // VARIAN B: EXECUTIVE HUB (Segmented Modular Tabs)
-  // ==========================================================================
-  Widget _buildVariantB(List<TicketModel> activeTickets, List<TicketModel> resolvedTickets) {
-    return SingleChildScrollView(
-      physics: const AlwaysScrollableScrollPhysics(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Corporate Top App Bar
-          _buildVariantANavbar(),
-
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Quick Summary Card
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
-                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 3))],
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Halo, ${(_user?.name ?? 'Karyawan').split(' ').first} 👋', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Color(0xFF0F172A))),
-                          const SizedBox(height: 2),
-                          Text('Dept: ${_user?.departmentName ?? 'General'} • Sesi Aktif', style: const TextStyle(fontSize: 11, color: Color(0xFF64748B))),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.chat_bubble_outline, color: Color(0xFF10B981)),
-                            tooltip: 'Hotline WhatsApp',
-                            onPressed: _openWhatsAppSupport,
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.auto_awesome, color: Color(0xFF2563EB)),
-                            tooltip: 'Asisten AI',
-                            onPressed: _openAiAssistantDialog,
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 14),
-
-                // Compact KPI Ribbon
-                _buildKpiMetricsStrip(),
-                const SizedBox(height: 18),
-
-                // Segmented Tab Selector
-                Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE2E8F0),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(child: _segmentTabButton(0, '📝 Buat Tiket')),
-                      Expanded(child: _segmentTabButton(1, '📋 Antrean (${activeTickets.length})')),
-                      Expanded(child: _segmentTabButton(2, '✅ Selesai (${resolvedTickets.length})')),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                // Selected Tab Content
-                if (_variantBSelectedTab == 0)
-                  _buildSubmitTicketFormCard()
-                else if (_variantBSelectedTab == 1)
-                  _buildActiveQueueCard(activeTickets)
-                else
-                  _buildResolvedArchiveCard(resolvedTickets),
-
-                const SizedBox(height: 36),
-                _buildCorporateFooter(),
-                const SizedBox(height: 80),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _segmentTabButton(int index, String title) {
-    final isSelected = _variantBSelectedTab == index;
-    return InkWell(
-      onTap: () => setState(() => _variantBSelectedTab = index),
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? Colors.white : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
-          boxShadow: isSelected ? [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2))] : null,
-        ),
-        alignment: Alignment.center,
-        child: Text(
-          title,
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: isSelected ? FontWeight.w900 : FontWeight.bold,
-            color: isSelected ? const Color(0xFF2563EB) : const Color(0xFF64748B),
-          ),
-        ),
-      ),
-    );
-  }
-
-  // ==========================================================================
-  // VARIAN C: MODERN BENTO DASHBOARD (Action-First Industrial Layout)
-  // ==========================================================================
-  Widget _buildVariantC(List<TicketModel> activeTickets, List<TicketModel> resolvedTickets) {
-    final total = _kpi['total_tickets'] ?? 0;
-    final resolved = _kpi['resolved_tickets'] ?? 0;
-    final percent = total > 0 ? (resolved / total).clamp(0.0, 1.0) : 1.0;
-
-    return SingleChildScrollView(
-      physics: const AlwaysScrollableScrollPhysics(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _buildVariantANavbar(),
-
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Modern Bento Progress Hero
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: const Color(0xFF334155)),
-                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 16, offset: const Offset(0, 6))],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text('PERFORMA PENANGANAN TIKET', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 0.6)),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                            decoration: BoxDecoration(color: const Color(0xFF10B981).withValues(alpha: 0.2), borderRadius: BorderRadius.circular(10)),
-                            child: Row(
-                              children: [
-                                const Icon(Icons.bolt, color: Color(0xFF10B981), size: 12),
-                                const SizedBox(width: 4),
-                                Text('${(percent * 100).toInt()}% Selesai', style: const TextStyle(color: Color(0xFF34D399), fontSize: 10, fontWeight: FontWeight.w900)),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Text('$resolved', style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: Colors.white)),
-                          Text(' / $total Tiket', style: const TextStyle(fontSize: 14, color: Color(0xFF94A3B8), fontWeight: FontWeight.bold)),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(6),
-                        child: LinearProgressIndicator(
-                          value: percent,
-                          minHeight: 8,
-                          backgroundColor: const Color(0xFF334155),
-                          color: const Color(0xFF10B981),
-                        ),
-                      ),
-                      const SizedBox(height: 14),
-
-                      // 4 Mini Bento Chips
-                      Row(
-                        children: [
-                          Expanded(child: _bentoMiniStat('Aktif', '${_kpi['active_tickets'] ?? 0}', const Color(0xFF3B82F6))),
-                          const SizedBox(width: 6),
-                          Expanded(child: _bentoMiniStat('Menunggu', '${_kpi['pending_tickets'] ?? 0}', const Color(0xFFF59E0B))),
-                          const SizedBox(width: 6),
-                          Expanded(child: _bentoMiniStat('Diproses', '${_kpi['in_progress_tickets'] ?? 0}', const Color(0xFF6366F1))),
-                          const SizedBox(width: 6),
-                          Expanded(child: _bentoMiniStat('Selesai', '${_kpi['resolved_tickets'] ?? 0}', const Color(0xFF10B981))),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                // AI Smart Preset Guidance Card
-                Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFEFF6FF),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: const Color(0xFFBFDBFE)),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.auto_awesome, color: Color(0xFF2563EB), size: 24),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text('Butuh Bantuan Kendala Cepat?', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF1E3A8A))),
-                            const Text('Gunakan tombol AI perapih deskripsi atau hubungi support langsung.', style: TextStyle(fontSize: 10, color: Color(0xFF3B82F6))),
-                          ],
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: _openAiAssistantDialog,
-                        style: TextButton.styleFrom(backgroundColor: const Color(0xFF2563EB), foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6)),
-                        child: const Text('Buka AI', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                // Form Pengajuan
-                _buildSubmitTicketFormCard(),
-                const SizedBox(height: 20),
-
-                // Antrean Tiket Aktif
-                _buildActiveQueueCard(activeTickets),
-                const SizedBox(height: 20),
-
-                // Riwayat Tiket Selesai
-                _buildResolvedArchiveCard(resolvedTickets),
-                const SizedBox(height: 36),
-
-                _buildCorporateFooter(),
-                const SizedBox(height: 80),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _bentoMiniStat(String label, String value, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-      decoration: BoxDecoration(
-        color: const Color(0xFF0F172A),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
-      ),
-      child: Column(
-        children: [
-          Text(value, style: TextStyle(color: color, fontSize: 13, fontWeight: FontWeight.w900)),
-          Text(label, style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 9)),
-        ],
-      ),
-    );
-  }
-
-  // ==========================================================================
-  // SHARED KPI METRICS STRIP
+  // SHARED: KPI METRICS STRIP
   // ==========================================================================
   Widget _buildKpiMetricsStrip() {
     return LayoutBuilder(builder: (context, constraints) {
@@ -1072,9 +1365,9 @@ class _HomeScreenState extends State<HomeScreen> {
           crossAxisCount: 2,
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          mainAxisSpacing: 10,
-          crossAxisSpacing: 10,
-          childAspectRatio: 2.2,
+          mainAxisSpacing: 8,
+          crossAxisSpacing: 8,
+          childAspectRatio: 2.3,
           children: cards,
         );
       }
@@ -1089,10 +1382,10 @@ class _HomeScreenState extends State<HomeScreen> {
     required Color bgColor,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(color: const Color(0xFFE2E8F0)),
         boxShadow: [
           BoxShadow(
@@ -1112,7 +1405,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Text(
                 title,
                 style: const TextStyle(
-                  fontSize: 10,
+                  fontSize: 9,
                   fontWeight: FontWeight.w800,
                   color: Color(0xFF64748B),
                   letterSpacing: 0.5,
@@ -1122,7 +1415,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Text(
                 value,
                 style: const TextStyle(
-                  fontSize: 20,
+                  fontSize: 18,
                   fontWeight: FontWeight.w900,
                   color: Color(0xFF0F172A),
                 ),
@@ -1130,12 +1423,9 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
           Container(
-            padding: const EdgeInsets.all(7),
-            decoration: BoxDecoration(
-              color: bgColor,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(icon, color: iconColor, size: 18),
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(color: bgColor, borderRadius: BorderRadius.circular(8)),
+            child: Icon(icon, color: iconColor, size: 16),
           ),
         ],
       ),
@@ -1143,7 +1433,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // ==========================================================================
-  // SHARED FORM: SUBMIT SUPPORT REQUEST
+  // SHARED: FORM SUBMIT SUPPORT REQUEST
   // ==========================================================================
   Widget _buildSubmitTicketFormCard() {
     final senderDeptName = _departments.firstWhere((d) => d.id == _selectedSenderDeptId, orElse: () => DepartmentModel(id: 0, name: _user?.departmentName ?? 'IT Support')).name;
@@ -1159,63 +1449,47 @@ class _HomeScreenState extends State<HomeScreen> {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(color: const Color(0xFFE2E8F0)),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 16, offset: const Offset(0, 4)),
-        ],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 14, offset: const Offset(0, 4))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Header Bar
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(7),
                   decoration: BoxDecoration(
                     color: const Color(0xFFEFF6FF),
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(8),
                     border: Border.all(color: const Color(0xFFBFDBFE)),
                   ),
                   child: const Icon(Icons.description_outlined, color: Color(0xFF2563EB), size: 18),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 8),
                 const Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Submit Support Request',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
-                      ),
-                      Text(
-                        'Dispatch official ticket to designated corporate department',
-                        style: TextStyle(fontSize: 11, color: Color(0xFF64748B)),
-                      ),
+                      Text('Submit Support Request', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
+                      Text('Dispatch official ticket to designated corporate department', style: TextStyle(fontSize: 10, color: Color(0xFF64748B))),
                     ],
                   ),
                 ),
-                const SizedBox(width: 6),
+                const SizedBox(width: 4),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFEFF6FF),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: const Color(0xFFBFDBFE)),
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                  decoration: BoxDecoration(color: const Color(0xFFEFF6FF), borderRadius: BorderRadius.circular(20), border: Border.all(color: const Color(0xFFBFDBFE))),
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.circle, color: Color(0xFF2563EB), size: 6),
-                      SizedBox(width: 4),
-                      Text(
-                        'Live Routing',
-                        style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Color(0xFF1D4ED8)),
-                      ),
+                      Icon(Icons.circle, color: Color(0xFF2563EB), size: 5),
+                      SizedBox(width: 3),
+                      Text('Live Routing', style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: Color(0xFF1D4ED8))),
                     ],
                   ),
                 ),
@@ -1226,19 +1500,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
           if (_ticketFormSuccessMsg != null)
             Container(
-              margin: const EdgeInsets.fromLTRB(16, 14, 16, 0),
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: const Color(0xFFECFDF5),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: const Color(0xFFA7F3D0)),
-              ),
+              margin: const EdgeInsets.fromLTRB(14, 12, 14, 0),
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(color: const Color(0xFFECFDF5), borderRadius: BorderRadius.circular(8), border: Border.all(color: const Color(0xFFA7F3D0))),
               child: Row(
                 children: [
-                  const Icon(Icons.check_circle, color: Color(0xFF059669), size: 18),
-                  const SizedBox(width: 8),
+                  const Icon(Icons.check_circle, color: Color(0xFF059669), size: 16),
+                  const SizedBox(width: 6),
                   Expanded(
-                    child: Text(_ticketFormSuccessMsg!, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF065F46))),
+                    child: Text(_ticketFormSuccessMsg!, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: Color(0xFF065F46))),
                   ),
                   IconButton(
                     icon: const Icon(Icons.close, size: 14, color: Color(0xFF065F46)),
@@ -1248,16 +1518,15 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
 
-          // Form Fields
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(14),
             child: Form(
               key: _formKey,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   _fieldLabel('JUDUL PERMINTAAN'),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 5),
                   TextFormField(
                     controller: _titleController,
                     style: const TextStyle(fontSize: 12, color: Color(0xFF0F172A)),
@@ -1267,23 +1536,18 @@ class _HomeScreenState extends State<HomeScreen> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 12),
 
-                  // Dropdowns
                   LayoutBuilder(builder: (context, constraints) {
                     final isWide = constraints.maxWidth > 650;
                     final senderDropdown = Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _fieldLabel('DEPARTEMEN PENGIRIM'),
-                        const SizedBox(height: 6),
+                        const SizedBox(height: 5),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF8FAFC),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: const Color(0xFFCBD5E1)),
-                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+                          decoration: BoxDecoration(color: const Color(0xFFF8FAFC), borderRadius: BorderRadius.circular(8), border: Border.all(color: const Color(0xFFCBD5E1))),
                           child: Row(
                             children: [
                               const Icon(Icons.business_outlined, size: 14, color: Color(0xFF64748B)),
@@ -1301,7 +1565,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _fieldLabel('DEPARTEMEN TUJUAN'),
-                        const SizedBox(height: 6),
+                        const SizedBox(height: 5),
                         DropdownButtonFormField<int>(
                           value: _selectedTargetDeptId,
                           isDense: true,
@@ -1330,7 +1594,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _fieldLabel('KATEGORI PERMINTAAN'),
-                        const SizedBox(height: 6),
+                        const SizedBox(height: 5),
                         DropdownButtonFormField<String>(
                           value: availableCategories.contains(_selectedCategory) ? _selectedCategory : availableCategories.first,
                           isDense: true,
@@ -1351,9 +1615,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       return Row(
                         children: [
                           Expanded(child: senderDropdown),
-                          const SizedBox(width: 10),
+                          const SizedBox(width: 8),
                           Expanded(child: targetDropdown),
-                          const SizedBox(width: 10),
+                          const SizedBox(width: 8),
                           Expanded(child: categoryDropdown),
                         ],
                       );
@@ -1369,9 +1633,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       );
                     }
                   }),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 12),
 
-                  // Description
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -1383,14 +1646,14 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 5),
                   TextFormField(
                     controller: _descController,
                     minLines: 3,
-                    maxLines: 6,
+                    maxLines: 5,
                     style: const TextStyle(fontSize: 12, color: Color(0xFF0F172A)),
                     onChanged: (_) => setState(() {}),
-                    decoration: _inputDecoration('Jelaskan detail kendala, nomor aset, pesan error yang tampil...'),
+                    decoration: _inputDecoration('Jelaskan detail kendala, nomor aset, pesan error...'),
                     validator: (val) {
                       if (val == null || val.trim().length < 10) return 'Deskripsi masalah minimal 10 karakter';
                       return null;
@@ -1401,18 +1664,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     alignment: WrapAlignment.spaceBetween,
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
-                      Text(
-                        '${_descController.text.length} karakter (Min. 10)',
-                        style: const TextStyle(fontSize: 10, color: Color(0xFF94A3B8)),
-                      ),
-                      const Text('Format: Teks / Template Otomatis', style: TextStyle(fontSize: 10, color: Color(0xFF94A3B8))),
+                      Text('${_descController.text.length} karakter (Min. 10)', style: const TextStyle(fontSize: 9, color: Color(0xFF94A3B8))),
+                      const Text('Format: Teks / Template Otomatis', style: TextStyle(fontSize: 9, color: Color(0xFF94A3B8))),
                     ],
                   ),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 12),
 
-                  // Photo Attachment
                   _fieldLabel('BUKTI FOTO / LAMPIRAN (OPSIONAL)'),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 5),
                   InkWell(
                     onTap: () {
                       showModalBottomSheet(
@@ -1443,39 +1702,32 @@ class _HomeScreenState extends State<HomeScreen> {
                     },
                     borderRadius: BorderRadius.circular(10),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 14),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF8FAFC),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: const Color(0xFFCBD5E1)),
-                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+                      decoration: BoxDecoration(color: const Color(0xFFF8FAFC), borderRadius: BorderRadius.circular(8), border: Border.all(color: const Color(0xFFCBD5E1))),
                       child: _imageBytes == null
                           ? const Column(
                               children: [
-                                Icon(Icons.add_photo_alternate_outlined, color: Color(0xFF2563EB), size: 26),
-                                SizedBox(height: 6),
+                                Icon(Icons.add_photo_alternate_outlined, color: Color(0xFF2563EB), size: 24),
+                                SizedBox(height: 4),
                                 Text('Pilih Bukti Foto atau Sentuh di Sini', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: Color(0xFF2563EB))),
                                 Text('(tangkapan layar error, fisik alat, dsb. Maks 10MB)', style: TextStyle(fontSize: 9, color: Color(0xFF94A3B8))),
                               ],
                             )
                           : Row(
                               children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: Image.memory(_imageBytes!, width: 48, height: 48, fit: BoxFit.cover),
-                                ),
-                                const SizedBox(width: 10),
+                                ClipRRect(borderRadius: BorderRadius.circular(6), child: Image.memory(_imageBytes!, width: 44, height: 44, fit: BoxFit.cover)),
+                                const SizedBox(width: 8),
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(_imageFileName ?? 'Foto Terlampir', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
-                                      const Text('Siap diunggah bersama tiket', style: TextStyle(fontSize: 10, color: Color(0xFF10B981))),
+                                      const Text('Siap diunggah bersama tiket', style: TextStyle(fontSize: 9, color: Color(0xFF10B981))),
                                     ],
                                   ),
                                 ),
                                 IconButton(
-                                  icon: const Icon(Icons.delete_outline, color: Color(0xFFEF4444), size: 20),
+                                  icon: const Icon(Icons.delete_outline, color: Color(0xFFEF4444), size: 18),
                                   onPressed: () => setState(() {
                                     _imageBytes = null;
                                     _base64Image = null;
@@ -1486,7 +1738,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                     ),
                   ),
-                  const SizedBox(height: 18),
+                  const SizedBox(height: 16),
 
                   ElevatedButton.icon(
                     onPressed: _isSubmittingTicket ? null : _submitTicket,
@@ -1497,8 +1749,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF2563EB),
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 13),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
                   ),
                 ],
@@ -1511,21 +1763,21 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // ==========================================================================
-  // SHARED CARD: ANTREAN TIKET & INSIDEN AKTIF
+  // SHARED: ANTREAN TIKET AKTIF
   // ==========================================================================
   Widget _buildActiveQueueCard(List<TicketModel> tickets) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(color: const Color(0xFFE2E8F0)),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 16, offset: const Offset(0, 4))],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 14, offset: const Offset(0, 4))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(14),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -1533,30 +1785,26 @@ class _HomeScreenState extends State<HomeScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFEFF6FF),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: const Color(0xFFBFDBFE)),
-                      ),
+                      padding: const EdgeInsets.all(7),
+                      decoration: BoxDecoration(color: const Color(0xFFEFF6FF), borderRadius: BorderRadius.circular(8), border: Border.all(color: const Color(0xFFBFDBFE))),
                       child: const Icon(Icons.inbox_outlined, color: Color(0xFF2563EB), size: 18),
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 8),
                     const Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Antrean Tiket & Insiden Aktif', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
-                          Text('Pilih tiket untuk membuka detail lengkap dan riwayat pengerjaan', style: TextStyle(fontSize: 11, color: Color(0xFF64748B))),
+                          Text('Antrean Tiket & Insiden Aktif', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
+                          Text('Pilih tiket untuk membuka detail lengkap dan riwayat penanganan', style: TextStyle(fontSize: 10, color: Color(0xFF64748B))),
                         ],
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 10),
                 TextField(
                   onChanged: (val) => setState(() => _activeQueueSearch = val),
-                  style: const TextStyle(fontSize: 12),
+                  style: const TextStyle(fontSize: 11),
                   decoration: InputDecoration(
                     hintText: 'Cari judul atau rincian tiket...',
                     hintStyle: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8)),
@@ -1573,17 +1821,16 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const Divider(height: 1, color: Color(0xFFF1F5F9)),
 
-          // Status & Department Filter Bar
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             child: Wrap(
               alignment: WrapAlignment.spaceBetween,
               crossAxisAlignment: WrapCrossAlignment.center,
-              spacing: 8,
-              runSpacing: 8,
+              spacing: 6,
+              runSpacing: 6,
               children: [
                 Wrap(
-                  spacing: 6,
+                  spacing: 4,
                   runSpacing: 4,
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
@@ -1598,9 +1845,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 DropdownButton<int?>(
                   value: _activeQueueDeptFilter,
                   isDense: true,
-                  hint: const Text('Semua Departemen', style: TextStyle(fontSize: 11)),
+                  hint: const Text('Semua Departemen', style: TextStyle(fontSize: 10)),
                   underline: const SizedBox(),
-                  style: const TextStyle(fontSize: 11, color: Color(0xFF0F172A), fontWeight: FontWeight.bold),
+                  style: const TextStyle(fontSize: 10, color: Color(0xFF0F172A), fontWeight: FontWeight.bold),
                   items: [
                     const DropdownMenuItem<int?>(value: null, child: Text('Semua Departemen')),
                     ..._departments.map((d) => DropdownMenuItem<int?>(value: d.id, child: Text(d.name))),
@@ -1614,18 +1861,18 @@ class _HomeScreenState extends State<HomeScreen> {
 
           if (tickets.isEmpty)
             const Padding(
-              padding: EdgeInsets.symmetric(vertical: 36),
+              padding: EdgeInsets.symmetric(vertical: 32),
               child: Center(
-                child: Text('Tidak ada tiket dalam antrean saat ini.', style: TextStyle(fontSize: 12, color: Color(0xFF94A3B8))),
+                child: Text('Tidak ada tiket dalam antrean saat ini.', style: TextStyle(fontSize: 11, color: Color(0xFF94A3B8))),
               ),
             )
           else
             ListView.separated(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(14),
               itemCount: tickets.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 10),
+              separatorBuilder: (_, __) => const SizedBox(height: 8),
               itemBuilder: (context, index) {
                 return _buildTicketCard(tickets[index], isResolvedSection: false);
               },
@@ -1641,39 +1888,29 @@ class _HomeScreenState extends State<HomeScreen> {
       onTap: () => setState(() => _activeQueueStatus = status),
       borderRadius: BorderRadius.circular(6),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF2563EB) : const Color(0xFFF1F5F9),
-          borderRadius: BorderRadius.circular(6),
-        ),
-        child: Text(
-          status,
-          style: TextStyle(
-            color: isSelected ? Colors.white : const Color(0xFF475569),
-            fontSize: 10,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+        decoration: BoxDecoration(color: isSelected ? const Color(0xFF2563EB) : const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(6)),
+        child: Text(status, style: TextStyle(color: isSelected ? Colors.white : const Color(0xFF475569), fontSize: 9, fontWeight: FontWeight.bold)),
       ),
     );
   }
 
   // ==========================================================================
-  // SHARED CARD: RIWAYAT TIKET SAYA YANG SELESAI
+  // SHARED: RIWAYAT TIKET SELESAI
   // ==========================================================================
   Widget _buildResolvedArchiveCard(List<TicketModel> resolvedTickets) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(color: const Color(0xFFE2E8F0)),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 16, offset: const Offset(0, 4))],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 14, offset: const Offset(0, 4))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(14),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -1681,15 +1918,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFECFDF5),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: const Color(0xFFA7F3D0)),
-                      ),
+                      padding: const EdgeInsets.all(7),
+                      decoration: BoxDecoration(color: const Color(0xFFECFDF5), borderRadius: BorderRadius.circular(8), border: Border.all(color: const Color(0xFFA7F3D0))),
                       child: const Icon(Icons.verified_outlined, color: Color(0xFF059669), size: 18),
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 8),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1699,16 +1932,16 @@ class _HomeScreenState extends State<HomeScreen> {
                             spacing: 6,
                             runSpacing: 4,
                             children: [
-                              const Text('Riwayat Tiket Saya yang Selesai', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
+                              const Text('Riwayat Tiket Saya yang Selesai', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                 decoration: BoxDecoration(color: const Color(0xFFECFDF5), borderRadius: BorderRadius.circular(10), border: Border.all(color: const Color(0xFFA7F3D0))),
-                                child: Text('${resolvedTickets.length} SELESAI', style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Color(0xFF065F46))),
+                                child: Text('${resolvedTickets.length} SELESAI', style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: Color(0xFF065F46))),
                               ),
                             ],
                           ),
                           const SizedBox(height: 2),
-                          const Text('Daftar riwayat tiket yang telah selesai diproses.', style: TextStyle(fontSize: 11, color: Color(0xFF64748B))),
+                          const Text('Daftar riwayat tiket yang telah selesai diproses.', style: TextStyle(fontSize: 10, color: Color(0xFF64748B))),
                         ],
                       ),
                     ),
@@ -1716,20 +1949,19 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(height: 10),
 
-                // Search & Filter
                 Wrap(
-                  spacing: 10,
-                  runSpacing: 8,
+                  spacing: 8,
+                  runSpacing: 6,
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     SizedBox(
-                      width: 220,
+                      width: 200,
                       child: TextField(
                         onChanged: (val) => setState(() => _resolvedSearch = val),
                         style: const TextStyle(fontSize: 11),
                         decoration: InputDecoration(
                           hintText: 'Cari tiket selesai...',
-                          hintStyle: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8)),
+                          hintStyle: const TextStyle(fontSize: 10, color: Color(0xFF94A3B8)),
                           prefixIcon: const Icon(Icons.search, size: 14, color: Color(0xFF94A3B8)),
                           contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                           isDense: true,
@@ -1742,9 +1974,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     DropdownButton<int?>(
                       value: _resolvedDeptFilter,
                       isDense: true,
-                      hint: const Text('Semua Departemen', style: TextStyle(fontSize: 11)),
+                      hint: const Text('Semua Departemen', style: TextStyle(fontSize: 10)),
                       underline: const SizedBox(),
-                      style: const TextStyle(fontSize: 11, color: Color(0xFF0F172A), fontWeight: FontWeight.bold),
+                      style: const TextStyle(fontSize: 10, color: Color(0xFF0F172A), fontWeight: FontWeight.bold),
                       items: [
                         const DropdownMenuItem<int?>(value: null, child: Text('Semua Departemen')),
                         ..._departments.map((d) => DropdownMenuItem<int?>(value: d.id, child: Text(d.name))),
@@ -1760,18 +1992,18 @@ class _HomeScreenState extends State<HomeScreen> {
 
           if (resolvedTickets.isEmpty)
             const Padding(
-              padding: EdgeInsets.symmetric(vertical: 36),
+              padding: EdgeInsets.symmetric(vertical: 32),
               child: Center(
-                child: Text('Belum ada tiket yang berstatus selesai.', style: TextStyle(fontSize: 12, color: Color(0xFF94A3B8))),
+                child: Text('Belum ada tiket yang berstatus selesai.', style: TextStyle(fontSize: 11, color: Color(0xFF94A3B8))),
               ),
             )
           else
             ListView.separated(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(14),
               itemCount: resolvedTickets.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 10),
+              separatorBuilder: (_, __) => const SizedBox(height: 8),
               itemBuilder: (context, index) {
                 return _buildTicketCard(resolvedTickets[index], isResolvedSection: true);
               },
@@ -1782,7 +2014,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // ==========================================================================
-  // SHARED TICKET CARD WIDGET
+  // SHARED: TICKET CARD
   // ==========================================================================
   Widget _buildTicketCard(TicketModel ticket, {required bool isResolvedSection}) {
     String formattedDate = ticket.createdAtHuman ?? ticket.createdAt ?? '-';
@@ -1800,16 +2032,14 @@ class _HomeScreenState extends State<HomeScreen> {
           MaterialPageRoute(builder: (_) => TicketDetailScreen(ticketId: ticket.id)),
         ).then((_) => _loadAllData());
       },
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(10),
       child: Container(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(10),
           border: Border.all(color: const Color(0xFFE2E8F0)),
-          boxShadow: [
-            BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 6, offset: const Offset(0, 2)),
-          ],
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 4, offset: const Offset(0, 2))],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1819,58 +2049,43 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.calendar_today_outlined, size: 11, color: Color(0xFF94A3B8)),
+                    const Icon(Icons.calendar_today_outlined, size: 10, color: Color(0xFF94A3B8)),
                     const SizedBox(width: 4),
                     Text(formattedDate, style: const TextStyle(fontSize: 10, color: Color(0xFF94A3B8))),
                   ],
                 ),
-                Text('#${ticket.id}', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF94A3B8))),
+                Text('#${ticket.id}', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF94A3B8))),
               ],
             ),
-            const SizedBox(height: 6),
-            Text(
-              ticket.title.toUpperCase(),
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: Color(0xFF0F172A), letterSpacing: 0.3),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              ticket.description,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 11, color: Color(0xFF64748B), height: 1.4),
-            ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 5),
+            Text(ticket.title.toUpperCase(), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: Color(0xFF0F172A), letterSpacing: 0.3)),
+            const SizedBox(height: 3),
+            Text(ticket.description, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 10, color: Color(0xFF64748B), height: 1.4)),
+            const SizedBox(height: 8),
 
             Wrap(
               alignment: WrapAlignment.spaceBetween,
               crossAxisAlignment: WrapCrossAlignment.center,
-              spacing: 8,
-              runSpacing: 6,
+              spacing: 6,
+              runSpacing: 4,
               children: [
                 Wrap(
-                  spacing: 6,
+                  spacing: 4,
                   runSpacing: 4,
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF1F5F9),
-                        borderRadius: BorderRadius.circular(6),
-                        border: Border.all(color: const Color(0xFFCBD5E1)),
-                      ),
-                      child: Text(
-                        ticket.targetDepartmentName ?? 'IT Support',
-                        style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Color(0xFF334155)),
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(4), border: Border.all(color: const Color(0xFFCBD5E1))),
+                      child: Text(ticket.targetDepartmentName ?? 'IT Support', style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Color(0xFF334155))),
                     ),
                     _badgeForStatus(ticket.status),
                     const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.verified, size: 11, color: Color(0xFF10B981)),
+                        Icon(Icons.verified, size: 10, color: Color(0xFF10B981)),
                         SizedBox(width: 2),
-                        Text('Di-ACC Admin', style: TextStyle(fontSize: 9, color: Color(0xFF10B981), fontWeight: FontWeight.bold)),
+                        Text('Di-ACC Admin', style: TextStyle(fontSize: 8, color: Color(0xFF10B981), fontWeight: FontWeight.bold)),
                       ],
                     ),
                   ],
@@ -1880,18 +2095,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      isResolvedSection ? 'Detail Riwayat & Solusi' : 'Buka Laporan',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        color: isResolvedSection ? const Color(0xFF059669) : const Color(0xFF2563EB),
-                      ),
+                      isResolvedSection ? 'Detail Solusi' : 'Buka Laporan',
+                      style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: isResolvedSection ? const Color(0xFF059669) : const Color(0xFF2563EB)),
                     ),
-                    Icon(
-                      Icons.chevron_right,
-                      size: 14,
-                      color: isResolvedSection ? const Color(0xFF059669) : const Color(0xFF2563EB),
-                    ),
+                    Icon(Icons.chevron_right, size: 14, color: isResolvedSection ? const Color(0xFF059669) : const Color(0xFF2563EB)),
                   ],
                 ),
               ],
@@ -1923,15 +2130,15 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(6), border: Border.all(color: border)),
-      child: Text(status, style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: text)),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(4), border: Border.all(color: border)),
+      child: Text(status, style: TextStyle(fontSize: 8, fontWeight: FontWeight.w800, color: text)),
     );
   }
 
   Widget _buildCorporateFooter() {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 14),
       decoration: const BoxDecoration(border: Border(top: BorderSide(color: Color(0xFFE2E8F0)))),
       child: const Column(
         children: [
@@ -1939,15 +2146,15 @@ class _HomeScreenState extends State<HomeScreen> {
             alignment: WrapAlignment.center,
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              Text('PT. ASIA PLASTIK', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 10, color: Color(0xFF475569))),
-              Text(' • Sistem Manajemen Tiket & Komunikasi Internal Manufaktur', style: TextStyle(fontSize: 10, color: Color(0xFF64748B))),
+              Text('PT. ASIA PLASTIK', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 9, color: Color(0xFF475569))),
+              Text(' • Sistem Manajemen Tiket Manufaktur', style: TextStyle(fontSize: 9, color: Color(0xFF64748B))),
             ],
           ),
-          SizedBox(height: 4),
+          SizedBox(height: 3),
           Text(
-            'Kantor & Pabrik: Rungkut Industri, Surabaya • Telp: +6231 8433078 • © 2026 All Rights Reserved',
+            'Rungkut Industri Surabaya • Telp: +6231 8433078 • © 2026 All Rights Reserved',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 9, color: Color(0xFF94A3B8)),
+            style: TextStyle(fontSize: 8, color: Color(0xFF94A3B8)),
           ),
         ],
       ),
@@ -1961,14 +2168,14 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _fieldLabel(String text) {
-    return Text(text, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: Color(0xFF334155), letterSpacing: 0.5));
+    return Text(text, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: Color(0xFF334155), letterSpacing: 0.5));
   }
 
   InputDecoration _inputDecoration(String hint) {
     return InputDecoration(
       hintText: hint,
       hintStyle: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8)),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       isDense: true,
       filled: true,
       fillColor: Colors.white,
