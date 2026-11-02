@@ -115,15 +115,6 @@
                 </button>
 
             </form>
-
-            <!-- Switch to Employee Portal Link -->
-            <div class="mt-6 pt-5 border-t border-sky-100 dark:border-slate-800 text-center text-xs text-slate-500 dark:text-slate-400">
-                {{ __('Bukan staf HRD atau Admin?') }}
-                <a href="{{ route('login') }}" class="font-bold text-sky-600 dark:text-sky-400 hover:text-sky-800 dark:hover:text-sky-300 transition underline ml-1">
-                    {{ __('Masuk via Portal Karyawan') }}
-                </a>
-            </div>
-
         </div>
 
         <!-- AI Footer: Clean White & Light Sky with Dark Mode Support -->
