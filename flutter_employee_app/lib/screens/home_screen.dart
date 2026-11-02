@@ -124,13 +124,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     // 3. 4 KPI STAT CARDS (GAMBAR 1)
                     // ====================================================
                     _buildKpiMetricsStrip(),
-                    const SizedBox(height: 18),
+                    const SizedBox(height: 10),
 
                     // ====================================================
                     // 4. RIWAYAT TIKET SAYA YANG SELESAI (GAMBAR 2)
                     // ====================================================
                     _buildResolvedArchiveCard(resolvedTickets),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 16),
 
                     // ====================================================
                     // 5. CORPORATE FOOTER
@@ -283,14 +283,24 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     ];
 
-    return GridView.count(
-      crossAxisCount: 2,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      mainAxisSpacing: 10,
-      crossAxisSpacing: 10,
-      childAspectRatio: 2.2,
-      children: cards,
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(child: cards[0]),
+            const SizedBox(width: 10),
+            Expanded(child: cards[1]),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            Expanded(child: cards[2]),
+            const SizedBox(width: 10),
+            Expanded(child: cards[3]),
+          ],
+        ),
+      ],
     );
   }
 
