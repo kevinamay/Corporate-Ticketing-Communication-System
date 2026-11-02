@@ -340,10 +340,34 @@ class _LoginScreenState extends State<LoginScreen> {
                                     'Selamat Datang',
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
-                                      fontSize: 24,
+                                      fontSize: 26,
                                       fontWeight: FontWeight.w900,
                                       color: Color(0xFF0F172A),
-                                      letterSpacing: -0.5,
+                                      letterSpacing: -0.6,
+                                      fontFamilyFallback: [
+                                        'Segoe UI',
+                                        'Inter',
+                                        'Helvetica Neue',
+                                        'Arial',
+                                        'sans-serif',
+                                      ],
+                                      shadows: [
+                                        Shadow(
+                                          color: Color(0xFF0F172A),
+                                          offset: Offset(0.4, 0),
+                                          blurRadius: 0.2,
+                                        ),
+                                        Shadow(
+                                          color: Color(0xFF0F172A),
+                                          offset: Offset(-0.4, 0),
+                                          blurRadius: 0.2,
+                                        ),
+                                        Shadow(
+                                          color: Color(0xFF0F172A),
+                                          offset: Offset(0, 0.35),
+                                          blurRadius: 0.2,
+                                        ),
+                                      ],
                                     ),
                                   ),
                                   const SizedBox(height: 22),
@@ -385,7 +409,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                           text: 'Email / No. WhatsApp ',
                                           style: TextStyle(
                                             fontSize: 12,
-                                            fontWeight: FontWeight.w700,
+                                            fontWeight: FontWeight.w800,
                                             color: Color(0xFF334155),
                                           ),
                                           children: [
@@ -445,7 +469,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                           text: 'Password ',
                                           style: TextStyle(
                                             fontSize: 12,
-                                            fontWeight: FontWeight.w700,
+                                            fontWeight: FontWeight.w800,
                                             color: Color(0xFF334155),
                                           ),
                                           children: [
