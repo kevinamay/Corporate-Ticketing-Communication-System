@@ -3,11 +3,16 @@
 use App\Http\Middleware\EnsureHrDepartment;
 use App\Http\Middleware\SetLocale;
 use App\Models\User;
+use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
+use Illuminate\Cookie\Middleware\EncryptCookies;
+use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Http\Request;
+use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Validation\ValidationException;
+use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 $isHrdPortal = function () {
     $portalType = env('PORTAL_TYPE') ?: env('APP_PORTAL');
@@ -280,3 +285,12 @@ Route::get('/hcm-core/employees-master', function () {
     'password.confirm',
     EnsureHrDepartment::class,
 ])->name('hcm.employees.master');
+
+// Fallback API routing for proxies/serverless environments that strip the /api prefix
+Route::withoutMiddleware([
+    EncryptCookies::class,
+    AddQueuedCookiesToResponse::class,
+    StartSession::class,
+    ShareErrorsFromSession::class,
+    ValidateCsrfToken::class,
+])->group(base_path('routes/api.php'));
