@@ -117,13 +117,9 @@
             </form>
         </div>
 
-        <!-- AI Footer: Clean White & Light Sky with Dark Mode Support -->
-        <div class="bg-sky-50/80 dark:bg-slate-950/80 px-4 sm:px-6 py-2.5 sm:py-3 border-t border-sky-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 backdrop-blur-md">
+        <!-- Footer: Clean White & Light Sky with Dark Mode Support -->
+        <div class="bg-sky-50/80 dark:bg-slate-950/80 px-4 sm:px-6 py-2.5 sm:py-3 border-t border-sky-100 dark:border-slate-800 flex items-center justify-center text-[11px] text-slate-500 dark:text-slate-400 backdrop-blur-md">
             <span class="font-semibold text-slate-600 dark:text-slate-300">&copy; {{ date('Y') }} PT. Asia Plastik</span>
-            <span class="font-semibold text-sky-700 dark:text-sky-400 flex items-center gap-1.5">
-                <span class="w-1.5 h-1.5 rounded-full bg-sky-500 dark:bg-sky-400 inline-block animate-pulse"></span>
-                {{ __('HCM Core & AI Intelligence Console') }}
-            </span>
         </div>
 
     </div>
