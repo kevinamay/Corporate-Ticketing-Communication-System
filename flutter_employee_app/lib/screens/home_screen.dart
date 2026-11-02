@@ -19,6 +19,17 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  // Prototype Variant Index: 0 = Variant A, 1 = Variant B, 2 = Variant C
+  int _currentVariant = 0;
+  final List<String> _variantNames = [
+    'Varian A: Feed Korporat (Web Parity)',
+    'Varian B: Executive Hub (Segmented Tabs)',
+    'Varian C: Modern Bento Dashboard',
+  ];
+
+  // For Variant B Tab Controller
+  int _variantBSelectedTab = 0;
+
   // Scroll Controller & Section Keys for In-Page Navigation
   final ScrollController _scrollController = ScrollController();
   final GlobalKey _formSectionKey = GlobalKey();
@@ -153,7 +164,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // --------------------------------------------------------------------------
-  // Image Picking (Supports Web & Mobile Cross-Platform)
+  // Image Picking
   // --------------------------------------------------------------------------
   Future<void> _pickPhoto(ImageSource source) async {
     try {
@@ -210,7 +221,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (res['success'] == true) {
       final ticket = res['ticket'] as TicketModel?;
       setState(() {
-        _ticketFormSuccessMsg = 'Request Dispatched Successfully #${ticket?.id ?? ''}';
+        _ticketFormSuccessMsg = 'Tiket Berhasil Diajukan #${ticket?.id ?? ''}';
         _titleController.clear();
         _descController.clear();
         _imageBytes = null;
@@ -218,7 +229,6 @@ class _HomeScreenState extends State<HomeScreen> {
         _imageFileName = null;
       });
 
-      // Reload fresh KPI and ticket queues
       _loadAllData();
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -238,12 +248,13 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // --------------------------------------------------------------------------
-  // AI Assistant Modal
+  // Quick Dialogs (AI & WhatsApp)
   // --------------------------------------------------------------------------
   void _openAiAssistantDialog() {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Row(
           children: [
             Icon(Icons.auto_awesome, color: Color(0xFF2563EB), size: 22),
@@ -264,7 +275,7 @@ class _HomeScreenState extends State<HomeScreen> {
               'Tips Pelaporan Cepat:\n'
               '• Sebutkan nama software / perangkat yang bermasalah\n'
               '• Sertakan pesan error atau foto tangkapan layar\n'
-              '• Gunakan tombol "Rapikan Deskripsi" untuk format rapi',
+              '• Gunakan tombol "Rapikan Deskripsi" untuk format rapi otomatis',
               style: TextStyle(fontSize: 12, color: Color(0xFF64748B), height: 1.4),
             ),
           ],
@@ -284,6 +295,7 @@ class _HomeScreenState extends State<HomeScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Row(
           children: [
             Icon(Icons.chat_bubble_outline, color: Color(0xFF10B981)),
@@ -293,8 +305,8 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         content: const Text(
           'Nomor Layanan Darurat IT / HRD Support PT. Asia Plastik:\n\n'
-          '📱 Hotline IT: +62 857-8469-4910\n'
-          '📱 Hotline HRD: +62 812-3456-7800\n\n'
+          '📱 Hotline IT Support: +62 857-8469-4910\n'
+          '📱 Hotline HRD & GA: +62 812-3456-7800\n\n'
           'Jam operasional pabrik: 07.00 - 17.00 WIB',
           style: TextStyle(fontSize: 13, height: 1.5),
         ),
@@ -320,7 +332,6 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
 
-    // Filter Active Queue (Pending, Open, In Progress, or Resolved matching filter)
     final filteredActiveTickets = _allTickets.where((t) {
       final matchesSearch = _activeQueueSearch.isEmpty ||
           t.title.toLowerCase().contains(_activeQueueSearch.toLowerCase()) ||
@@ -331,7 +342,6 @@ class _HomeScreenState extends State<HomeScreen> {
       return matchesSearch && matchesStatus && matchesDept;
     }).toList();
 
-    // Filter Resolved Archive (Tickets with status Resolved or Closed)
     final resolvedTickets = _allTickets.where((t) {
       final isResolved = t.status.toLowerCase() == 'resolved' || t.status.toLowerCase() == 'closed';
       final matchesSearch = _resolvedSearch.isEmpty ||
@@ -342,340 +352,286 @@ class _HomeScreenState extends State<HomeScreen> {
     }).toList();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F5F9), // Slate-100 corporate background
+      backgroundColor: const Color(0xFFF1F5F9),
       body: Stack(
         children: [
           SafeArea(
             child: RefreshIndicator(
               onRefresh: _loadAllData,
               color: const Color(0xFF2563EB),
-              child: SingleChildScrollView(
-                controller: _scrollController,
-                physics: const AlwaysScrollableScrollPhysics(),
+              child: _renderCurrentVariant(filteredActiveTickets, resolvedTickets),
+            ),
+          ),
+
+          // ============================================================
+          // FLOATING PROTOTYPE SWITCHER (Bottom Pill Bar)
+          // ============================================================
+          Positioned(
+            bottom: 16,
+            left: 16,
+            right: 16,
+            child: Center(
+              child: _buildPrototypeSwitcher(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ==========================================================================
+  // PROTOTYPE SWITCHER BAR
+  // ==========================================================================
+  Widget _buildPrototypeSwitcher() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F172A).withValues(alpha: 0.94),
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(color: const Color(0xFF3B82F6).withValues(alpha: 0.6), width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.35),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Left Arrow
+          IconButton(
+            icon: const Icon(Icons.arrow_back_ios_rounded, color: Colors.white, size: 14),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+            onPressed: () {
+              setState(() {
+                _currentVariant = (_currentVariant - 1 + _variantNames.length) % _variantNames.length;
+              });
+            },
+          ),
+          const SizedBox(width: 4),
+
+          // Current Variant Badge & Name
+          InkWell(
+            onTap: () {
+              setState(() {
+                _currentVariant = (_currentVariant + 1) % _variantNames.length;
+              });
+            },
+            borderRadius: BorderRadius.circular(20),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF2563EB),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      'DESAIN ${_currentVariant + 1}/3',
+                      style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w900),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    _variantNames[_currentVariant],
+                    style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(width: 4),
+
+          // Right Arrow
+          IconButton(
+            icon: const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 14),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+            onPressed: () {
+              setState(() {
+                _currentVariant = (_currentVariant + 1) % _variantNames.length;
+              });
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ==========================================================================
+  // VARIANT ROUTER
+  // ==========================================================================
+  Widget _renderCurrentVariant(List<TicketModel> activeTickets, List<TicketModel> resolvedTickets) {
+    switch (_currentVariant) {
+      case 0:
+        return _buildVariantA(activeTickets, resolvedTickets);
+      case 1:
+        return _buildVariantB(activeTickets, resolvedTickets);
+      case 2:
+      default:
+        return _buildVariantC(activeTickets, resolvedTickets);
+    }
+  }
+
+  // ==========================================================================
+  // VARIAN A: FEED KORPORAT PRESISI (Web Parity Elegan & Responsif)
+  // ==========================================================================
+  Widget _buildVariantA(List<TicketModel> activeTickets, List<TicketModel> resolvedTickets) {
+    return SingleChildScrollView(
+      controller: _scrollController,
+      physics: const AlwaysScrollableScrollPhysics(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // 1. Sleek Mobile Corporate Top Bar (No crowded desktop buttons)
+          _buildVariantANavbar(),
+
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1200),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // ========================================================
-                    // 1. TOP CORPORATE NAVBAR HEADER
-                    // ========================================================
-                    _buildTopCorporateNavbar(),
+                    // 2. Banner with scroll actions
+                    _buildVariantABanner(resolvedTickets.length),
+                    const SizedBox(height: 16),
 
-                    // Main Content Canvas Container
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                      child: Center(
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 1200),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              // ====================================================
-                              // 2. KARYAWAN WELCOME & GUIDANCE BANNER
-                              // ====================================================
-                              _buildWelcomeBanner(resolvedTickets.length),
-                              const SizedBox(height: 16),
+                    // 3. Realtime KPI Metrics Strip
+                    _buildKpiMetricsStrip(),
+                    const SizedBox(height: 20),
 
-                              // ====================================================
-                              // 3. ELEVATED REALTIME KPI METRICS STRIP
-                              // ====================================================
-                              _buildKpiMetricsStrip(),
-                              const SizedBox(height: 20),
-
-                              // ====================================================
-                              // 4. SUBMIT SUPPORT REQUEST FORM (livewire:ticket-form)
-                              // ====================================================
-                              Container(
-                                key: _formSectionKey,
-                                child: _buildSubmitTicketFormCard(),
-                              ),
-                              const SizedBox(height: 24),
-
-                              // ====================================================
-                              // 5. ANTREAN TIKET & INSIDEN AKTIF (livewire:ticket-list)
-                              // ====================================================
-                              Container(
-                                key: _queueSectionKey,
-                                child: _buildActiveQueueCard(filteredActiveTickets),
-                              ),
-                              const SizedBox(height: 24),
-
-                              // ====================================================
-                              // 6. RIWAYAT TIKET SAYA YANG SELESAI
-                              // ====================================================
-                              Container(
-                                key: _resolvedSectionKey,
-                                child: _buildResolvedArchiveCard(resolvedTickets),
-                              ),
-                              const SizedBox(height: 36),
-
-                              // ====================================================
-                              // 7. CORPORATE FOOTER
-                              // ====================================================
-                              _buildCorporateFooter(),
-                              const SizedBox(height: 60),
-                            ],
-                          ),
-                        ),
-                      ),
+                    // 4. Submit Support Request Card
+                    Container(
+                      key: _formSectionKey,
+                      child: _buildSubmitTicketFormCard(),
                     ),
+                    const SizedBox(height: 24),
+
+                    // 5. Antrean Tiket & Insiden Aktif Card
+                    Container(
+                      key: _queueSectionKey,
+                      child: _buildActiveQueueCard(activeTickets),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // 6. Riwayat Tiket Selesai Card
+                    Container(
+                      key: _resolvedSectionKey,
+                      child: _buildResolvedArchiveCard(resolvedTickets),
+                    ),
+                    const SizedBox(height: 36),
+
+                    // 7. Corporate Footer
+                    _buildCorporateFooter(),
+                    const SizedBox(height: 80),
                   ],
                 ),
               ),
             ),
           ),
+        ],
+      ),
+    );
+  }
 
-          // ============================================================
-          // 8. FLOATING ACTION QUICK BUTTONS (WhatsApp & Asisten AI)
-          // ============================================================
-          Positioned(
-            bottom: 20,
-            right: 20,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                // WhatsApp Button
-                ElevatedButton.icon(
-                  onPressed: _openWhatsAppSupport,
-                  icon: const Icon(Icons.chat, color: Colors.white, size: 16),
-                  label: const Text('WhatsApp', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF10B981),
-                    foregroundColor: Colors.white,
-                    elevation: 4,
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+  Widget _buildVariantANavbar() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: const BoxDecoration(
+        color: Color(0xFF0F172A),
+        border: Border(bottom: BorderSide(color: Color(0xFF1E293B))),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              Image.asset(
+                'assets/images/logo2.webp',
+                height: 28,
+                fit: BoxFit.contain,
+                errorBuilder: (_, __, ___) => const Icon(Icons.business, color: Colors.white, size: 24),
+              ),
+              const SizedBox(width: 8),
+              const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.circle, color: Color(0xFF10B981), size: 6),
+                      SizedBox(width: 4),
+                      Text('PT. ASIA PLASTIK', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
+                    ],
                   ),
-                ),
-                const SizedBox(height: 10),
+                  Text('PORTAL LAYANAN TIKET & KOMUNIKASI', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 8, fontWeight: FontWeight.bold)),
+                ],
+              ),
+            ],
+          ),
 
-                // Asisten AI Button
-                ElevatedButton.icon(
-                  onPressed: _openAiAssistantDialog,
-                  icon: const Icon(Icons.auto_awesome, color: Color(0xFF2563EB), size: 16),
-                  label: const Text('Asisten AI', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF0F172A))),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: const Color(0xFF0F172A),
-                    elevation: 4,
-                    side: const BorderSide(color: Color(0xFFE2E8F0)),
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-                  ),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E293B),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFF334155)),
                 ),
-              ],
-            ),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 10,
+                      backgroundColor: const Color(0xFF0284C7),
+                      child: Text((_user?.name ?? 'K').substring(0, 1).toUpperCase(), style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                    ),
+                    const SizedBox(width: 6),
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 90),
+                      child: Text(_user?.name ?? 'Karyawan', overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                    ),
+                    const SizedBox(width: 4),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                      decoration: BoxDecoration(color: const Color(0xFF2563EB), borderRadius: BorderRadius.circular(6)),
+                      child: const Text('EMP', style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.w900)),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 6),
+              IconButton(
+                icon: const Icon(Icons.logout_rounded, color: Color(0xFF94A3B8), size: 18),
+                onPressed: _logout,
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  // ==========================================================================
-  // SECTION WIDGETS
-  // ==========================================================================
-
-  Widget _buildTopCorporateNavbar() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      decoration: const BoxDecoration(
-        color: Color(0xFF0F172A), // Dark corporate navy
-        border: Border(bottom: BorderSide(color: Color(0xFF1E293B))),
-      ),
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 1200),
-          child: Wrap(
-            alignment: WrapAlignment.spaceBetween,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            spacing: 12,
-            runSpacing: 10,
-            children: [
-              // Logo & Enterprise Title
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Image.asset(
-                    'assets/images/logo2.webp',
-                    height: 32,
-                    fit: BoxFit.contain,
-                    errorBuilder: (_, __, ___) => const Icon(Icons.business, color: Colors.white, size: 28),
-                  ),
-                  const SizedBox(width: 10),
-                  const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.circle, color: Color(0xFF10B981), size: 7),
-                          SizedBox(width: 4),
-                          Text(
-                            'PT. ASIA PLASTIK',
-                            style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w900, letterSpacing: 0.5),
-                          ),
-                        ],
-                      ),
-                      Text(
-                        'PORTAL LAYANAN TIKET & KOMUNIKASI INTERNAL',
-                        style: TextStyle(color: Color(0xFF94A3B8), fontSize: 9, fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-
-              // Quick In-Page Navigation Pills
-              Wrap(
-                spacing: 6,
-                runSpacing: 4,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  _navPill('Dashboard', isHighlight: true, onTap: () {
-                    _scrollController.animateTo(0, duration: const Duration(milliseconds: 500), curve: Curves.easeInOut);
-                  }),
-                  _navPill('Buat Tiket', onTap: () => _scrollToKey(_formSectionKey)),
-                  _navPill('Antrean Tiket', count: _kpi['active_tickets'] ?? 0, onTap: () => _scrollToKey(_queueSectionKey)),
-                  _navPill('Riwayat Tiket', count: _kpi['resolved_tickets'] ?? 0, isEmerald: true, onTap: () => _scrollToKey(_resolvedSectionKey)),
-                ],
-              ),
-
-              // User Info Chip & Actions
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF1E293B),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: const Color(0xFF334155)),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        CircleAvatar(
-                          radius: 12,
-                          backgroundColor: const Color(0xFF0284C7),
-                          child: Text(
-                            (_user?.name ?? 'K').substring(0, 1).toUpperCase(),
-                            style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 130),
-                          child: Text(
-                            _user?.name ?? 'Karyawan',
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF2563EB),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: const Text(
-                            'EMPLOYEE',
-                            style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w900),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-
-                  // Logout icon button
-                  IconButton(
-                    icon: const Icon(Icons.logout_rounded, color: Color(0xFF94A3B8), size: 18),
-                    tooltip: 'Keluar Akun',
-                    onPressed: () async {
-                      await ApiService.logout();
-                      if (!mounted) return;
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(builder: (_) => const LoginScreen()),
-                        (r) => false,
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _navPill(String title, {int? count, bool isHighlight = false, bool isEmerald = false, required VoidCallback onTap}) {
-    Color bg = const Color(0xFF1E293B);
-    Color text = const Color(0xFFCBD5E1);
-    if (isHighlight) {
-      bg = const Color(0xFF2563EB);
-      text = Colors.white;
-    } else if (isEmerald) {
-      bg = const Color(0xFF065F46).withValues(alpha: 0.6);
-      text = const Color(0xFF6EE7B7);
-    }
-
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-        decoration: BoxDecoration(
-          color: bg,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(title, style: TextStyle(color: text, fontSize: 11, fontWeight: FontWeight.bold)),
-            if (count != null && count > 0) ...[
-              const SizedBox(width: 5),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.25),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text('$count', style: TextStyle(color: text, fontSize: 10, fontWeight: FontWeight.w900)),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildWelcomeBanner(int resolvedCount) {
+  Widget _buildVariantABanner(int resolvedCount) {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [
-            Color(0xFF0F172A), // from-slate-900
-            Color(0xFF172554), // via-blue-950
-            Color(0xFF0F172A), // to-slate-900
-          ],
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
+          colors: [Color(0xFF0F172A), Color(0xFF1E3A8A), Color(0xFF0F172A)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFF1E3A8A).withValues(alpha: 0.5)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.15),
-            blurRadius: 18,
-            offset: const Offset(0, 6),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFF3B82F6).withValues(alpha: 0.4)),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.12), blurRadius: 14, offset: const Offset(0, 4))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -684,75 +640,50 @@ class _HomeScreenState extends State<HomeScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                width: 44,
-                height: 44,
+                width: 40,
+                height: 40,
                 decoration: BoxDecoration(
                   color: const Color(0xFF2563EB).withValues(alpha: 0.25),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFF3B82F6).withValues(alpha: 0.35)),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: const Color(0xFF3B82F6).withValues(alpha: 0.4)),
                 ),
-                child: const Icon(Icons.confirmation_number_outlined, color: Color(0xFF93C5FD), size: 24),
+                child: const Icon(Icons.confirmation_number_outlined, color: Color(0xFF93C5FD), size: 20),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Wrap(
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      spacing: 6,
-                      runSpacing: 4,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF2563EB).withValues(alpha: 0.35),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFF60A5FA).withValues(alpha: 0.3)),
-                          ),
-                          child: const Text(
-                            'PORTAL LAYANAN TIKET KARYAWAN',
-                            style: TextStyle(color: Color(0xFFBFDBFE), fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 0.5),
-                          ),
-                        ),
-                        Text(
-                          '• ${_user?.name ?? 'Karyawan'}',
-                          style: const TextStyle(color: Color(0xFF93C5FD), fontSize: 11, fontWeight: FontWeight.bold),
-                        ),
-                      ],
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(color: const Color(0xFF2563EB).withValues(alpha: 0.35), borderRadius: BorderRadius.circular(8)),
+                      child: const Text('PORTAL LAYANAN TIKET KARYAWAN', style: TextStyle(color: Color(0xFFBFDBFE), fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
                     ),
                     const SizedBox(height: 4),
-                    const Text(
-                      'Pengajuan Kendala & Bantuan Teknis',
-                      style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900),
-                    ),
+                    const Text('Pengajuan Kendala & Bantuan Teknis', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w900)),
                     const SizedBox(height: 2),
-                    const Text(
-                      'Laporkan kendala operasional ke tim IT Support dan pantau status penyelesaian tiket secara real-time.',
-                      style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
-                    ),
+                    const Text('Laporkan kendala operasional ke tim IT Support dan pantau status penyelesaian real-time.', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 11)),
                   ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
 
-          // Action Buttons Row
+          // 3 Quick Action Chips
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: [
               ElevatedButton.icon(
                 onPressed: () => _scrollToKey(_formSectionKey),
-                icon: const Icon(Icons.add, size: 16),
-                label: const Text('Buat Tiket Baru', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                icon: const Icon(Icons.add, size: 14),
+                label: const Text('Buat Tiket Baru', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF2563EB),
                   foregroundColor: Colors.white,
-                  elevation: 1,
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
               ),
               OutlinedButton(
@@ -761,21 +692,20 @@ class _HomeScreenState extends State<HomeScreen> {
                   foregroundColor: Colors.white,
                   side: BorderSide(color: Colors.white.withValues(alpha: 0.25)),
                   backgroundColor: Colors.white.withValues(alpha: 0.08),
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
-                child: const Text('Daftar Tiket', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                child: const Text('Daftar Antrean', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
               ),
               ElevatedButton.icon(
                 onPressed: () => _scrollToKey(_resolvedSectionKey),
-                icon: const Icon(Icons.check_circle_outline, size: 16),
-                label: const Text('Riwayat Tiket Selesai', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                icon: const Icon(Icons.check_circle_outline, size: 14),
+                label: const Text('Riwayat Selesai', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF059669),
                   foregroundColor: Colors.white,
-                  elevation: 1,
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
               ),
             ],
@@ -785,6 +715,289 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // ==========================================================================
+  // VARIAN B: EXECUTIVE HUB (Segmented Modular Tabs)
+  // ==========================================================================
+  Widget _buildVariantB(List<TicketModel> activeTickets, List<TicketModel> resolvedTickets) {
+    return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Corporate Top App Bar
+          _buildVariantANavbar(),
+
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Quick Summary Card
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 3))],
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Halo, ${(_user?.name ?? 'Karyawan').split(' ').first} 👋', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Color(0xFF0F172A))),
+                          const SizedBox(height: 2),
+                          Text('Dept: ${_user?.departmentName ?? 'General'} • Sesi Aktif', style: const TextStyle(fontSize: 11, color: Color(0xFF64748B))),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.chat_bubble_outline, color: Color(0xFF10B981)),
+                            tooltip: 'Hotline WhatsApp',
+                            onPressed: _openWhatsAppSupport,
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.auto_awesome, color: Color(0xFF2563EB)),
+                            tooltip: 'Asisten AI',
+                            onPressed: _openAiAssistantDialog,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 14),
+
+                // Compact KPI Ribbon
+                _buildKpiMetricsStrip(),
+                const SizedBox(height: 18),
+
+                // Segmented Tab Selector
+                Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE2E8F0),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(child: _segmentTabButton(0, '📝 Buat Tiket')),
+                      Expanded(child: _segmentTabButton(1, '📋 Antrean (${activeTickets.length})')),
+                      Expanded(child: _segmentTabButton(2, '✅ Selesai (${resolvedTickets.length})')),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Selected Tab Content
+                if (_variantBSelectedTab == 0)
+                  _buildSubmitTicketFormCard()
+                else if (_variantBSelectedTab == 1)
+                  _buildActiveQueueCard(activeTickets)
+                else
+                  _buildResolvedArchiveCard(resolvedTickets),
+
+                const SizedBox(height: 36),
+                _buildCorporateFooter(),
+                const SizedBox(height: 80),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _segmentTabButton(int index, String title) {
+    final isSelected = _variantBSelectedTab == index;
+    return InkWell(
+      onTap: () => setState(() => _variantBSelectedTab = index),
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.white : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: isSelected ? [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2))] : null,
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          title,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: isSelected ? FontWeight.w900 : FontWeight.bold,
+            color: isSelected ? const Color(0xFF2563EB) : const Color(0xFF64748B),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ==========================================================================
+  // VARIAN C: MODERN BENTO DASHBOARD (Action-First Industrial Layout)
+  // ==========================================================================
+  Widget _buildVariantC(List<TicketModel> activeTickets, List<TicketModel> resolvedTickets) {
+    final total = _kpi['total_tickets'] ?? 0;
+    final resolved = _kpi['resolved_tickets'] ?? 0;
+    final percent = total > 0 ? (resolved / total).clamp(0.0, 1.0) : 1.0;
+
+    return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildVariantANavbar(),
+
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Modern Bento Progress Hero
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xFF334155)),
+                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 16, offset: const Offset(0, 6))],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text('PERFORMA PENANGANAN TIKET', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 0.6)),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(color: const Color(0xFF10B981).withValues(alpha: 0.2), borderRadius: BorderRadius.circular(10)),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.bolt, color: Color(0xFF10B981), size: 12),
+                                const SizedBox(width: 4),
+                                Text('${(percent * 100).toInt()}% Selesai', style: const TextStyle(color: Color(0xFF34D399), fontSize: 10, fontWeight: FontWeight.w900)),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Text('$resolved', style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: Colors.white)),
+                          Text(' / $total Tiket', style: const TextStyle(fontSize: 14, color: Color(0xFF94A3B8), fontWeight: FontWeight.bold)),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(6),
+                        child: LinearProgressIndicator(
+                          value: percent,
+                          minHeight: 8,
+                          backgroundColor: const Color(0xFF334155),
+                          color: const Color(0xFF10B981),
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+
+                      // 4 Mini Bento Chips
+                      Row(
+                        children: [
+                          Expanded(child: _bentoMiniStat('Aktif', '${_kpi['active_tickets'] ?? 0}', const Color(0xFF3B82F6))),
+                          const SizedBox(width: 6),
+                          Expanded(child: _bentoMiniStat('Menunggu', '${_kpi['pending_tickets'] ?? 0}', const Color(0xFFF59E0B))),
+                          const SizedBox(width: 6),
+                          Expanded(child: _bentoMiniStat('Diproses', '${_kpi['in_progress_tickets'] ?? 0}', const Color(0xFF6366F1))),
+                          const SizedBox(width: 6),
+                          Expanded(child: _bentoMiniStat('Selesai', '${_kpi['resolved_tickets'] ?? 0}', const Color(0xFF10B981))),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // AI Smart Preset Guidance Card
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEFF6FF),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFFBFDBFE)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.auto_awesome, color: Color(0xFF2563EB), size: 24),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Butuh Bantuan Kendala Cepat?', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF1E3A8A))),
+                            const Text('Gunakan tombol AI perapih deskripsi atau hubungi support langsung.', style: TextStyle(fontSize: 10, color: Color(0xFF3B82F6))),
+                          ],
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: _openAiAssistantDialog,
+                        style: TextButton.styleFrom(backgroundColor: const Color(0xFF2563EB), foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6)),
+                        child: const Text('Buka AI', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Form Pengajuan
+                _buildSubmitTicketFormCard(),
+                const SizedBox(height: 20),
+
+                // Antrean Tiket Aktif
+                _buildActiveQueueCard(activeTickets),
+                const SizedBox(height: 20),
+
+                // Riwayat Tiket Selesai
+                _buildResolvedArchiveCard(resolvedTickets),
+                const SizedBox(height: 36),
+
+                _buildCorporateFooter(),
+                const SizedBox(height: 80),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _bentoMiniStat(String label, String value, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F172A),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        children: [
+          Text(value, style: TextStyle(color: color, fontSize: 13, fontWeight: FontWeight.w900)),
+          Text(label, style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 9)),
+        ],
+      ),
+    );
+  }
+
+  // ==========================================================================
+  // SHARED KPI METRICS STRIP
+  // ==========================================================================
   Widget _buildKpiMetricsStrip() {
     return LayoutBuilder(builder: (context, constraints) {
       final isWide = constraints.maxWidth > 700;
@@ -845,15 +1058,15 @@ class _HomeScreenState extends State<HomeScreen> {
     required Color bgColor,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(color: const Color(0xFFE2E8F0)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 8,
+            blurRadius: 6,
             offset: const Offset(0, 2),
           ),
         ],
@@ -878,7 +1091,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Text(
                 value,
                 style: const TextStyle(
-                  fontSize: 22,
+                  fontSize: 20,
                   fontWeight: FontWeight.w900,
                   color: Color(0xFF0F172A),
                 ),
@@ -886,12 +1099,12 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(7),
             decoration: BoxDecoration(
               color: bgColor,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, color: iconColor, size: 20),
+            child: Icon(icon, color: iconColor, size: 18),
           ),
         ],
       ),
@@ -899,7 +1112,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // ==========================================================================
-  // CARD 1: SUBMIT SUPPORT REQUEST (livewire:ticket-form)
+  // SHARED FORM: SUBMIT SUPPORT REQUEST
   // ==========================================================================
   Widget _buildSubmitTicketFormCard() {
     final senderDeptName = _departments.firstWhere((d) => d.id == _selectedSenderDeptId, orElse: () => DepartmentModel(id: 0, name: _user?.departmentName ?? 'IT Support')).name;
@@ -924,7 +1137,7 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Header Bar with Responsive Expanded layout
+          // Header Bar
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             child: Row(
@@ -937,7 +1150,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(color: const Color(0xFFBFDBFE)),
                   ),
-                  child: const Icon(Icons.description_outlined, color: Color(0xFF2563EB), size: 20),
+                  child: const Icon(Icons.description_outlined, color: Color(0xFF2563EB), size: 18),
                 ),
                 const SizedBox(width: 10),
                 const Expanded(
@@ -946,16 +1159,16 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       Text(
                         'Submit Support Request',
-                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
                       ),
                       Text(
-                        'Dispatch an official ticket to designated corporate department',
+                        'Dispatch official ticket to designated corporate department',
                         style: TextStyle(fontSize: 11, color: Color(0xFF64748B)),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 6),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
@@ -966,11 +1179,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.circle, color: Color(0xFF2563EB), size: 7),
+                      Icon(Icons.circle, color: Color(0xFF2563EB), size: 6),
                       SizedBox(width: 4),
                       Text(
                         'Live Routing',
-                        style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF1D4ED8)),
+                        style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Color(0xFF1D4ED8)),
                       ),
                     ],
                   ),
@@ -980,38 +1193,31 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const Divider(height: 1, color: Color(0xFFF1F5F9)),
 
-          // Success message banner if recently dispatched
           if (_ticketFormSuccessMsg != null)
             Container(
               margin: const EdgeInsets.fromLTRB(16, 14, 16, 0),
-              padding: const EdgeInsets.all(14),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: const Color(0xFFECFDF5),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(10),
                 border: Border.all(color: const Color(0xFFA7F3D0)),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.check_circle, color: Color(0xFF059669), size: 20),
-                  const SizedBox(width: 10),
+                  const Icon(Icons.check_circle, color: Color(0xFF059669), size: 18),
+                  const SizedBox(width: 8),
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(_ticketFormSuccessMsg!, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF065F46))),
-                        const Text('Tiket Anda aktif dan langsung terhubung ke meja penanganan antrian di bawah.', style: TextStyle(fontSize: 11, color: Color(0xFF047857))),
-                      ],
-                    ),
+                    child: Text(_ticketFormSuccessMsg!, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF065F46))),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close, size: 16, color: Color(0xFF065F46)),
+                    icon: const Icon(Icons.close, size: 14, color: Color(0xFF065F46)),
                     onPressed: () => setState(() => _ticketFormSuccessMsg = null),
                   ),
                 ],
               ),
             ),
 
-          // Form Body
+          // Form Fields
           Padding(
             padding: const EdgeInsets.all(16),
             child: Form(
@@ -1019,21 +1225,20 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Field: JUDUL PERMINTAAN
                   _fieldLabel('JUDUL PERMINTAAN'),
                   const SizedBox(height: 6),
                   TextFormField(
                     controller: _titleController,
-                    style: const TextStyle(fontSize: 13, color: Color(0xFF0F172A)),
-                    decoration: _inputDecoration('Ringkasan singkat masalah atau kebutuhan (contoh: Gangguan koneksi VPN di Lantai 3)'),
+                    style: const TextStyle(fontSize: 12, color: Color(0xFF0F172A)),
+                    decoration: _inputDecoration('Contoh: Gangguan koneksi VPN / Printer Offline di Lantai 2'),
                     validator: (val) {
                       if (val == null || val.trim().isEmpty) return 'Judul tiket wajib diisi';
                       return null;
                     },
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 14),
 
-                  // 3 Columns: DEPARTEMEN PENGIRIM, DEPARTEMEN TUJUAN, KATEGORI PERMINTAAN
+                  // Dropdowns
                   LayoutBuilder(builder: (context, constraints) {
                     final isWide = constraints.maxWidth > 650;
                     final senderDropdown = Column(
@@ -1042,7 +1247,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         _fieldLabel('DEPARTEMEN PENGIRIM'),
                         const SizedBox(height: 6),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                           decoration: BoxDecoration(
                             color: const Color(0xFFF8FAFC),
                             borderRadius: BorderRadius.circular(8),
@@ -1050,10 +1255,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.business_outlined, size: 16, color: Color(0xFF64748B)),
-                              const SizedBox(width: 8),
+                              const Icon(Icons.business_outlined, size: 14, color: Color(0xFF64748B)),
+                              const SizedBox(width: 6),
                               Expanded(
-                                child: Text(senderDeptName, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
+                                child: Text(senderDeptName, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
                               ),
                             ],
                           ),
@@ -1069,12 +1274,12 @@ class _HomeScreenState extends State<HomeScreen> {
                         DropdownButtonFormField<int>(
                           value: _selectedTargetDeptId,
                           isDense: true,
-                          style: const TextStyle(fontSize: 13, color: Color(0xFF0F172A)),
+                          style: const TextStyle(fontSize: 12, color: Color(0xFF0F172A)),
                           decoration: _inputDecoration(''),
                           items: _departments.map((d) {
                             return DropdownMenuItem<int>(
                               value: d.id,
-                              child: Text(d.name, style: const TextStyle(fontSize: 12, color: Color(0xFF0F172A))),
+                              child: Text(d.name, style: const TextStyle(fontSize: 11, color: Color(0xFF0F172A))),
                             );
                           }).toList(),
                           onChanged: (val) {
@@ -1098,12 +1303,12 @@ class _HomeScreenState extends State<HomeScreen> {
                         DropdownButtonFormField<String>(
                           value: availableCategories.contains(_selectedCategory) ? _selectedCategory : availableCategories.first,
                           isDense: true,
-                          style: const TextStyle(fontSize: 13, color: Color(0xFF0F172A)),
+                          style: const TextStyle(fontSize: 12, color: Color(0xFF0F172A)),
                           decoration: _inputDecoration(''),
                           items: availableCategories.map((c) {
                             return DropdownMenuItem<String>(
                               value: c,
-                              child: Text(c, style: const TextStyle(fontSize: 12, color: Color(0xFF0F172A))),
+                              child: Text(c, style: const TextStyle(fontSize: 11, color: Color(0xFF0F172A))),
                             );
                           }).toList(),
                           onChanged: (val) => setState(() => _selectedCategory = val),
@@ -1115,9 +1320,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       return Row(
                         children: [
                           Expanded(child: senderDropdown),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: 10),
                           Expanded(child: targetDropdown),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: 10),
                           Expanded(child: categoryDropdown),
                         ],
                       );
@@ -1125,40 +1330,38 @@ class _HomeScreenState extends State<HomeScreen> {
                       return Column(
                         children: [
                           senderDropdown,
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 10),
                           targetDropdown,
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 10),
                           categoryDropdown,
                         ],
                       );
                     }
                   }),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 14),
 
-                  // Field: RINCIAN MASALAH / DESKRIPSI + Toolbar
+                  // Description
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       _fieldLabel('RINCIAN MASALAH / DESKRIPSI'),
                       TextButton.icon(
                         onPressed: _beautifyDescription,
-                        icon: const Icon(Icons.auto_fix_high, size: 14, color: Color(0xFF2563EB)),
-                        label: const Text('✨ Rapikan & Perindah Deskripsi', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF2563EB))),
+                        icon: const Icon(Icons.auto_fix_high, size: 12, color: Color(0xFF2563EB)),
+                        label: const Text('✨ Rapikan Deskripsi', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF2563EB))),
                       ),
                     ],
                   ),
                   const SizedBox(height: 6),
                   TextFormField(
                     controller: _descController,
-                    minLines: 4,
-                    maxLines: 7,
-                    style: const TextStyle(fontSize: 13, color: Color(0xFF0F172A)),
+                    minLines: 3,
+                    maxLines: 6,
+                    style: const TextStyle(fontSize: 12, color: Color(0xFF0F172A)),
                     onChanged: (_) => setState(() {}),
-                    decoration: _inputDecoration('Jelaskan situasi, nomor aset, personil terkait, pesan kesalahan, dan langkah yang sudah dicoba...'),
+                    decoration: _inputDecoration('Jelaskan detail kendala, nomor aset, pesan error yang tampil...'),
                     validator: (val) {
-                      if (val == null || val.trim().length < 10) {
-                        return 'Deskripsi masalah minimal 10 karakter';
-                      }
+                      if (val == null || val.trim().length < 10) return 'Deskripsi masalah minimal 10 karakter';
                       return null;
                     },
                   ),
@@ -1166,19 +1369,17 @@ class _HomeScreenState extends State<HomeScreen> {
                   Wrap(
                     alignment: WrapAlignment.spaceBetween,
                     crossAxisAlignment: WrapCrossAlignment.center,
-                    spacing: 8,
-                    runSpacing: 4,
                     children: [
                       Text(
-                        '${_descController.text.length} karakter • ${_descController.text.split(RegExp(r'\s+')).where((s) => s.isNotEmpty).length} kata (Min. 10 karakter)',
+                        '${_descController.text.length} karakter (Min. 10)',
                         style: const TextStyle(fontSize: 10, color: Color(0xFF94A3B8)),
                       ),
                       const Text('Format: Teks / Template Otomatis', style: TextStyle(fontSize: 10, color: Color(0xFF94A3B8))),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 14),
 
-                  // Field: BUKTI FOTO / LAMPIRAN (OPSIONAL)
+                  // Photo Attachment
                   _fieldLabel('BUKTI FOTO / LAMPIRAN (OPSIONAL)'),
                   const SizedBox(height: 6),
                   InkWell(
@@ -1211,93 +1412,63 @@ class _HomeScreenState extends State<HomeScreen> {
                     },
                     borderRadius: BorderRadius.circular(10),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+                      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 14),
                       decoration: BoxDecoration(
                         color: const Color(0xFFF8FAFC),
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: const Color(0xFFCBD5E1), style: BorderStyle.solid),
+                        border: Border.all(color: const Color(0xFFCBD5E1)),
                       ),
                       child: _imageBytes == null
                           ? const Column(
                               children: [
-                                Icon(Icons.add_photo_alternate_outlined, color: Color(0xFF2563EB), size: 32),
-                                SizedBox(height: 8),
-                                Text(
-                                  'Pilih Bukti Foto atau sentuh di sini',
-                                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF2563EB)),
-                                ),
-                                SizedBox(height: 2),
-                                Text(
-                                  '(tangkapan layar error, foto fisik alat, dsb. Maks 10MB)',
-                                  style: TextStyle(fontSize: 10, color: Color(0xFF94A3B8)),
-                                ),
+                                Icon(Icons.add_photo_alternate_outlined, color: Color(0xFF2563EB), size: 26),
+                                SizedBox(height: 6),
+                                Text('Pilih Bukti Foto atau Sentuh di Sini', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: Color(0xFF2563EB))),
+                                Text('(tangkapan layar error, fisik alat, dsb. Maks 10MB)', style: TextStyle(fontSize: 9, color: Color(0xFF94A3B8))),
                               ],
                             )
                           : Row(
                               children: [
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(8),
-                                  child: Image.memory(
-                                    _imageBytes!,
-                                    width: 56,
-                                    height: 56,
-                                    fit: BoxFit.cover,
-                                  ),
+                                  child: Image.memory(_imageBytes!, width: 48, height: 48, fit: BoxFit.cover),
                                 ),
-                                const SizedBox(width: 12),
+                                const SizedBox(width: 10),
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text(_imageFileName ?? 'Foto Terlampir', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                                      const Text('Foto siap diunggah bersama tiket', style: TextStyle(fontSize: 10, color: Color(0xFF10B981))),
+                                      Text(_imageFileName ?? 'Foto Terlampir', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
+                                      const Text('Siap diunggah bersama tiket', style: TextStyle(fontSize: 10, color: Color(0xFF10B981))),
                                     ],
                                   ),
                                 ),
                                 IconButton(
-                                  icon: const Icon(Icons.delete_outline, color: Color(0xFFEF4444)),
-                                  onPressed: () {
-                                    setState(() {
-                                      _imageBytes = null;
-                                      _base64Image = null;
-                                      _imageFileName = null;
-                                    });
-                                  },
+                                  icon: const Icon(Icons.delete_outline, color: Color(0xFFEF4444), size: 20),
+                                  onPressed: () => setState(() {
+                                    _imageBytes = null;
+                                    _base64Image = null;
+                                    _imageFileName = null;
+                                  }),
                                 ),
                               ],
                             ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 18),
 
-                  // Bottom Action Row
-                  Wrap(
-                    alignment: WrapAlignment.spaceBetween,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    spacing: 16,
-                    runSpacing: 12,
-                    children: [
-                      const Text(
-                        'Pengiriman otomatis memulai ruang komunikasi antar departemen secara langsung',
-                        style: TextStyle(fontSize: 11, color: Color(0xFF64748B)),
-                      ),
-                      ElevatedButton.icon(
-                        onPressed: _isSubmittingTicket ? null : _submitTicket,
-                        icon: _isSubmittingTicket
-                            ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                            : const Icon(Icons.send_rounded, size: 16),
-                        label: Text(
-                          _isSubmittingTicket ? 'Mengirim...' : 'Kirim Permintaan',
-                          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF2563EB),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                        ),
-                      ),
-                    ],
+                  ElevatedButton.icon(
+                    onPressed: _isSubmittingTicket ? null : _submitTicket,
+                    icon: _isSubmittingTicket
+                        ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                        : const Icon(Icons.send_rounded, size: 14),
+                    label: Text(_isSubmittingTicket ? 'Mengirim...' : 'Kirim Permintaan Tiket', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 12)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF2563EB),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 13),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
                   ),
                 ],
               ),
@@ -1309,7 +1480,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // ==========================================================================
-  // CARD 2: ANTREAN TIKET & INSIDEN AKTIF (livewire:ticket-list)
+  // SHARED CARD: ANTREAN TIKET & INSIDEN AKTIF
   // ==========================================================================
   Widget _buildActiveQueueCard(List<TicketModel> tickets) {
     return Container(
@@ -1317,14 +1488,11 @@ class _HomeScreenState extends State<HomeScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFE2E8F0)),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 16, offset: const Offset(0, 4)),
-        ],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 16, offset: const Offset(0, 4))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Header Row with Title & Search
           Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -1340,29 +1508,21 @@ class _HomeScreenState extends State<HomeScreen> {
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(color: const Color(0xFFBFDBFE)),
                       ),
-                      child: const Icon(Icons.inbox_outlined, color: Color(0xFF2563EB), size: 20),
+                      child: const Icon(Icons.inbox_outlined, color: Color(0xFF2563EB), size: 18),
                     ),
                     const SizedBox(width: 10),
                     const Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'Antrean Tiket & Insiden Aktif',
-                            style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
-                          ),
-                          Text(
-                            'Pilih atau klik tiket untuk membuka detail lengkap dan riwayat penanganan',
-                            style: TextStyle(fontSize: 11, color: Color(0xFF64748B)),
-                          ),
+                          Text('Antrean Tiket & Insiden Aktif', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
+                          Text('Pilih tiket untuk membuka detail lengkap dan riwayat pengerjaan', style: TextStyle(fontSize: 11, color: Color(0xFF64748B))),
                         ],
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 12),
-
-                // Search Bar Input
                 TextField(
                   onChanged: (val) => setState(() => _activeQueueSearch = val),
                   style: const TextStyle(fontSize: 12),
@@ -1384,20 +1544,19 @@ class _HomeScreenState extends State<HomeScreen> {
 
           // Status & Department Filter Bar
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             child: Wrap(
               alignment: WrapAlignment.spaceBetween,
               crossAxisAlignment: WrapCrossAlignment.center,
-              spacing: 12,
-              runSpacing: 10,
+              spacing: 8,
+              runSpacing: 8,
               children: [
-                // Status Filter Pills
                 Wrap(
                   spacing: 6,
                   runSpacing: 4,
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
-                    const Text('STATUS:', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Color(0xFF64748B))),
+                    const Text('STATUS:', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Color(0xFF64748B))),
                     _statusPill('Semua'),
                     _statusPill('Pending'),
                     _statusPill('Open'),
@@ -1405,8 +1564,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     _statusPill('Resolved'),
                   ],
                 ),
-
-                // Department Dropdown Filter
                 DropdownButton<int?>(
                   value: _activeQueueDeptFilter,
                   isDense: true,
@@ -1424,18 +1581,11 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const Divider(height: 1, color: Color(0xFFF1F5F9)),
 
-          // List of Active Tickets
           if (tickets.isEmpty)
             const Padding(
-              padding: EdgeInsets.symmetric(vertical: 40),
+              padding: EdgeInsets.symmetric(vertical: 36),
               child: Center(
-                child: Column(
-                  children: [
-                    Icon(Icons.task_alt_outlined, size: 36, color: Color(0xFF94A3B8)),
-                    SizedBox(height: 8),
-                    Text('Tidak ada antrean tiket yang cocok', style: TextStyle(fontSize: 13, color: Color(0xFF64748B), fontWeight: FontWeight.bold)),
-                  ],
-                ),
+                child: Text('Tidak ada tiket dalam antrean saat ini.', style: TextStyle(fontSize: 12, color: Color(0xFF94A3B8))),
               ),
             )
           else
@@ -1444,10 +1594,9 @@ class _HomeScreenState extends State<HomeScreen> {
               physics: const NeverScrollableScrollPhysics(),
               padding: const EdgeInsets.all(16),
               itemCount: tickets.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              separatorBuilder: (_, __) => const SizedBox(height: 10),
               itemBuilder: (context, index) {
-                final t = tickets[index];
-                return _buildTicketCard(t, isResolvedSection: false);
+                return _buildTicketCard(tickets[index], isResolvedSection: false);
               },
             ),
         ],
@@ -1461,7 +1610,7 @@ class _HomeScreenState extends State<HomeScreen> {
       onTap: () => setState(() => _activeQueueStatus = status),
       borderRadius: BorderRadius.circular(6),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
         decoration: BoxDecoration(
           color: isSelected ? const Color(0xFF2563EB) : const Color(0xFFF1F5F9),
           borderRadius: BorderRadius.circular(6),
@@ -1470,7 +1619,7 @@ class _HomeScreenState extends State<HomeScreen> {
           status,
           style: TextStyle(
             color: isSelected ? Colors.white : const Color(0xFF475569),
-            fontSize: 11,
+            fontSize: 10,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -1479,7 +1628,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // ==========================================================================
-  // CARD 3: RIWAYAT TIKET SAYA YANG SELESAI
+  // SHARED CARD: RIWAYAT TIKET SAYA YANG SELESAI
   // ==========================================================================
   Widget _buildResolvedArchiveCard(List<TicketModel> resolvedTickets) {
     return Container(
@@ -1487,14 +1636,11 @@ class _HomeScreenState extends State<HomeScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFE2E8F0)),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 16, offset: const Offset(0, 4)),
-        ],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 16, offset: const Offset(0, 4))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Header Bar
           Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -1510,7 +1656,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(color: const Color(0xFFA7F3D0)),
                       ),
-                      child: const Icon(Icons.verified_outlined, color: Color(0xFF059669), size: 20),
+                      child: const Icon(Icons.verified_outlined, color: Color(0xFF059669), size: 18),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
@@ -1519,74 +1665,42 @@ class _HomeScreenState extends State<HomeScreen> {
                         children: [
                           Wrap(
                             crossAxisAlignment: WrapCrossAlignment.center,
-                            spacing: 8,
+                            spacing: 6,
                             runSpacing: 4,
                             children: [
-                              const Text(
-                                'Riwayat Tiket Saya yang Selesai',
-                                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
-                              ),
+                              const Text('Riwayat Tiket Saya yang Selesai', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFECFDF5),
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: const Color(0xFFA7F3D0)),
-                                ),
-                                child: Text(
-                                  '${resolvedTickets.length} SELESAI',
-                                  style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Color(0xFF065F46)),
-                                ),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFEFF6FF),
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: const Color(0xFFBFDBFE)),
-                                ),
-                                child: const Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(Icons.circle, color: Color(0xFF2563EB), size: 6),
-                                    SizedBox(width: 4),
-                                    Text(
-                                      'Sinkronisasi Realtime',
-                                      style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF1D4ED8)),
-                                    ),
-                                  ],
-                                ),
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(color: const Color(0xFFECFDF5), borderRadius: BorderRadius.circular(10), border: Border.all(color: const Color(0xFFA7F3D0))),
+                                child: Text('${resolvedTickets.length} SELESAI', style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Color(0xFF065F46))),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 4),
-                          const Text(
-                            'Daftar riwayat tiket yang Anda ajukan yang telah selesai diproses. Anda dapat memeriksa hasil pengerjaan dan solusi penanganan.',
-                            style: TextStyle(fontSize: 11, color: Color(0xFF64748B)),
-                          ),
+                          const SizedBox(height: 2),
+                          const Text('Daftar riwayat tiket yang telah selesai diproses.', style: TextStyle(fontSize: 11, color: Color(0xFF64748B))),
                         ],
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 10),
 
-                // Search & Filter Row
+                // Search & Filter
                 Wrap(
-                  spacing: 12,
-                  runSpacing: 10,
+                  spacing: 10,
+                  runSpacing: 8,
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     SizedBox(
-                      width: 260,
+                      width: 220,
                       child: TextField(
                         onChanged: (val) => setState(() => _resolvedSearch = val),
-                        style: const TextStyle(fontSize: 12),
+                        style: const TextStyle(fontSize: 11),
                         decoration: InputDecoration(
-                          hintText: 'Cari riwayat tiket, judul, ID tiket...',
+                          hintText: 'Cari tiket selesai...',
                           hintStyle: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8)),
-                          prefixIcon: const Icon(Icons.search, size: 16, color: Color(0xFF94A3B8)),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                          prefixIcon: const Icon(Icons.search, size: 14, color: Color(0xFF94A3B8)),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                           isDense: true,
                           filled: true,
                           fillColor: Colors.white,
@@ -1597,11 +1711,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     DropdownButton<int?>(
                       value: _resolvedDeptFilter,
                       isDense: true,
-                      hint: const Text('Semua Departemen Penanganan', style: TextStyle(fontSize: 11)),
+                      hint: const Text('Semua Departemen', style: TextStyle(fontSize: 11)),
                       underline: const SizedBox(),
                       style: const TextStyle(fontSize: 11, color: Color(0xFF0F172A), fontWeight: FontWeight.bold),
                       items: [
-                        const DropdownMenuItem<int?>(value: null, child: Text('Semua Departemen Penanganan')),
+                        const DropdownMenuItem<int?>(value: null, child: Text('Semua Departemen')),
                         ..._departments.map((d) => DropdownMenuItem<int?>(value: d.id, child: Text(d.name))),
                       ],
                       onChanged: (val) => setState(() => _resolvedDeptFilter = val),
@@ -1613,7 +1727,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const Divider(height: 1, color: Color(0xFFF1F5F9)),
 
-          // List of Resolved Tickets
           if (resolvedTickets.isEmpty)
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 36),
@@ -1627,10 +1740,9 @@ class _HomeScreenState extends State<HomeScreen> {
               physics: const NeverScrollableScrollPhysics(),
               padding: const EdgeInsets.all(16),
               itemCount: resolvedTickets.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              separatorBuilder: (_, __) => const SizedBox(height: 10),
               itemBuilder: (context, index) {
-                final t = resolvedTickets[index];
-                return _buildTicketCard(t, isResolvedSection: true);
+                return _buildTicketCard(resolvedTickets[index], isResolvedSection: true);
               },
             ),
         ],
@@ -1659,55 +1771,45 @@ class _HomeScreenState extends State<HomeScreen> {
       },
       borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: const Color(0xFFE2E8F0)),
           boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.02),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
+            BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 6, offset: const Offset(0, 2)),
           ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Top Date & ID
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.calendar_today_outlined, size: 12, color: Color(0xFF94A3B8)),
+                    const Icon(Icons.calendar_today_outlined, size: 11, color: Color(0xFF94A3B8)),
                     const SizedBox(width: 4),
-                    Text(formattedDate, style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8))),
+                    Text(formattedDate, style: const TextStyle(fontSize: 10, color: Color(0xFF94A3B8))),
                   ],
                 ),
                 Text('#${ticket.id}', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF94A3B8))),
               ],
             ),
-            const SizedBox(height: 8),
-
-            // Title
+            const SizedBox(height: 6),
             Text(
               ticket.title.toUpperCase(),
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: Color(0xFF0F172A), letterSpacing: 0.3),
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: Color(0xFF0F172A), letterSpacing: 0.3),
             ),
             const SizedBox(height: 4),
-
-            // Description preview
             Text(
               ticket.description,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 12, color: Color(0xFF64748B), height: 1.4),
+              style: const TextStyle(fontSize: 11, color: Color(0xFF64748B), height: 1.4),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
 
-            // Footer Badges & Actions (Responsive Wrap)
             Wrap(
               alignment: WrapAlignment.spaceBetween,
               crossAxisAlignment: WrapCrossAlignment.center,
@@ -1719,9 +1821,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   runSpacing: 4,
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
-                    // Target Dept Badge
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                       decoration: BoxDecoration(
                         color: const Color(0xFFF1F5F9),
                         borderRadius: BorderRadius.circular(6),
@@ -1729,26 +1830,21 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       child: Text(
                         ticket.targetDepartmentName ?? 'IT Support',
-                        style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF334155)),
+                        style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Color(0xFF334155)),
                       ),
                     ),
-
-                    // Status Badge
                     _badgeForStatus(ticket.status),
-
-                    // Di-ACC Admin indicator
                     const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.verified, size: 12, color: Color(0xFF10B981)),
+                        Icon(Icons.verified, size: 11, color: Color(0xFF10B981)),
                         SizedBox(width: 2),
-                        Text('Di-ACC Admin', style: TextStyle(fontSize: 10, color: Color(0xFF10B981), fontWeight: FontWeight.bold)),
+                        Text('Di-ACC Admin', style: TextStyle(fontSize: 9, color: Color(0xFF10B981), fontWeight: FontWeight.bold)),
                       ],
                     ),
                   ],
                 ),
 
-                // Button Action
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -1762,7 +1858,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     Icon(
                       Icons.chevron_right,
-                      size: 16,
+                      size: 14,
                       color: isResolvedSection ? const Color(0xFF059669) : const Color(0xFF2563EB),
                     ),
                   ],
@@ -1796,92 +1892,59 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: border),
-      ),
-      child: Text(
-        status,
-        style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: text),
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(6), border: Border.all(color: border)),
+      child: Text(status, style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: text)),
     );
   }
 
-  // ==========================================================================
-  // 7. CORPORATE FOOTER
-  // ==========================================================================
   Widget _buildCorporateFooter() {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-      decoration: const BoxDecoration(
-        border: Border(top: BorderSide(color: Color(0xFFE2E8F0))),
-      ),
+      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+      decoration: const BoxDecoration(border: Border(top: BorderSide(color: Color(0xFFE2E8F0)))),
       child: const Column(
         children: [
           Wrap(
             alignment: WrapAlignment.center,
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              Text(
-                'PT. ASIA PLASTIK',
-                style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11, color: Color(0xFF475569)),
-              ),
-              Text(
-                ' • Sistem Manajemen Tiket & Komunikasi Internal Manufaktur',
-                style: TextStyle(fontSize: 11, color: Color(0xFF64748B)),
-              ),
+              Text('PT. ASIA PLASTIK', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 10, color: Color(0xFF475569))),
+              Text(' • Sistem Manajemen Tiket & Komunikasi Internal Manufaktur', style: TextStyle(fontSize: 10, color: Color(0xFF64748B))),
             ],
           ),
           SizedBox(height: 4),
           Text(
             'Kantor & Pabrik: Rungkut Industri, Surabaya • Telp: +6231 8433078 • © 2026 All Rights Reserved',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 10, color: Color(0xFF94A3B8)),
+            style: TextStyle(fontSize: 9, color: Color(0xFF94A3B8)),
           ),
         ],
       ),
     );
   }
 
-  // Helper Form Styles
+  void _logout() async {
+    await ApiService.logout();
+    if (!mounted) return;
+    Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const LoginScreen()), (r) => false);
+  }
+
   Widget _fieldLabel(String text) {
-    return Text(
-      text,
-      style: const TextStyle(
-        fontSize: 11,
-        fontWeight: FontWeight.w800,
-        color: Color(0xFF334155),
-        letterSpacing: 0.5,
-      ),
-    );
+    return Text(text, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: Color(0xFF334155), letterSpacing: 0.5));
   }
 
   InputDecoration _inputDecoration(String hint) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8)),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      hintStyle: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8)),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
       isDense: true,
       filled: true,
       fillColor: Colors.white,
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
-      ),
-      errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Color(0xFFEF4444)),
-      ),
-      focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1.5),
-      ),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFCBD5E1))),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.5)),
+      errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFEF4444))),
+      focusedErrorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1.5)),
     );
   }
 }
