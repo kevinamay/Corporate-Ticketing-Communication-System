@@ -10,14 +10,13 @@ $_SERVER['VERCEL'] = '1';
 $_SERVER['SCRIPT_NAME'] = '/index.php';
 $_SERVER['PHP_SELF'] = '/index.php';
 
-// Global CORS Handling for Flutter Mobile & Flutter Web clients
-$httpOrigin = $_SERVER['HTTP_ORIGIN'] ?? '*';
-header("Access-Control-Allow-Origin: {$httpOrigin}");
-header('Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, Accept, Origin, X-CSRF-TOKEN');
-header('Access-Control-Allow-Credentials: true');
-
+// Fast CORS preflight handler for Flutter Web & Mobile clients
 if (isset($_SERVER['REQUEST_METHOD']) && strtoupper($_SERVER['REQUEST_METHOD']) === 'OPTIONS') {
+    $httpOrigin = $_SERVER['HTTP_ORIGIN'] ?? '*';
+    header("Access-Control-Allow-Origin: {$httpOrigin}");
+    header('Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS');
+    header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, Accept, Origin, X-CSRF-TOKEN');
+    header('Access-Control-Max-Age: 86400');
     http_response_code(200);
     exit;
 }
