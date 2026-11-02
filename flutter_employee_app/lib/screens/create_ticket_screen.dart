@@ -584,50 +584,12 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
             errorBuilder: (_, __, ___) => const Icon(Icons.business, color: Colors.white, size: 22),
           ),
 
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1E293B),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFF334155)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    CircleAvatar(
-                      radius: 9,
-                      backgroundColor: const Color(0xFF0284C7),
-                      child: Text((_user?.name ?? 'K').substring(0, 1).toUpperCase(), style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
-                    ),
-                    const SizedBox(width: 4),
-                    ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 55),
-                      child: Text(
-                        (_user?.name ?? 'Karyawan').split(' ').first,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                      decoration: BoxDecoration(color: const Color(0xFF2563EB), borderRadius: BorderRadius.circular(4)),
-                      child: const Text('EMP', style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.w900)),
-                    ),
-                  ],
-                ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.logout_rounded, color: Color(0xFF94A3B8), size: 17),
-                padding: const EdgeInsets.all(4),
-                constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
-                tooltip: 'Keluar',
-                onPressed: _logout,
-              ),
-            ],
+          IconButton(
+            icon: const Icon(Icons.logout_rounded, color: Color(0xFF94A3B8), size: 20),
+            padding: const EdgeInsets.all(4),
+            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+            tooltip: 'Keluar',
+            onPressed: _logout,
           ),
         ],
       ),
