@@ -113,12 +113,8 @@ class LoginHrd extends Component
             session(['active_user_id' => Auth::id()]);
             session(['auth.password_confirmed_at' => time()]);
 
-            // Arahkan ke dashboard atau langsung modul data karyawan jika admin
-            if ($user->email === 'user123@gmail.com') {
-                $this->redirect(route('hcm.employees.master'), navigate: false);
-            } else {
-                $this->redirect(route('dashboard'), navigate: false);
-            }
+            // Arahkan langsung ke dashboard utama
+            $this->redirect(route('dashboard'), navigate: false);
 
             return;
         }

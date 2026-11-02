@@ -47,7 +47,7 @@ class HrdLoginTest extends TestCase
             ->set('login_id', 'user123@gmail.com')
             ->set('password', 'password123')
             ->call('login')
-            ->assertRedirect(route('hcm.employees.master'));
+            ->assertRedirect(route('dashboard'));
 
         $this->assertAuthenticatedAs($admin);
     }

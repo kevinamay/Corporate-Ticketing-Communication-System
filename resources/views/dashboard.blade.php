@@ -9,11 +9,18 @@
             auth()->login($activeUser);
         }
     }
+    $deptName = strtolower($activeUser?->department?->name ?? '');
+    $isHrDept = str_contains($deptName, 'hr') || str_contains($deptName, 'human resource') || str_contains($deptName, 'personalia');
     $isAdmin = $activeUser && (
         $activeUser->role === 'admin' ||
-        $activeUser->email === 'user123@gmail.com'
+        $activeUser->email === 'user123@gmail.com' ||
+        $isHrDept
     );
-    $canAccessMasterData = $activeUser && ($activeUser->email === 'user123@gmail.com');
+    $canAccessMasterData = $activeUser && (
+        $activeUser->role === 'admin' ||
+        $activeUser->email === 'user123@gmail.com' ||
+        $isHrDept
+    );
 @endphp
 
 <div class="space-y-6">
