@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Koneksi Terputus - PT. Asia Plastik Ticketing System</title>
+    
+    <script>
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            background-color: #f1f5f9;
+            color: #1e293b;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        html.dark body {
+            background-color: #0b1120;
+            color: #f8fafc;
+        }
+
+        .card {
+            width: 100%;
+            max-width: 460px;
+            background: #ffffff;
+            border-radius: 1.75rem;
+            padding: 2.25rem 2rem;
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(226, 232, 240, 0.8);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        html.dark .card {
+            background: #111827;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.08);
+        }
+
+        .icon-wrapper {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 1.5rem;
+            border-radius: 1.5rem;
+            background: linear-gradient(135deg, #fee2e2 0%, #fecdd3 100%);
+            color: #e11d48;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.8), 0 8px 16px -4px rgba(225, 29, 72, 0.2);
+            position: relative;
+        }
+
+        html.dark .icon-wrapper {
+            background: linear-gradient(135deg, #881337 0%, #4c0519 100%);
+            color: #fda4af;
+            box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.2), 0 8px 20px -4px rgba(0, 0, 0, 0.6);
+        }
+
+        .pulse-dot {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background-color: #ef4444;
+            border: 3px solid #ffffff;
+            animation: pulse 1.8s infinite;
+        }
+
+        html.dark .pulse-dot {
+            border-color: #111827;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        .brand-badge {
+            display: inline-block;
+            font-size: 0.6875rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            background: #e2e8f0;
+            color: #475569;
+            margin-bottom: 0.75rem;
+        }
+
+        html.dark .brand-badge {
+            background: #1e293b;
+            color: #94a3b8;
+        }
+
+        h1 {
+            font-size: 1.35rem;
+            font-weight: 800;
+            margin-bottom: 0.625rem;
+            letter-spacing: -0.02em;
+        }
+
+        p {
+            font-size: 0.875rem;
+            line-height: 1.5;
+            color: #64748b;
+            margin-bottom: 1.75rem;
+        }
+
+        html.dark p {
+            color: #94a3b8;
+        }
+
+        .btn-retry {
+            width: 100%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.625rem;
+            padding: 0.875rem 1.5rem;
+            border-radius: 1rem;
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 0.875rem;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 10px 20px -5px rgba(37, 99, 235, 0.4);
+            transition: all 0.2s ease;
+        }
+
+        .btn-retry:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 24px -5px rgba(37, 99, 235, 0.5);
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        }
+
+        .btn-retry:active {
+            transform: translateY(0);
+        }
+
+        .status-badge {
+            margin-top: 1.25rem;
+            font-size: 0.75rem;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .status-badge::before {
+            content: "";
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #ef4444;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="brand-badge">PT. ASIA PLASTIK &bull; PWA OFFLINE MODE</div>
+        
+        <div class="icon-wrapper">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="1" y1="1" x2="23" y2="23"></line>
+                <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"></path>
+                <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"></path>
+                <path d="M10.71 5.05A16 16 0 0 1 22.58 9"></path>
+                <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"></path>
+                <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+                <line x1="12" y1="20" x2="12.01" y2="20"></line>
+            </svg>
+            <div class="pulse-dot"></div>
+        </div>
+
+        <h1>Tidak Ada Koneksi Internet</h1>
+        <p>Aplikasi sedang berada dalam mode offline. Anda dapat terus melihat data tampilan yang tersimpan, namun pembuatan tiket baru dan obrolan pesan membutuhkan koneksi ke server perusahaan.</p>
+
+        <button class="btn-retry" onclick="retryConnection()" id="retryBtn">
+            <svg id="retryIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="23 4 23 10 17 10"></polyline>
+                <polyline points="1 20 1 14 7 14"></polyline>
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+            </svg>
+            <span id="btnText">Muat Ulang Halaman</span>
+        </button>
+
+        <div class="status-badge" id="netStatus">
+            Menunggu sinyal jaringan kembali...
+        </div>
+    </div>
+
+    <script>
+        function retryConnection() {
+            const btn = document.getElementById('retryBtn');
+            const btnText = document.getElementById('btnText');
+            btnText.innerText = 'Menghubungkan...';
+            btn.style.opacity = '0.75';
+            btn.disabled = true;
+
+            setTimeout(() => {
+                window.location.reload();
+            }, 500);
+        }
+
+        // Auto-reload when network restores
+        window.addEventListener('online', () => {
+            const status = document.getElementById('netStatus');
+            status.innerText = 'Koneksi terhubung kembali! Memuat halaman...';
+            status.style.color = '#10b981';
+            setTimeout(() => {
+                window.location.reload();
+            }, 600);
+        });
+    </script>
+</body>
+</html>

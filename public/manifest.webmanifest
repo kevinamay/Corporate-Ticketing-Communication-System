@@ -1,0 +1,95 @@
+{
+  "id": "/?source=pwa",
+  "name": "PT Asia Plastik - Corporate Ticketing Desk",
+  "short_name": "Asia Plastik",
+  "description": "Portal Layanan Tiket, Helpdesk & Komunikasi Real-Time Karyawan PT. Asia Plastik",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": [
+    "window-controls-overlay",
+    "standalone",
+    "minimal-ui"
+  ],
+  "orientation": "any",
+  "background_color": "#0b1120",
+  "theme_color": "#0f172a",
+  "lang": "id",
+  "dir": "ltr",
+  "categories": [
+    "business",
+    "productivity",
+    "utilities"
+  ],
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "/images/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/icons/icon-maskable-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/images/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/icons/icon-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/images/icons/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Buat Tiket Baru",
+      "short_name": "Tiket Baru",
+      "description": "Buka formulir pembuatan tiket layanan departemen",
+      "url": "/?action=new_ticket#ticket-form-section",
+      "icons": [
+        {
+          "src": "/images/icons/icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Portal HRD & Admin",
+      "short_name": "Portal HRD",
+      "description": "Login ke konsol manajemen tiket & personalia HRD",
+      "url": "/hrd/login",
+      "icons": [
+        {
+          "src": "/images/icons/icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Antrean Tiket",
+      "short_name": "Antrean",
+      "description": "Buka antrean tiket aktif korporat",
+      "url": "/dashboard",
+      "icons": [
+        {
+          "src": "/images/icons/icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}

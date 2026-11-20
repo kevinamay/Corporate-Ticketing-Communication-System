@@ -16,6 +16,21 @@
         }
     </script>
 
+    <!-- PWA / Web APK Manifest & Mobile Meta Tags -->
+    <link rel="manifest" href="{{ asset('manifest.webmanifest') }}">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Asia Plastik">
+    <meta name="application-name" content="Asia Plastik">
+    <meta name="theme-color" content="#0f172a">
+    
+    <!-- PWA Icons & Favicon -->
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('images/icons/favicon-32x32.png') }}">
+    <link rel="icon" type="image/svg+xml" href="{{ asset('images/icons/icon.svg') }}">
+    <link rel="apple-touch-icon" href="{{ asset('images/icons/apple-touch-icon.png') }}">
+
     <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -83,6 +98,18 @@
                         <span class="text-slate-700">|</span>
                         <a href="{{ route('register') }}" class="hover:text-white font-bold text-slate-200 transition text-[11px] sm:text-xs">{{ __('Daftar') }}</a>
                     @endauth
+
+                    <span class="text-slate-700">|</span>
+
+                    <!-- PWA / Web APK Quick Install Action -->
+                    <button type="button" 
+                            onclick="window.triggerPwaInstall && window.triggerPwaInstall()" 
+                            class="inline-flex items-center gap-1.5 px-2 sm:px-2.5 py-0.5 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-[10px] uppercase tracking-wider shadow-xs transition cursor-pointer"
+                            title="{{ __('Pasang sebagai Aplikasi HP / Desktop (Web APK)') }}">
+                        <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        <span class="hidden sm:inline">{{ __('Install App') }}</span>
+                        <span class="sm:hidden">{{ __('APK') }}</span>
+                    </button>
 
                     <span class="text-slate-700">|</span>
 
@@ -190,7 +217,17 @@
                 </nav>
 
                 <!-- Right: Search, Notifications, User Roster, Menu -->
-                <div class="flex items-center gap-1.5 sm:gap-3 shrink-0">
+                <div class="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+                    <!-- Prominent PWA / WebAPK Install Button -->
+                    <button type="button" 
+                            onclick="window.triggerPwaInstall && window.triggerPwaInstall()"
+                            class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs shadow-md shadow-blue-500/25 active:scale-95 transition cursor-pointer select-none border border-blue-400/30"
+                            title="{{ __('Pasang Aplikasi di HP / Desktop (WebAPK)') }}">
+                        <svg class="w-3.5 h-3.5 text-white animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        <span class="hidden sm:inline">{{ __('Install App (WebAPK)') }}</span>
+                        <span class="sm:hidden">{{ __('Install APK') }}</span>
+                    </button>
+
                     <!-- Search Icon Button -->
                     <a href="{{ request()->is('/') ? '#queue' : url('/#queue') }}" title="{{ __('Cari Tiket') }}" class="text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-slate-800 transition">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
@@ -471,6 +508,23 @@
                             </span>
                         </div>
                     </a>
+
+                    <!-- Pasang Aplikasi (Web APK) Button in Drawer -->
+                    <button type="button" 
+                            onclick="window.triggerPwaInstall && window.triggerPwaInstall()"
+                            class="w-full flex items-center gap-3.5 p-2.5 rounded-2xl transition bg-blue-50/80 dark:bg-blue-950/40 hover:bg-blue-100 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 border border-blue-200/80 dark:border-blue-900/50 cursor-pointer text-left">
+                        <div class="w-11 h-11 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        </div>
+                        <div class="flex-1">
+                            <span class="font-bold text-sm block leading-tight">
+                                {{ __('Pasang Aplikasi (Web APK)') }}
+                            </span>
+                            <span class="text-[11px] text-blue-600/80 dark:text-blue-400 font-normal">
+                                {{ __('Install ke layar utama HP / Tablet') }}
+                            </span>
+                        </div>
+                    </button>
                 </nav>
             </div>
 
@@ -537,6 +591,24 @@
             </div>
         </div>
     </footer>
+
+    <!-- Progressive Web App / Web APK Install Banner & Modal -->
+    <x-pwa-install-prompt />
+
+    <!-- Service Worker Registration for PWA / Web APK -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(function(reg) {
+                        console.log('[PWA] Service Worker registered with scope:', reg.scope);
+                    })
+                    .catch(function(err) {
+                        console.warn('[PWA] Service Worker registration failed:', err);
+                    });
+            });
+        }
+    </script>
 
     @livewireScripts
 </body>

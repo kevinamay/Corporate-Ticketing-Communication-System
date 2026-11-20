@@ -16,6 +16,21 @@
         }
     </script>
 
+    <!-- PWA / Web APK Manifest & Mobile Meta Tags -->
+    <link rel="manifest" href="{{ asset('manifest.webmanifest') }}">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Asia Plastik">
+    <meta name="application-name" content="Asia Plastik">
+    <meta name="theme-color" content="#0f172a">
+    
+    <!-- PWA Icons & Favicon -->
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('images/icons/favicon-32x32.png') }}">
+    <link rel="icon" type="image/svg+xml" href="{{ asset('images/icons/icon.svg') }}">
+    <link rel="apple-touch-icon" href="{{ asset('images/icons/apple-touch-icon.png') }}">
+
     <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -80,6 +95,16 @@
             </div>
         </div>
 
+        <!-- Quick PWA / Web APK Install Button -->
+        <button type="button" 
+            onclick="window.triggerPwaInstall && window.triggerPwaInstall()" 
+            class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs shadow-lg backdrop-blur-md transition cursor-pointer"
+            title="{{ __('Pasang Aplikasi di HP / Desktop (Web APK)') }}">
+            <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+            <span class="hidden sm:inline">{{ __('Install App') }}</span>
+            <span class="sm:hidden">{{ __('APK') }}</span>
+        </button>
+
         <button type="button" 
             @click="darkMode = !darkMode; if (darkMode) { document.documentElement.classList.add('dark'); localStorage.setItem('theme', 'dark'); } else { document.documentElement.classList.remove('dark'); localStorage.setItem('theme', 'light'); }" 
             id="theme-toggle"
@@ -98,6 +123,24 @@
 
     {{ $slot ?? '' }}
     @yield('content')
+
+    <!-- Progressive Web App / Web APK Install Banner & Modal -->
+    <x-pwa-install-prompt />
+
+    <!-- Service Worker Registration for PWA / Web APK -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(function(reg) {
+                        console.log('[PWA] Service Worker registered with scope:', reg.scope);
+                    })
+                    .catch(function(err) {
+                        console.warn('[PWA] Service Worker registration failed:', err);
+                    });
+            });
+        }
+    </script>
 
     @livewireScripts
 </body>
