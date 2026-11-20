@@ -99,12 +99,12 @@
                         <a href="{{ route('register') }}" class="hover:text-white font-bold text-slate-200 transition text-[11px] sm:text-xs">{{ __('Daftar') }}</a>
                     @endauth
 
-                    <span class="text-slate-700 md:hidden">|</span>
+                    <span class="text-slate-700 md:!hidden">|</span>
 
                     <!-- PWA / Web APK Quick Install Action (Mobile Only) -->
                     <button type="button" 
                             onclick="window.triggerPwaInstall && window.triggerPwaInstall()" 
-                            class="md:hidden inline-flex items-center gap-1.5 px-2 sm:px-2.5 py-0.5 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-[10px] uppercase tracking-wider shadow-xs transition cursor-pointer"
+                            class="md:!hidden inline-flex items-center gap-1.5 px-2 sm:px-2.5 py-0.5 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-[10px] uppercase tracking-wider shadow-xs transition cursor-pointer"
                             title="{{ __('Pasang sebagai Aplikasi HP (Web APK)') }}">
                         <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                         <span>{{ __('Install App') }}</span>
@@ -220,7 +220,7 @@
                     <!-- Prominent PWA / WebAPK Install Button (Mobile Only) -->
                     <button type="button" 
                             onclick="window.triggerPwaInstall && window.triggerPwaInstall()"
-                            class="md:hidden inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs shadow-md shadow-blue-500/25 active:scale-95 transition cursor-pointer select-none border border-blue-400/30"
+                            class="md:!hidden inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs shadow-md shadow-blue-500/25 active:scale-95 transition cursor-pointer select-none border border-blue-400/30"
                             title="{{ __('Pasang Aplikasi di HP (WebAPK)') }}">
                         <svg class="w-3.5 h-3.5 text-white animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                         <span>{{ __('Install APK') }}</span>
