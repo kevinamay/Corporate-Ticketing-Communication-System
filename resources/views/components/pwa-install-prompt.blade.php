@@ -81,7 +81,7 @@
          x-transition:leave-start="opacity-100 translate-y-0 scale-100"
          x-transition:leave-end="opacity-0 translate-y-8 scale-95"
          style="display: none;"
-         class="fixed bottom-4 left-3 right-3 sm:left-auto sm:right-6 sm:max-w-md bg-slate-900/95 dark:bg-slate-900/95 text-white backdrop-blur-xl border border-blue-500/40 rounded-2xl shadow-2xl p-4 z-50 flex items-start gap-3.5 transition-colors">
+         class="md:hidden fixed bottom-4 left-3 right-3 sm:left-auto sm:right-6 sm:max-w-md bg-slate-900/95 dark:bg-slate-900/95 text-white backdrop-blur-xl border border-blue-500/40 rounded-2xl shadow-2xl p-4 z-50 flex items-start gap-3.5 transition-colors">
         
         <!-- App Icon Thumbnail -->
         <div class="w-12 h-12 rounded-xl bg-slate-800 border border-blue-400/40 flex items-center justify-center shrink-0 shadow-md overflow-hidden p-1.5">

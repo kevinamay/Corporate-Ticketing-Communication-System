@@ -122,8 +122,8 @@
                 </div>
             </div>
 
-            <!-- Install Web APK CTA Box on Login Page -->
-            <div class="mt-4 p-3 rounded-2xl bg-blue-50/90 dark:bg-blue-950/40 border border-blue-200/80 dark:border-blue-900/60 flex items-center justify-between gap-3 text-left">
+            <!-- Install Web APK CTA Box on Login Page (Mobile Only) -->
+            <div class="md:hidden mt-4 p-3 rounded-2xl bg-blue-50/90 dark:bg-blue-950/40 border border-blue-200/80 dark:border-blue-900/60 flex items-center justify-between gap-3 text-left">
                 <div class="flex items-center gap-2.5 min-w-0">
                     <div class="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
