@@ -24,6 +24,54 @@ $isHrdPortal = function () {
     return str_contains($host, 'hrd') || str_contains($host, 'hcm');
 };
 
+// PWA & WebAPK Endpoints (Ensures Vercel serverless and local serve correct files & headers)
+Route::get('/manifest.json', function () {
+    $path = public_path('manifest.json');
+    if (! file_exists($path)) {
+        abort(404);
+    }
+
+    return response()->file($path, [
+        'Content-Type' => 'application/manifest+json; charset=utf-8',
+        'Cache-Control' => 'public, max-age=3600',
+    ]);
+});
+
+Route::get('/manifest.webmanifest', function () {
+    $path = public_path('manifest.webmanifest');
+    if (! file_exists($path)) {
+        abort(404);
+    }
+
+    return response()->file($path, [
+        'Content-Type' => 'application/manifest+json; charset=utf-8',
+        'Cache-Control' => 'public, max-age=3600',
+    ]);
+});
+
+Route::get('/sw.js', function () {
+    $path = public_path('sw.js');
+    if (! file_exists($path)) {
+        abort(404);
+    }
+
+    return response()->file($path, [
+        'Content-Type' => 'application/javascript; charset=utf-8',
+        'Cache-Control' => 'no-cache, no-store, must-revalidate',
+    ]);
+});
+
+Route::get('/offline.html', function () {
+    $path = public_path('offline.html');
+    if (! file_exists($path)) {
+        abort(404);
+    }
+
+    return response()->file($path, [
+        'Content-Type' => 'text/html; charset=utf-8',
+    ]);
+});
+
 Route::get('/', function () use ($isHrdPortal) {
     $defaultLogin = $isHrdPortal() ? 'hrd.login' : 'login';
 

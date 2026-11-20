@@ -11,6 +11,38 @@
   },
   "routes": [
     {
+      "src": "/manifest.webmanifest",
+      "dest": "/public/manifest.webmanifest",
+      "headers": {
+        "content-type": "application/manifest+json; charset=utf-8",
+        "cache-control": "public, max-age=3600"
+      }
+    },
+    {
+      "src": "/manifest.json",
+      "dest": "/public/manifest.json",
+      "headers": {
+        "content-type": "application/manifest+json; charset=utf-8",
+        "cache-control": "public, max-age=3600"
+      }
+    },
+    {
+      "src": "/sw.js",
+      "dest": "/public/sw.js",
+      "headers": {
+        "content-type": "application/javascript; charset=utf-8",
+        "cache-control": "no-cache, no-store, must-revalidate",
+        "service-worker-allowed": "/"
+      }
+    },
+    {
+      "src": "/offline.html",
+      "dest": "/public/offline.html",
+      "headers": {
+        "content-type": "text/html; charset=utf-8"
+      }
+    },
+    {
       "src": "/build/(.*)",
       "dest": "/public/build/$1"
     },

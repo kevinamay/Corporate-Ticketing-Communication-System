@@ -21,6 +21,36 @@ if (isset($_SERVER['REQUEST_METHOD']) && strtoupper($_SERVER['REQUEST_METHOD']) 
     exit;
 }
 
+// Fast PWA & WebAPK static asset server for Vercel
+$requestUri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
+if ($requestUri === '/manifest.json' || $requestUri === '/manifest.webmanifest') {
+    $manifestFile = __DIR__.'/../public'.$requestUri;
+    if (file_exists($manifestFile)) {
+        header('Content-Type: application/manifest+json; charset=utf-8');
+        header('Cache-Control: public, max-age=3600');
+        readfile($manifestFile);
+        exit;
+    }
+}
+if ($requestUri === '/sw.js') {
+    $swFile = __DIR__.'/../public/sw.js';
+    if (file_exists($swFile)) {
+        header('Content-Type: application/javascript; charset=utf-8');
+        header('Cache-Control: no-cache, no-store, must-revalidate');
+        header('Service-Worker-Allowed: /');
+        readfile($swFile);
+        exit;
+    }
+}
+if ($requestUri === '/offline.html') {
+    $offFile = __DIR__.'/../public/offline.html';
+    if (file_exists($offFile)) {
+        header('Content-Type: text/html; charset=utf-8');
+        readfile($offFile);
+        exit;
+    }
+}
+
 // 1. Prepare serverless writable directories in /tmp
 $storageDirs = [
     '/tmp/storage',
